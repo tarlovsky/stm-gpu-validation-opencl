@@ -136,7 +136,7 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 for((sequential=0; sequential<=1;sequential++)); do
   #vary cpu validation percentage
-  for((j=32; j<=100; j++)); do
+  for((j=100; j<=100; j++)); do
 
 
     #CPU validation proportion set and recompile
@@ -162,6 +162,7 @@ for((sequential=0; sequential<=1;sequential++)); do
       avg=0
 
       for k in {0..9}; do
+
 
         if [[ $sequential -eq 1 ]];then
           echo "RUN:$((k+1)), 1 thread, sequential array walk, $global_stm rset:$i CPU_VAL_PROPORTION:$j"

@@ -636,12 +636,14 @@ int launchInstantKernel(void){
     //TIMER_READ(start1);
     pCommBuffer[FINISH] = 0;
     pCommBuffer[COMPLETE] = 0;
-    status = clEnqueueNDRangeKernel(g_clCommandQueue, cl_kernel_worker, 1, NULL, global_dim, lws, 0, NULL, &event);
-    //testStatus(status, "clEnqueueNDRangeKernel error");
-    clFlush(g_clCommandQueue);
+    if(CPU_VALIDATION_PROPORTION < 100) {
+        status = clEnqueueNDRangeKernel(g_clCommandQueue, cl_kernel_worker, 1, NULL, global_dim, lws, 0, NULL, &event);
+        //testStatus(status, "clEnqueueNDRangeKernel error");
+        clFlush(g_clCommandQueue);
 
-    //wait before GPU is ready , each thread will signal
-    while (pCommBuffer[SPIN] < NumberOfHwThreads);
+        //wait before GPU is ready , each thread will signal
+        while (pCommBuffer[SPIN] < NumberOfHwThreads);
+    }
     //TIMER_READ(stop1);
     //printf("kernel exec time %f\n", TIMER_DIFF_SECONDS(start1, stop1));
     //clFlush(g_clCommandQueue);

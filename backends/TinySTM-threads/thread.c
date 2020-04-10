@@ -39,7 +39,7 @@ __thread long threadID;
 
         THREAD_LOCAL_SET(global_threadId, (long)threadId);
 
-        bindThread(threadId);
+        //bindThread(threadId);
 
         while (1) {
             THREAD_BARRIER(global_barrierPtr, threadId); /* wait for start parallel */

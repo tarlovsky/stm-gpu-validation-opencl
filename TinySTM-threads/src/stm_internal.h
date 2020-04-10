@@ -1191,10 +1191,139 @@ int_stm_WaW(stm_tx_t *tx, volatile stm_word_t *addr, stm_word_t value, stm_word_
 #endif /* DESIGN == WRITE_THROUGH */
 }
 
+#define VAL_THREADS 4
+
+pthread_t val_threads[VAL_THREADS];
+pthread_attr_t attr;
+
+pthread_mutex_t validate_mutex;
+pthread_cond_t validate_cond;
+pthread_mutex_t currently_validating_mutex;
+pthread_cond_t currently_validating_cond;
+
+atomic_int currently_validating;
+atomic_int start_validate;
+atomic_int valid;
+atomic_int workers_valid;
+atomic_int val_finish;
+atomic_int val_stat_reads;
+
+long val_chunk;
+long val_last_chunk_diff;
+r_entry_t *my_r_set_start;
+w_set_t *my_w_set_start, *my_w_set_end;
+
+static void
+*stm_wbetl_validate_parallel(void *tid)
+{
+    int id = (int) tid;
+    int my_chunk;
+    r_entry_t *r;
+    int i, n;
+    stm_word_t l;
+    w_set_t *ws, *we;
+    int val_reads;
+    //printf("Thread %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->n: %d\n", id, data, (unsigned long)data->start, (unsigned long)data->start + n, data->n);
+
+    while(atomic_load(&val_finish) == 0){
+
+        pthread_mutex_lock(&validate_mutex);
+            while(!atomic_load_explicit(&start_validate, memory_order_relaxed)){
+                pthread_cond_wait(&validate_cond, &validate_mutex);
+            }
+        pthread_mutex_unlock(&validate_mutex);
+
+        val_reads=0;
+        n = val_chunk;
+        my_chunk = val_chunk * id;
+        if(id == VAL_THREADS - 1){
+            my_chunk += val_last_chunk_diff;
+        }
+        r  = my_r_set_start + my_chunk; /*wind to where your chunk is*/
+        ws = my_w_set_start;
+        we = my_w_set_end;
+
+        for (i = n; i > 0; i--, r++) {
+
+            if(workers_valid < VAL_THREADS){
+                goto ret;
+            }
+
+#ifdef TM_STATISTICS
+            val_reads++;
+#endif
+
+            l = ATOMIC_LOAD(r->lock);
+
+            if (LOCK_GET_OWNED(l)) {
+
+                w_entry_t *w = (w_entry_t *)LOCK_GET_ADDR(l);
+
+                if (!(ws <= w && w < we)){
+#ifdef CONFLICT_TRACKING
+                    if (_tinystm.conflict_cb != NULL) {
+    # ifdef UNIT_TX
+              if (l != LOCK_UNIT) {
+    # endif /* UNIT_TX */
+                /* Call conflict callback */
+                stm_tx_t *other = ((w_entry_t *)LOCK_GET_ADDR(l))->tx;
+                _tinystm.conflict_cb(tx, other);
+    # ifdef UNIT_TX
+              }
+    # endif /* UNIT_TX */
+            }
+#endif /* CONFLICT_TRACKING */
+                    /*notify all that read-set is invalid*/
+                    atomic_fetch_sub_explicit(&workers_valid, 1, memory_order_relaxed);/*tx invalid*/
+                    goto ret;
+                }
+            } else {
+                if (LOCK_GET_TIMESTAMP(l) != r->version) {
+                    /*notify all that read-set is invalid*/
+                    atomic_fetch_sub_explicit(&workers_valid, 1, memory_order_relaxed);/*tx invalid*/
+                    goto ret;
+                }
+                /* Same version: OK */
+            }
+        }
+        /* if we got here the normal way, then valid. invalid jumps to RET */
+        //atomic_add_explicit(&val_stat_succ, val_reads, memory_order_relaxed);
+ret:
+        /*  gather all counters  */
+        /*  atomically increment */
+        atomic_add_explicit(&val_stat_reads, val_reads, memory_order_relaxed);
+
+        /* signal main thread you are finished */
+        pthread_mutex_lock(&currently_validating_mutex);
+            atomic_sub_explicit(&currently_validating, 1, memory_order_release);
+            pthread_cond_signal(&currently_validating_cond);/*cpu will get VAL_THREADS signals*/
+        pthread_mutex_unlock(&currently_validating_mutex);
+    }
+
+
+    return "VALIDATION_RESULT_IS_GLOBAL";
+}
+
 static INLINE stm_tx_t *
 int_stm_init_thread(void)
 {
   stm_tx_t *tx;
+
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+  /* start all VAL_THREADS */
+  for (int i = 0; i < VAL_THREADS; i++){
+      pthread_create(&val_threads[i], NULL, stm_wbetl_validate_parallel, (void*) i);
+  }
+
+  pthread_mutex_init(validate_mutex, NULL);
+  pthread_mutex_init(currently_validating_mutex, NULL);
+  pthread_cond_init(validate_cond, NULL);
+  pthread_cond_init(currently_validating_cond, NULL);
+
+  /*init all validation global vars to 0*/
+  currently_validating = start_validate = valid = workers_valid = val_finish = val_stat_reads = 0;
 
   PRINT_DEBUG("==> stm_init_thread()\n");
 

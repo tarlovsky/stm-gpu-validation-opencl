@@ -1,0 +1,2 @@
+"RSET" "Validation time (s)" "stddev" "Validation time (s) CPU" "stddev" "Validation time (s) GPU" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "Val success" "stddev" "Val fail" "stddev" "Energy (J)" "stddev" "Total time (s)" "stddev"
+512 0.000001 0.000000 0.000001 0.000000 0 0 1.000000 0 0 0 512.000000 0 1.000000 0 0 0 0.019885 0.013206 0.000642 0.000090 
