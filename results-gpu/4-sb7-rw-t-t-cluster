@@ -1,0 +1,5 @@
+"STM mode" "Validation time (s)" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "Val success" "stddev" "Val fail" "stddev" "Energy (J)" "stddev" "Total time (s)" "stddev"
+TinySTM-igpu-naive-wbetl 0.007898 0.002691 52.550000 0.893029 498149933.375000 159237274.153250 12292.025000 24415.835834 22.075000 9.737524 0.075000 0.263391 323.948460 13.893991 5.560325 0.251485 
+TinySTM-igpu-persistent-wbetl 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+TinySTM-threads-wbetl 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+TinySTM-wbetl 0.020855 0.013010 53.476190 1.841817 387018007.761905 147801042.108205 7982649.476190 5083155.417024 9.142857 2.531435 1.809524 1.258080 373.852344 35.152438 6.561190 0.679660 

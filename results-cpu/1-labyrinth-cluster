@@ -1,0 +1,5 @@
+"STM mode" "Validation time (s)" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "Val success" "stddev" "Val fail" "stddev" "Energy (J)" "stddev" "Total time (s)" "stddev"
+norec 0 0 174.000000 0 0 0 0 0 0 0 0 0 0.184277 0.013734 0.006860 0.000013 
+swissTM 0 0 174.000000 0 0 0 0 0 0 0 0 0 0.189465 0.013267 0.006983 0.000007 
+TinySTM-wbetl 0 0 174.000000 0 0 0 0 0 0 0 0 0 0.186591 0.012140 0.006713 0.000007 
+tl2 0.000006 0.000002 174.000000 0 0 0 2356.000000 0 144.000000 0 0 0 0.193158 0.011870 0.006992 0.000019 

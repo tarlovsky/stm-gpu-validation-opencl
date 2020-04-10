@@ -1,0 +1,29 @@
+
+
+
+X ONE BIG VACATION plot histogram
+
+X only wbetl has timers for validation, put timer into every tinystm mode
+
+X Look at how validation time is gathered.
+  You are only getting it when validation completes with no problems.
+  When it fails you dont touch it.
+
+
+GEN ASSEMBLY CHAPTER ON opencl executions
+
+
+X add percentage labels to gnuplot bars, for example, percentage of time validatio runs. easier to compare between modes
+
+
+start reading through NOREC validation
+
+
+start with a lot of data, yada yada+ yada++, kmeans kmeans ++ etc
+then say that from now on you will simplify observations recurring to a geometric
+mean to represent entire program executions.
+from now on kmeans kmeans+ kmeans++ -> just KMEANS
+
+
+
+TODO add detailed validation, succ/fail graph

@@ -1,0 +1,133 @@
+########################################
+# set platform/OS-specific variables
+SOLARIS_CPP = g++
+
+MFLAGS = -j2
+
+########################################
+# set platform specific variables
+OS_NAME = $(shell uname -s)
+
+
+CPPFLAGS += -DSB7_TT_LINUX -pthread
+LDFLAGS += -lrt -lpthread
+CPP = g++
+
+########################################
+# set architecture specific flags
+ifeq ($(ARCH), )
+    ARCH_NAME = $(shell uname -m)
+endif
+
+ARCH = x86_64
+CPPFLAGS += -D SB7_TT_X86 -D SB7_TT_64
+CPPFLAGS += $(LPDSTM_CPPFLAGS)
+LDFLAGS += $(LPDSTM_LDFLAGS)
+
+
+########################################
+# set initial values for the core variables
+
+# dirs to use
+SRC_DIR = ./src
+SRC_DOCS_DIR = ./docs
+
+TARGET_DIR = ./target
+OBJ_DIR = ./target/obj
+TARGET_DOCS_DIR = ./target/docs
+
+CPPFLAGS += -w -Wno-non-template-friend
+CPPFLAGS += -g -O2
+
+ATOMIC_OPS_INCLUDE = ../TinySTM/src/atomic_ops/
+
+# tl2 dirs
+TL2_ROOT_DIR = ../tl2
+TL2_BIN_DIR = $(TL2_ROOT_DIR)
+TL2_INC_DIR = $(TL2_ROOT_DIR)
+
+# TinySTM dirs
+TINY_STM_ROOT_DIR = ../TinySTM
+TINY_STM_BIN_DIR = ${TINY_STM_ROOT_DIR}/lib
+TINY_STM_INC_DIR = ${TINY_STM_ROOT_DIR}/include
+
+# TinySTM dirs
+TINYIGPU_STM_ROOT_DIR = ../TinySTM-igpu-persistent
+TINYIGPU_STM_BIN_DIR = ${TINYIGPU_STM_ROOT_DIR}/lib
+TINYIGPU_STM_INC_DIR = ${TINYIGPU_STM_ROOT_DIR}/include
+
+# wlpdstm dirs
+WLPDSTM_ROOT_DIR = ../swissTM
+WLPDSTM_BIN_DIR = ${WLPDSTM_ROOT_DIR}/lib
+WLPDSTM_INC_DIR = ${WLPDSTM_ROOT_DIR}/include
+
+# norec dirs
+NOREC_ROOT_DIR = ../norec
+NOREC_BIN_DIR = $(NOREC_ROOT_DIR)
+NOREC_INC_DIR = $(NOREC_ROOT_DIR)
+
+#######################################
+# include library to use
+STM_CPPFLAGS_tl2 = -I$(TL2_INC_DIR) -DSTM_TL2 -DTL2_STATS
+STM_LDFLAGS_tl2 = -L$(TL2_BIN_DIR) -ltl2
+
+STM_CPPFLAGS_TinySTM = -I$(TINY_STM_INC_DIR) -DSTM_TINY_STM
+STM_LDFLAGS_TinySTM = -L$(TINY_STM_BIN_DIR) -lstm
+
+###################### IGPU ########################
+STM_CPPFLAGS_TinySTM-igpu-persistent = -I$(TINYIGPU_STM_INC_DIR) -DSTM_TINY_STM
+STM_LDFLAGS_TinySTM-igpu-persistent = -L$(TINYIGPU_STM_BIN_DIR) -lstm -lOpenCL
+
+STM_CPPFLAGS_swissTM = -I$(WLPDSTM_INC_DIR) -DSTM_WLPDSTM
+STM_LDFLAGS_swissTM = -L$(WLPDSTM_BIN_DIR) -lwlpdstm
+
+STM_CPPFLAGS_norec = -I$(NOREC_INC_DIR) -DSTM_NOREC
+STM_LDFLAGS_norec = -L$(NOREC_BIN_DIR) -lnorec
+
+ifeq ($(STM_NAME), )
+	STM_NAME = wlpdstm
+endif
+
+CPPFLAGS += $(STM_CPPFLAGS_${STM_NAME})
+LDFLAGS += $(STM_LDFLAGS_${STM_NAME})
+LDFLAGS += -L../rapl-power -lrapl
+
+#gets put there by build-stmbench7.sh script
+include ../common/Defines.common.mk
+
+#reduced tm api makes every STM work with sb7
+CPPFLAGS += -D REDUCED_TM_API -DSB7_TT_LINUX
+
+
+#######################################
+# collect malloc stats
+CPPFLAGS_COLLECT_MALLOC_STATS = -D COLLECT_MALLOC_STATS
+
+ifeq ($(COLLECT_MALLOC_STATS), yes)
+	CPPFLAGS += $(CPPFLAGS_COLLECT_MALLOC_STATS)
+endif
+
+
+#######################################
+# collect txmm stats
+CPPFLAGS_COLLECT_TXMM_STATS = -D COLLECT_TXMM_STATISTICS
+
+ifeq ($(COLLECT_TXMM_STATS), yes)
+	CPPFLAGS += $(CPPFLAGS_COLLECT_TXMM_STATS)
+endif
+
+#######################################
+# collect total size stats
+CPPFLAGS_COLLECT_TOTAL_SIZE_STATS = -D COLLECT_TOTAL_SIZE_STATISTICS
+
+ifeq ($(COLLECT_TOTAL_SIZE_STATS), yes)
+	CPPFLAGS += $(CPPFLAGS_COLLECT_TOTAL_SIZE_STATS)
+endif
+
+#######Change workload  at runtime
+ifdef CHANGEWORKLOAD
+CPPFLAGS+= -DCHANGEWORKLOAD
+   ifdef WORKLOAD_PHASE_DURATION
+   CPPFLAGS+= $(WORKLOAD_PHASE_DURATION)
+   endif
+endif
