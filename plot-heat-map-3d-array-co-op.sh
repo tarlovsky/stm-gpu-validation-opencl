@@ -68,7 +68,7 @@ for((i=0;i<=100;i++));do
   awk -vi=$i 'NR>1{print i, $1, $2}' "$CO_OP_SEQ_PATH/1-sequential-cpu-$(($i))-gpu-$((100-$i))" >> $HEAT_FILE_SEQ
   echo >> $HEAT_FILE_SEQ
 
-  #draw plane accross
+  #draw TINYSTM UNTOUCHED plane accross
   awk -vi=$i 'NR>4{print i, $1, $2}' "$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation" >> $HEAT_FILE_CPU_RAND
   echo >> $HEAT_FILE_CPU_RAND
 
@@ -98,22 +98,26 @@ echo "set xtics nomirror rotate by 45 right scale 0 font \",8\"" | tee -a $FILE1
 #echo "set dgrid3d" >> $FILE
 
 #FILE 1
-echo "set title \"Simple array random walk cpu-igpu co-op validation\" font \",12\"" >> $FILE1
-echo "set pm3d" >> $FILE1
-echo "set style data lines" >> $FILE1
+
+#echo "set logscale x" >> $FILE1
+echo "set title \"SIMPLE ARRAY, TRANSACTIONAL RANDOM WALK CPU+IGPU CO-OP VALIDATION (ASSIGNMENT IN %)\" font \",14\"" >> $FILE1
+echo "set pm3d noborder" >> $FILE1
+echo "set style fill transparent solid 1" >> $FILE1
+
 #echo "set view 45, 45" >> $FILE
-echo "splot '$HEAT_FILE_RAND' u 2:1:3:xtic(1), \\" >> $FILE1
-echo "      '$HEAT_FILE_CPU_RAND' u 2:1:3:xtic(2) w l ls 15 " >> $FILE1
+echo "splot '$HEAT_FILE_RAND' u 2:1:3:xtic(1) t \"TINYSTM-WBETL CPU+GPU CO-OP VALIDATION\" with pm3d, \\" >> $FILE1
+echo "      '$HEAT_FILE_CPU_RAND' u 2:1:3:xtic(2) t \"TINYSTM-WBETL\" w surface lc \"#22b5d2ff\"" >> $FILE1
 echo >> $FILE1
 
 #FILE 2
 #logscale on read-set-size
-echo "set logscale x" >> $FILE2
+#echo "set logscale x" >> $FILE2
+echo "set title \"SIMPLE ARRAY, TRANSACTIONAL SEQUENTIAL WALK CPU+IGPU CO-OP VALIDATION (ASSIGNMENT IN %)\" font \",14\"" >> $FILE2
 echo "set pm3d" >> $FILE2
-echo "set style data lines" >> $FILE2
-echo "set title \"Simple array sequential walk cpu-igpu co-op validation\" font \",12\"" >> $FILE2
-echo "splot '$HEAT_FILE_SEQ' u 2:1:3:xtic(1), \\" >> $FILE2
-echo "      '$HEAT_FILE_CPU_SEQ' u 2:1:3:xtic(2) w l ls 15 " >> $FILE2
+echo "set style fill transparent solid 1" >> $FILE2
+#echo "set view 45, 45" >> $FILE
+echo "splot '$HEAT_FILE_SEQ' u 2:1:3:xtic(1) t \"TINYSTM-WBETL CPU+GPU CO-OP VALIDATION\" with pm3d, \\" >> $FILE2
+echo "      '$HEAT_FILE_CPU_SEQ' u 2:1:3:xtic(2) t \"TINYSTM-WBETL\" w surface lc \"#22b5d2ff\"" >> $FILE2
 echo >> $FILE2
 
 gnuplot -p $FILE1

@@ -89,6 +89,8 @@
 # define RW_SET_SIZE                    4096                /* Initial size of read/write sets */
 #endif /* ! RW_SET_SIZE */
 
+#define VALTHREADS                     16
+
 #ifndef LOCK_ARRAY_LOG_SIZE
 # define LOCK_ARRAY_LOG_SIZE            20                  /* Size of lock array: 2^20 = 1M */
 #endif /* LOCK_ARRAY_LOG_SIZE */
@@ -267,7 +269,6 @@ enum {                                  /* Transaction status */
 # define MAX_SPECIFIC                   7
 #endif /* MAX_SPECIFIC */
 
-
 typedef struct r_entry {                /* Read set entry */
   stm_word_t version;                   /* Version read */
   volatile stm_word_t *lock;            /* Pointer to lock (for fast access) */
@@ -359,7 +360,7 @@ typedef struct stm_tx {                 /* Transaction descriptor */
   unsigned long stat_val_fail;
   unsigned long stat_val_succ;
   double val_time;                      /* total validation time this thread did time to validate */
-  unsigned long long val_reads;         /* at least 64 bits */
+  atomic_ulong val_reads;         /* at least 64 bits */
 
 #endif /* TM_STATISTICS */
 #ifdef TM_STATISTICS2
@@ -371,7 +372,35 @@ typedef struct stm_tx {                 /* Transaction descriptor */
   unsigned int stat_locked_reads_failed;/* Failed reads of previous value */
 # endif /* READ_LOCKED_DATA */
 #endif /* TM_STATISTICS2 */
+    atomic_int tid;
+
+    pthread_t val_threads[VALTHREADS];
+    pthread_attr_t val_attr;
+
+    pthread_mutex_t validate_mutex;
+    pthread_cond_t validate_cond;
+    pthread_mutex_t finished_validating_mutex;
+    pthread_cond_t finished_validating_cond;
+    pthread_cond_t worker_done_cond;
+
+    atomic_int currently_validating;
+    atomic_int start_validate;
+    atomic_int valid;
+    atomic_int workers_valid;
+    atomic_int val_finish;
+
+    long val_chunk;
+    long val_last_chunk_diff;
+
+
 } stm_tx_t;
+
+typedef struct val_thread_data {
+    stm_tx_t* tx;
+    unsigned int thread_id;
+} val_thread_data_t;
+
+val_thread_data_t *val_data;
 
 /* This structure should be ordered by hot and cold variables */
 typedef struct {
@@ -408,33 +437,14 @@ typedef struct {
 #if CM == CM_MODULAR
   int (*contention_manager)(stm_tx_t *, stm_tx_t *, int);
 #endif /* CM == CM_MODULAR */
+  atomic_int global_tid;
   /* At least twice a cache line (256 bytes to be on the safe side) */
   char padding[CACHELINE_SIZE];
 } ALIGNED global_t;
 
 extern global_t _tinystm;
 
-#define VAL_THREADS 2
 
-pthread_t val_threads[VAL_THREADS];
-pthread_attr_t attr;
-
-pthread_mutex_t validate_mutex;
-pthread_cond_t validate_cond;
-pthread_mutex_t currently_validating_mutex;
-pthread_cond_t currently_validating_cond;
-
-atomic_int currently_validating;
-atomic_int start_validate;
-atomic_int valid;
-atomic_int workers_valid;
-atomic_int val_finish;
-atomic_int val_stat_reads;
-
-long val_chunk;
-long val_last_chunk_diff;
-r_entry_t *my_r_set_start;
-w_set_t *my_w_set_start, *my_w_set_end;
 
 #if CM == CM_MODULAR
 # define KILL_SELF                      0x00
@@ -1215,53 +1225,61 @@ int_stm_WaW(stm_tx_t *tx, volatile stm_word_t *addr, stm_word_t value, stm_word_
 #endif /* DESIGN == WRITE_THROUGH */
 }
 
-typedef struct barrier {
-    pthread_cond_t complete;
-    pthread_mutex_t mutex;
-    int count;
-    int crossing;
-} barrier_t;
-
-static void
-*stm_wbetl_validate_parallel(void *tid)
+static void* stm_wbetl_validate_parallel(void *txarg)
 {
-    int id = (int) tid;
-    int my_chunk;
+    val_thread_data_t* data = (val_thread_data_t*) txarg;
+    int my_rset_start;
     r_entry_t *r;
     int i, n;
     stm_word_t l;
-    w_set_t *ws, *we;
+    w_set_t *ws;
+    w_set_t *we;
     int val_reads;
+    int Phase = 0;
+    stm_tx_t* tx = data->tx;
+    int id = data->thread_id;
     //printf("Thread %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->n: %d\n", id, data, (unsigned long)data->start, (unsigned long)data->start + n, data->n);
 
+    while(!tx->val_finish){
 
-    while(atomic_load(&val_finish) == 0){
-        //printf("Worker %d val_finish:0\n", id);
+        pthread_mutex_lock(&tx->validate_mutex);
+            /*while phases are equal we sleep*/
+            //printf("%d Phase %d, ReqPhase %d\n", id, Phase, tx->start_validate);
 
-        pthread_mutex_lock(&validate_mutex);
+            while(Phase == atomic_load_explicit(&tx->start_validate, memory_order_acquire)){
+                //printf("%d WAITING, my phase %d\n", id, Phase);
 
-            while(!atomic_load_explicit(&start_validate, memory_order_acquire)){
-                printf("Worker %d WAITING on validate signal.\n", id);
-                pthread_cond_wait(&validate_cond, &validate_mutex);
+                //printf("Worker %d val_finish:0\n", id);
+                //if(tx->val_finish == 1){
+                    //printf("%d exiting finishing\n", id);
+                    //break;
+                    //return "EXITING";
+                //}
+
+                pthread_cond_wait(&tx->validate_cond, &tx->validate_mutex);
             }
-        pthread_mutex_unlock(&validate_mutex);
-        printf("--Worker %d WOKE UP to work.\n", id);
+
+        pthread_mutex_unlock(&tx->validate_mutex);
+        //printf("--Worker %d WOKE UP to work.\n", id);
+
 
         val_reads=0;
-        n = val_chunk;
-        my_chunk = val_chunk * id;
-        if(id == VAL_THREADS - 1){
-            my_chunk += val_last_chunk_diff;
+        n = tx->val_chunk;
+        my_rset_start = n * id;
+        if(id == VALTHREADS - 1){
+            n += tx->val_last_chunk_diff;
         }
-        r  = my_r_set_start + my_chunk; /*wind to where your chunk is*/
-        ws = my_w_set_start;
-        we = my_w_set_end;
+        r = (r_entry_t*) (tx->r_set.entries + my_rset_start); /*wind to where your chunk is*/
+        ws = tx->w_set.entries;
+        we = tx->w_set.entries + tx->w_set.nb_entries;
 
-        //printf("%2d R[%016" PRIXPTR ",  %016" PRIXPTR "] \n", i, r, r+n);
+        //printf("%2d R[%016" PRIXPTR ",  %016" PRIXPTR "] \n", id, r, r+n);
+
+        //printf("%d, %d Phase - validating %lu elements, R[%d,%d]\n", id, Phase, n, my_rset_start, my_rset_start + n);
 
         for (i = n; i > 0; i--, r++) {
             //printf("worker %d validating\n", id);
-            if(workers_valid < VAL_THREADS){
+            if(&tx->workers_valid < VALTHREADS){
                 goto ret;
             }
 
@@ -1290,13 +1308,13 @@ static void
             }
 #endif /* CONFLICT_TRACKING */
                     /*notify all that read-set is invalid*/
-                    atomic_fetch_sub_explicit(&workers_valid, 1, memory_order_relaxed);/*tx invalid*/
+                    atomic_fetch_sub_explicit(&tx->workers_valid, 1, memory_order_relaxed);/*tx invalid*/
                     goto ret;
                 }
             } else {
                 if (LOCK_GET_TIMESTAMP(l) != r->version) {
                     /*notify all that read-set is invalid*/
-                    atomic_fetch_sub_explicit(&workers_valid, 1, memory_order_relaxed);/*tx invalid*/
+                    atomic_fetch_sub_explicit(&tx->workers_valid, 1, memory_order_relaxed);/*tx invalid*/
                     goto ret;
                 }
                 /* Same version: OK */
@@ -1305,22 +1323,21 @@ static void
         /* if we got here the normal way, then valid. invalid jumps to RET */
         //atomic_fetch_add_explicit(&val_stat_succ, val_reads, memory_order_relaxed);
 ret:
+        Phase++;
         /*  gather all counters  */
         /*  atomically increment */
-        atomic_fetch_add_explicit(&val_stat_reads, val_reads, memory_order_relaxed);
-
+        atomic_fetch_add_explicit(&tx->val_reads, val_reads, memory_order_relaxed);
+        atomic_fetch_sub_explicit(&tx->currently_validating, 1, memory_order_release);
         /* signal main thread you are finished */
-        pthread_mutex_lock(&currently_validating_mutex);
-            //printf("SIGNALING MAIN THREAD THAT I AM OVER %d\n", id);
+        pthread_mutex_lock(&tx->finished_validating_mutex);
 
-            //printf("CURRENTLY VALIDATING %d\n", currently_validating);
+            //printf("%d currently validating %d\n", id, currently_validating);
 
-            atomic_fetch_sub_explicit(&currently_validating, 1, memory_order_release);
-            pthread_cond_signal(&currently_validating_cond);/*cpu will get VAL_THREADS signals*/
-        pthread_mutex_unlock(&currently_validating_mutex);
+            pthread_cond_signal(&tx->worker_done_cond);
+
+        pthread_mutex_unlock(&tx->finished_validating_mutex);
 
     }
-
 
     return "VALIDATION_RESULT_IS_GLOBAL";
 }
@@ -1329,29 +1346,6 @@ static INLINE stm_tx_t *
 int_stm_init_thread(void)
 {
   stm_tx_t *tx;
-
-  pthread_attr_init(&attr);
-  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-
-  /* start all VAL_THREADS */
-  for (int i = 0; i < VAL_THREADS; i++){
-      pthread_create(&val_threads[i], NULL, stm_wbetl_validate_parallel, (void*) i);
-  }
-
-  pthread_mutex_init(&validate_mutex, NULL);
-  pthread_mutex_init(&currently_validating_mutex, NULL);
-  pthread_cond_init(&validate_cond, NULL);
-  pthread_cond_init(&currently_validating_cond, NULL);
-
-
-  pthread_cond_init(&b->complete, NULL);
-  pthread_mutex_init(&b->mutex, NULL);
-  b->count = n;
-  b->crossing = 0;
-
-
-  /*init all validation global vars to 0*/
-  currently_validating = start_validate = valid = workers_valid = val_finish = val_stat_reads = 0;
 
   PRINT_DEBUG("==> stm_init_thread()\n");
 
@@ -1368,6 +1362,37 @@ int_stm_init_thread(void)
     perror("malloc tx");
     exit(1);
   }
+
+  tx->tid = atomic_fetch_add(&_tinystm.global_tid, 1);
+
+  pthread_attr_init(&tx->val_attr);
+  pthread_attr_setdetachstate(&tx->val_attr, PTHREAD_CREATE_JOINABLE);
+
+    /*init all validation global vars to 0*/
+  tx->currently_validating = 0;
+  tx->start_validate = 0;
+  tx->valid = 0;
+  tx->workers_valid = 0;
+  tx->val_finish = 0;
+
+  pthread_mutex_init(&tx->validate_mutex, NULL);
+  pthread_mutex_init(&tx->finished_validating_mutex, NULL);
+
+  pthread_cond_init(&tx->validate_cond, NULL);
+  pthread_cond_init(&tx->finished_validating_cond, NULL);
+  pthread_cond_init(&tx->worker_done_cond, NULL);
+
+ /* start all VALTHREADS */
+  int err=0;
+  val_data = malloc(sizeof(val_thread_data_t) * VALTHREADS);
+  for (int i = 0; i < VALTHREADS; i++){
+      val_data[i].tx = tx;
+      val_data[i].thread_id = i;
+      if((err = pthread_create(&tx->val_threads[i], &tx->val_attr, stm_wbetl_validate_parallel, (void*) &val_data[i])) != 0){
+          printf("VALDIATION WORKER PTHREADS ERROR %d\n",err);
+      }
+  }
+
   /* Set attribute */
   tx->attr = (stm_tx_attr_t)0;
   /* Set status (no need for CAS or atomic op) */
@@ -1457,13 +1482,32 @@ int_stm_exit_thread(stm_tx_t *tx)
   stm_word_t t;
 #endif /* EPOCH_GC */
 
+
+
+  pthread_mutex_lock(&tx->validate_mutex);
+    tx->val_finish=1;
+    tx->start_validate = 0;
+        //printf("Captured validate_mutex..\n");
+        pthread_cond_broadcast(&tx->validate_cond);
+  pthread_mutex_unlock(&tx->validate_mutex);
+
+    /* Wait for thread completion */
+  for (int i = 0; i < VALTHREADS; i++) {
+    if (pthread_join(tx->val_threads[i], NULL) != 0) {
+      fprintf(stderr, "Error waiting for thread completion\n");
+      exit(1);
+    }
+  }
+
+
+  free(val_data);
+
   PRINT_DEBUG("==> stm_exit_thread(%p[%lu-%lu])\n", tx, (unsigned long)tx->start, (unsigned long)tx->end);
 
   /* Avoid finalizing again a thread */
   if (tx == NULL)
     return;
 
-  val_finish = 1;
 
   /* Callbacks */
   if (likely(_tinystm.nb_exit_cb != 0)) {

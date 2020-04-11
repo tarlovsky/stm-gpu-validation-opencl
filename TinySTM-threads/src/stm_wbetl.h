@@ -40,21 +40,21 @@ static INLINE int
 stm_wbetl_validate(stm_tx_t *tx)
 {
     //printf("ENTERING VALIDATION\n");
-    printf("==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d\n", tx, (unsigned long)tx->r_set.entries, (unsigned long)(tx->r_set.entries + tx->r_set.nb_entries), tx->r_set.nb_entries);
+    //printf("==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d\n", tx, (unsigned long)tx->r_set.entries, (unsigned long)(tx->r_set.entries + tx->r_set.nb_entries), tx->r_set.nb_entries);
 
     /*set state globals*/
-    workers_valid = VAL_THREADS;
-    valid = 1;
-    currently_validating = VAL_THREADS;
+    tx->workers_valid = VALTHREADS;
+    int valid = 1;
+    tx->currently_validating = VALTHREADS;
 
     /*set data globals*/
-    val_chunk = tx->r_set.nb_entries / VAL_THREADS;
-    val_last_chunk_diff = tx->r_set.nb_entries - (VAL_THREADS * val_chunk);//irregular parallelism (from integer division) goes to last thread, or whatever.
-    my_r_set_start = tx->r_set.entries;
-    my_w_set_start = tx->w_set.entries;
-    my_w_set_end   = tx->w_set.entries + tx->w_set.nb_entries;
+    tx->val_chunk = tx->r_set.nb_entries / VALTHREADS;
+    tx->val_last_chunk_diff = tx->r_set.nb_entries - (VALTHREADS * tx->val_chunk);//irregular parallelism (from integer division) goes to last thread, or whatever.
+    //tx->my_r_set_start = tx->r_set.entries;
+    //tx->my_w_set_start = tx->w_set.entries;
+    //tx->my_w_set_end   = tx->w_set.entries + tx->w_set.nb_entries;
     /*set stats globals*/
-    val_stat_reads=0;
+
 
 #ifdef TM_STATISTICS
     TIMER_T start;
@@ -63,46 +63,46 @@ stm_wbetl_validate(stm_tx_t *tx)
 #endif
 
     /* signal here then wait for conditions */
-    pthread_mutex_lock(&validate_mutex);
-        printf("Signaling all workers to validate\n");
-        atomic_store_explicit(&start_validate, 1, memory_order_release);
-        pthread_cond_broadcast(&validate_cond);
-    pthread_mutex_unlock(&validate_mutex);
+    pthread_mutex_lock(&tx->validate_mutex);
+        atomic_fetch_add_explicit(&tx->start_validate, 1, memory_order_release);
+        pthread_cond_broadcast(&tx->validate_cond);
+    pthread_mutex_unlock(&tx->validate_mutex);
 
     /*wait for all workers to complete validation*/
-    pthread_mutex_lock(&currently_validating_mutex);
+    pthread_mutex_lock(&tx->finished_validating_mutex);
         /*every thread will signal and decrement this int. when it's zero i stop sleeping on this condition.*/
-        printf("WAITING FOR WORKERS TO TERMINATE\n");
+        //printf("WAITING FOR WORKERS TO TERMINATE\n");
         int x;
-        while((x = atomic_load_explicit(&currently_validating, memory_order_acquire)) > 0){
-            printf("WAITING FOR WORKERS TO TERMINATE\n");
+        //while((x = atomic_load_explicit(&currently_validating, memory_order_acquire)) != 0){
+        while((x = tx->currently_validating) > 0){
+           //printf("WAITING FOR WORKERS TO TERMINATE, %d\n", x);
             /* each worker wakes up main thread for it to check if all workers complete, and go back to bed */
             /* pthread_cond_wait regains lock when it returns. */
             /* it is safe to go to sleep if currently_validating is not 0. */
-            /* some worker thread will get currently_validating_mutex when we sleep,
+            /* some worker thread will get finished_validating_mutex when we sleep,
              * and we will release it for them when we cond_wait again */
-            pthread_cond_wait(&currently_validating_cond, &currently_validating_mutex);
+            pthread_cond_wait(&tx->worker_done_cond, &tx->finished_validating_mutex);
         }
-    pthread_mutex_unlock(&currently_validating_mutex);
-    printf("ALL workers FINISHED.\n");
+        //pthread_cond_broadcast(&worker_done_cond);
+    pthread_mutex_unlock(&tx->finished_validating_mutex);
+
+    //printf("ALL workers FINISHED.\n");
 #ifdef TM_STATISTICS
     /*all threads joined timer read stop*/
     TIMER_READ(stop);
     tx->val_time += TIMER_DIFF_SECONDS(start, stop);
-    if(workers_valid < VAL_THREADS){
+    if(tx->workers_valid < VALTHREADS){
         valid = 0;
     }else{
         valid = 1;
     }
     tx->stat_val_succ += valid;
     tx->stat_val_fail += !valid;
-    tx->val_reads+=val_stat_reads;
+    //tx->val_reads+=tx->val_stat_reads;
 #endif
 
-    start_validate = 0;/*for next iter, worker will sleep on validate_cond and check this var if wakes up spuriously*/
 
-
-        //printf("Thread %d analyzed %d reads in %f seconds.\n", i, vdata[i].val_reads, vdata[i].val_time);
+    //printf("Thread %d analyzed %d reads in %f seconds.\n", i, vdata[i].val_reads, vdata[i].val_time);
 
     //printf("validity %d\n", valid);
     return valid;

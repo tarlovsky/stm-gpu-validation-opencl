@@ -1,10 +1,1 @@
-"Validation time(S)" "Validation time(S) CPU" "Validation time(S) GPU" "Commits" "Aborts" "Val Reads" "Val success" "Val fail" "Energy (J)" "Time(S)"
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
-0.000000 0.000000 0.000000 0 0 0 0 0  
+"Validation time(S)" "Commits" "Aborts" "Val Reads" "Val success" "Val fail" "Energy (J)" "Time(S)"
