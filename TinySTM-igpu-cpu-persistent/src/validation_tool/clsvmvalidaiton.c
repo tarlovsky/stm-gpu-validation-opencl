@@ -630,14 +630,15 @@ int launchInstantKernel(void){
            "+--------------------+\n",
            NumberOfHwThreads, SimdSize, global_dim[0], HWThreadsPerWKGP, lws[0], g_numWorkgroups);*/
 
-    cl_event event;
+    //cl_event event;
     //TIMER_T start1;
     //TIMER_T stop1;
     //TIMER_READ(start1);
     pCommBuffer[FINISH] = 0;
     pCommBuffer[COMPLETE] = 0;
+
     if(CPU_VALIDATION_PROPORTION < 100) {
-        status = clEnqueueNDRangeKernel(g_clCommandQueue, cl_kernel_worker, 1, NULL, global_dim, lws, 0, NULL, &event);
+        status = clEnqueueNDRangeKernel(g_clCommandQueue, cl_kernel_worker, 1, NULL, global_dim, lws, 0, NULL, NULL);
         //testStatus(status, "clEnqueueNDRangeKernel error");
         clFlush(g_clCommandQueue);
 
@@ -680,11 +681,15 @@ void* signal_gpu(void *slot){
     while (atomic_load_explicit(&need_gpu, memory_order_acquire)) {
         /*wait on condition to launch validation from co-op routine*/
         pthread_mutex_lock(&validate_mutex);
-        /* if no work we sleep on condition */
-        while (!atomic_load_explicit(&validate, memory_order_acquire)) {
-            pthread_cond_wait(&validate_cond, &validate_mutex);
-        }
-        //printf("SIGNAL RECEIVED, VALIDATING ON GPU\n");
+            /* if no work we sleep on condition */
+            while (!atomic_load_explicit(&validate, memory_order_acquire)) {
+                pthread_cond_wait(&validate_cond, &validate_mutex);
+            }
+        pthread_mutex_unlock(&validate_mutex);/*should release lock after cond wait checked, because main thread cant get cond signaled*/
+
+        /* ##### */
+            /*do work*/
+            //printf("SIGNAL RECEIVED, VALIDATING ON GPU\n");
             threadComm[idx].n_per_wi = (threadComm[idx].nb_entries + global_dim[0] - 1) / global_dim[0];//ceil division of work left for GPU. total work-cpu work = gpu work
 
             threadComm[idx].reads_count = 0;
@@ -699,17 +704,18 @@ void* signal_gpu(void *slot){
             TIMER_READ(T1G);
                 while (pCommBuffer[COMPLETE] < g_numWorkgroups);
             TIMER_READ(T2G);
-            gpu_exit_validity = threadComm[idx].valid;
-            //atomic_store_explicit(&gpu_exit_validity, threadComm[idx].valid, memory_order_release);
+            gpu_exit_validity = threadComm[idx].valid; //atomic_store_explicit(&gpu_exit_validity, threadComm[idx].valid, memory_order_release);
+
             //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));
             pCommBuffer[COMPLETE] = 0;
+        /* ##### */
 
+        pthread_mutex_lock(&validate_mutex);
             atomic_store_explicit(&validate_complete, 1, memory_order_release);
             pthread_cond_signal(&validate_complete_cond);
-
-        atomic_store_explicit(&validate, 0, memory_order_release);
-
+            atomic_store_explicit(&validate, 0, memory_order_release);/*so that i dont start again*/
         pthread_mutex_unlock(&validate_mutex);
+
     }
     pCommBuffer[FINISH]=1;
 

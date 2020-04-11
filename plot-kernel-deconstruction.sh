@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RESULTS_DIR="results-gpu"
+RESULTS_DIR="results-validation-array"
 
 mkdir -p "gnuplot"
 ####################################################################################################################################################
@@ -57,28 +57,29 @@ echo "set yrange [0.0000001:10]" >> $FILE
 echo "set ylabel \"Time (s)\""  >> $FILE
 
 #l1
-echo  "set arrow from 8.8, graph 0 to 8.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE
-echo  "set label \"\$L1: 128KB\" at 8.9,0.00000014 " >> $FILE
+echo  "set arrow from 7.8, graph 0 to 7.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE
+echo  "set label \"\$L1: 128KB\" at 7.9,0.00000014 " >> $FILE
 #intelhd l3
-echo  "set arrow from 10.8, graph 0 to 10.8, graph 1 nohead lc rgb \"#dadada\"" >> $FILE
-echo  "set label \"\L3 GPU: 512KB\" at 10.9,0.00000014*2.5 " >> $FILE
+echo  "set arrow from 9.8, graph 0 to 9.8, graph 1 nohead lc rgb \"#dadada\"" >> $FILE
+echo  "set label \"\L3 GPU: 512KB\" at 9.9,0.00000014*2.5 " >> $FILE
 #l2
-echo  "set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb \"#bebebe\"" >> $FILE
-echo  "set label \"\$L2: 1.024MB\" at 11.9,0.00000014*1.5 " >> $FILE
+echo  "set arrow from 10.8, graph 0 to 10.8, graph 1 nohead lc rgb \"#bebebe\"" >> $FILE
+echo  "set label \"\$L2: 1.024MB\" at 10.9,0.00000014*1.5 " >> $FILE
 #l3
-echo  "set arrow from 14.8, graph 0 to 14.8, graph 1 nohead lc rgb \"#afafaf\"" >> $FILE
-echo  "set label \"\$L3: 8MB\" at 14.9,0.00000014*2.5 " >> $FILE
+echo  "set arrow from 13.8, graph 0 to 13.8, graph 1 nohead lc rgb \"#afafaf\"" >> $FILE
+echo  "set label \"\$L3: 8MB\" at 13.9,0.00000014*2.5 " >> $FILE
 echo  "set title \"Only CPU, threaded validation, sequential walk\" font \",12\"" >> $FILE
 
-echo "set yrange [0.0000001:1]" >> $FILE
+echo "set yrange [0.00000001:1]" >> $FILE
 echo "set title \"Persistent threads kernel deconstruction by phase\" font \",12\"" >> $FILE
 echo  "plot \\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col dt new lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col dt new1 lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 5:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col lw 1 lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 6:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col dt new lc rgb col_24 pt 8,\\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-CPU-O2-1THREADS-VALIDATING' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col lc rgb col_gold pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col dt new lc rgb col_24 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col dt new1 lc rgb col_24 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 5:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col lw 1 lc rgb col_24 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 6:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col dt new lc rgb col_24 pt 8,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 7:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col dt new lc rgb \"black\" pt 8,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-wbetl/1a-array-r99-w1-random-CPU-O2-1THREADS-VALIDATING'      u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t col lc rgb col_gold pt 1,\\"  >> $FILE
 echo >> $FILE
 
 echo  "unset multiplot" >> $FILE

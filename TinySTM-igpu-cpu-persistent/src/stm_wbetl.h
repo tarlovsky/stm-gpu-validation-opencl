@@ -91,7 +91,7 @@ stm_wbetl_validate(stm_tx_t *tx)
         /*signal gpu signaler thread*/
         //pthread_create(&gpu_thread, NULL, signal_gpu, (void*) i);
         pthread_mutex_lock(&validate_mutex);
-            //printf("SIGNALING GPU..\n");
+            //printf("SIGNALING GPU SIGNALER THREAD..\n");
             atomic_store_explicit(&validate, 1, memory_order_release);
             pthread_cond_signal(&validate_cond);
         pthread_mutex_unlock(&validate_mutex);

@@ -37,9 +37,9 @@ set title "Only CPU, threaded validation, sequential walk" font ",12"
 set yrange [0.0000001:10]
 set title "CPU VS GPU MAD VALIDATION" font ",12"
 plot \
- 'results-gpu/1a-array-r99-w1-random-MAD-VALIDATE' u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU O2 MAD instead of VALIDATE" lw 1 lc rgb col_gold pt 1,\
- 'results-gpu/1a-array-r99-w1-random-MAD-VALIDATE' u 3:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "Persistent Kernel Threads 24WKGPS 224WI/WKGP, MAD instead of VALIDATE" lw 1 lc rgb col_48 pt 1,\
- 'results-gpu/1a-array-r99-w1-random-CPU-O2-1THREADS-VALIDATING' u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU 02 1 THREADS VALIDATING random array traversal" lw 2 lc rgb col_gold pt 17,\
- 'results-gpu/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL'    u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal" lw 2 lc rgb col_48 pt 16
+ 'results-validation-array/1a-array-r99-w1-random-MAD-VALIDATE' u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU O2 MAD instead of VALIDATE" lw 1 lc rgb col_gold pt 1,\
+ 'results-validation-array/1a-array-r99-w1-random-MAD-VALIDATE' u 3:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "Persistent Kernel Threads 24WKGPS 224WI/WKGP, MAD instead of VALIDATE" lw 1 lc rgb col_48 pt 1,\
+ 'results-validation-array/TinySTM-wbetl/1a-array-r99-w1-random-CPU-O2-1THREADS-VALIDATING' u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU 02 1 THREADS VALIDATING random array traversal" lw 2 lc rgb col_gold pt 17,\
+ 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL'    u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal" lw 2 lc rgb col_48 pt 16
 
 unset multiplot

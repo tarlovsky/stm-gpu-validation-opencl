@@ -1,5 +1,5 @@
 
-RESULTS_DIR="results-validate"
+RESULTS_DIR="results-validation-array"
 
 mkdir -p "gnuplot"
 ####################################################################################################################################################
@@ -75,8 +75,8 @@ echo "set title \"CPU VS GPU MAD VALIDATION\" font \",12\"" >> $FILE
 echo  "plot \\"  >> $FILE
 echo  " '$RESULTS_DIR/1a-array-r99-w1-random-MAD-VALIDATE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU O2 MAD instead of VALIDATE\" lw 1 lc rgb col_gold pt 1,\\"  >> $FILE
 echo  " '$RESULTS_DIR/1a-array-r99-w1-random-MAD-VALIDATE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"Persistent Kernel Threads 24WKGPS 224WI/WKGP, MAD instead of VALIDATE\" lw 1 lc rgb col_48 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-CPU-O2-1THREADS-VALIDATING' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU 02 1 THREADS VALIDATING random array traversal\" lw 2 lc rgb col_gold pt 17,\\"  >> $FILE
-echo  " '$RESULTS_DIR/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal\" lw 2 lc rgb col_48 pt 16"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-wbetl/1a-array-r99-w1-random-CPU-O2-1THREADS-VALIDATING' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU 02 1 THREADS VALIDATING random array traversal\" lw 2 lc rgb col_gold pt 17,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal\" lw 2 lc rgb col_48 pt 16"  >> $FILE
 
 echo >> $FILE
 

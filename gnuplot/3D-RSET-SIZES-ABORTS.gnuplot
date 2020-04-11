@@ -13,18 +13,41 @@ set view 45, 45, 1, 1.1
 set key outside top right
 set title "swissTM" font ",16" tc rgb "#8f8800"
 splot \
- 'results-gpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):-2:-1:xtic(1) t col with linespoints
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):1:2:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):3:4:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):5:6:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):7:8:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):9:10:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):11:12:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):13:14:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):15:16:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):17:18:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):19:20:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):21:22:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-swissTM' using (int($0)):23:24:xtic(1) t col with linespoints
 
 set title "TinySTM-wbetl" font ",16" tc rgb "#8f8800"
 splot \
- 'results-gpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-TinySTM-wbetl' using (int($0)):-2:-1:xtic(1) t col with linespoints
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-TinySTM-wbetl' using (int($0)):1:2:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-TinySTM-wbetl' using (int($0)):3:4:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-TinySTM-wbetl' using (int($0)):5:6:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-TinySTM-wbetl' using (int($0)):7:8:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-TinySTM-wbetl' using (int($0)):9:10:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-TinySTM-wbetl' using (int($0)):11:12:xtic(1) t col with linespoints
 
 set title "norec" font ",16" tc rgb "#8f8800"
 splot \
- 'results-gpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-norec' using (int($0)):-2:-1:xtic(1) t col with linespoints
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-norec' using (int($0)):1:2:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-norec' using (int($0)):3:4:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-norec' using (int($0)):5:6:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-norec' using (int($0)):7:8:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-norec' using (int($0)):9:10:xtic(1) t col with linespoints
 
 set title "tl2" font ",16" tc rgb "#8f8800"
 splot \
- 'results-gpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-tl2' using (int($0)):-2:-1:xtic(1) t col with linespoints
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-tl2' using (int($0)):1:2:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-tl2' using (int($0)):3:4:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-tl2' using (int($0)):5:6:xtic(1) t col with linespoints ,\
+ 'results-cpu/3D-RSET-SIZE-ABORTS-TOP-TRANSPOSED-tl2' using (int($0)):7:8:xtic(1) t col with linespoints
 
 unset multiplot

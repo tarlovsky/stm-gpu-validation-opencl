@@ -1,26 +1,27 @@
 
-set terminal wxt size 2560,1080
+set terminal wxt size 2560,1180
 set multiplot layout 2,3 rowsfirst title "vacation - Validation success rate" font ",16"
+set bmargin 3
+set border 1 lc rgb "#606060" 
 xlabeloffsety=-2.75
 set tics scale 0
 set xtics nomirror rotate by 45 right scale 0 font ",8"
 set style fill solid 1.00
 set grid ytics lc rgb "#606060"
-unset border
 set yrange [0:*]
-set bmargin -10
+set format y "%0.3f"
 set datafile separator whitespace
 set boxwidth 0.88
 set style data histogram
 set style histogram rowstacked gap 1
 unset key
 leftcolumn_offset_1= 0
-leftcolumn_offset_1a=3
-leftcolumn_offset_2= 6
-leftcolumn_offset_4= 9
-leftcolumn_offset_8= 12
-leftcolumn_offset_16=15
-leftcolumn_offset_32=18
+leftcolumn_offset_1a=5
+leftcolumn_offset_2= 10
+leftcolumn_offset_4= 15
+leftcolumn_offset_8= 20
+leftcolumn_offset_16=25
+leftcolumn_offset_32=30
 set xtics offset 0, xlabeloffsety
 set ylabel ""
 set format y ""

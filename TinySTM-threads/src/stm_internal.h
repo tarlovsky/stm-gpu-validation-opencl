@@ -27,12 +27,14 @@
 #define _STM_INTERNAL_H_
 
 #include <pthread.h>
+#include <stdatomic.h>
 #include <string.h>
 #include "tls.h"
 #include <stm.h>
 #include "utils.h"
 #include "atomic.h"
 #include "gc.h"
+#include "inttypes.h"
 
 /*tarlovskyy*/
 #include "timer.h"
@@ -411,6 +413,28 @@ typedef struct {
 } ALIGNED global_t;
 
 extern global_t _tinystm;
+
+#define VAL_THREADS 2
+
+pthread_t val_threads[VAL_THREADS];
+pthread_attr_t attr;
+
+pthread_mutex_t validate_mutex;
+pthread_cond_t validate_cond;
+pthread_mutex_t currently_validating_mutex;
+pthread_cond_t currently_validating_cond;
+
+atomic_int currently_validating;
+atomic_int start_validate;
+atomic_int valid;
+atomic_int workers_valid;
+atomic_int val_finish;
+atomic_int val_stat_reads;
+
+long val_chunk;
+long val_last_chunk_diff;
+r_entry_t *my_r_set_start;
+w_set_t *my_w_set_start, *my_w_set_end;
 
 #if CM == CM_MODULAR
 # define KILL_SELF                      0x00
@@ -1191,27 +1215,12 @@ int_stm_WaW(stm_tx_t *tx, volatile stm_word_t *addr, stm_word_t value, stm_word_
 #endif /* DESIGN == WRITE_THROUGH */
 }
 
-#define VAL_THREADS 4
-
-pthread_t val_threads[VAL_THREADS];
-pthread_attr_t attr;
-
-pthread_mutex_t validate_mutex;
-pthread_cond_t validate_cond;
-pthread_mutex_t currently_validating_mutex;
-pthread_cond_t currently_validating_cond;
-
-atomic_int currently_validating;
-atomic_int start_validate;
-atomic_int valid;
-atomic_int workers_valid;
-atomic_int val_finish;
-atomic_int val_stat_reads;
-
-long val_chunk;
-long val_last_chunk_diff;
-r_entry_t *my_r_set_start;
-w_set_t *my_w_set_start, *my_w_set_end;
+typedef struct barrier {
+    pthread_cond_t complete;
+    pthread_mutex_t mutex;
+    int count;
+    int crossing;
+} barrier_t;
 
 static void
 *stm_wbetl_validate_parallel(void *tid)
@@ -1225,13 +1234,18 @@ static void
     int val_reads;
     //printf("Thread %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->n: %d\n", id, data, (unsigned long)data->start, (unsigned long)data->start + n, data->n);
 
+
     while(atomic_load(&val_finish) == 0){
+        //printf("Worker %d val_finish:0\n", id);
 
         pthread_mutex_lock(&validate_mutex);
-            while(!atomic_load_explicit(&start_validate, memory_order_relaxed)){
+
+            while(!atomic_load_explicit(&start_validate, memory_order_acquire)){
+                printf("Worker %d WAITING on validate signal.\n", id);
                 pthread_cond_wait(&validate_cond, &validate_mutex);
             }
         pthread_mutex_unlock(&validate_mutex);
+        printf("--Worker %d WOKE UP to work.\n", id);
 
         val_reads=0;
         n = val_chunk;
@@ -1243,8 +1257,10 @@ static void
         ws = my_w_set_start;
         we = my_w_set_end;
 
-        for (i = n; i > 0; i--, r++) {
+        //printf("%2d R[%016" PRIXPTR ",  %016" PRIXPTR "] \n", i, r, r+n);
 
+        for (i = n; i > 0; i--, r++) {
+            //printf("worker %d validating\n", id);
             if(workers_valid < VAL_THREADS){
                 goto ret;
             }
@@ -1287,17 +1303,22 @@ static void
             }
         }
         /* if we got here the normal way, then valid. invalid jumps to RET */
-        //atomic_add_explicit(&val_stat_succ, val_reads, memory_order_relaxed);
+        //atomic_fetch_add_explicit(&val_stat_succ, val_reads, memory_order_relaxed);
 ret:
         /*  gather all counters  */
         /*  atomically increment */
-        atomic_add_explicit(&val_stat_reads, val_reads, memory_order_relaxed);
+        atomic_fetch_add_explicit(&val_stat_reads, val_reads, memory_order_relaxed);
 
         /* signal main thread you are finished */
         pthread_mutex_lock(&currently_validating_mutex);
-            atomic_sub_explicit(&currently_validating, 1, memory_order_release);
+            //printf("SIGNALING MAIN THREAD THAT I AM OVER %d\n", id);
+
+            //printf("CURRENTLY VALIDATING %d\n", currently_validating);
+
+            atomic_fetch_sub_explicit(&currently_validating, 1, memory_order_release);
             pthread_cond_signal(&currently_validating_cond);/*cpu will get VAL_THREADS signals*/
         pthread_mutex_unlock(&currently_validating_mutex);
+
     }
 
 
@@ -1317,10 +1338,17 @@ int_stm_init_thread(void)
       pthread_create(&val_threads[i], NULL, stm_wbetl_validate_parallel, (void*) i);
   }
 
-  pthread_mutex_init(validate_mutex, NULL);
-  pthread_mutex_init(currently_validating_mutex, NULL);
-  pthread_cond_init(validate_cond, NULL);
-  pthread_cond_init(currently_validating_cond, NULL);
+  pthread_mutex_init(&validate_mutex, NULL);
+  pthread_mutex_init(&currently_validating_mutex, NULL);
+  pthread_cond_init(&validate_cond, NULL);
+  pthread_cond_init(&currently_validating_cond, NULL);
+
+
+  pthread_cond_init(&b->complete, NULL);
+  pthread_mutex_init(&b->mutex, NULL);
+  b->count = n;
+  b->crossing = 0;
+
 
   /*init all validation global vars to 0*/
   currently_validating = start_validate = valid = workers_valid = val_finish = val_stat_reads = 0;
@@ -1434,6 +1462,8 @@ int_stm_exit_thread(stm_tx_t *tx)
   /* Avoid finalizing again a thread */
   if (tx == NULL)
     return;
+
+  val_finish = 1;
 
   /* Callbacks */
   if (likely(_tinystm.nb_exit_cb != 0)) {

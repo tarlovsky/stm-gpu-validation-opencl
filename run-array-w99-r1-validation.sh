@@ -51,10 +51,9 @@ then
     # this can be moved to run-benches to run only once
     rm ./$global_stm/src/validation_tool/instant_kernel.bin #remove it on first run then it gets built again
     rm ./$global_stm/src/validation_tool/regular_kernel.bin #remove it on first run then it gets built again
-    RESULTS_DIR+='-validation-proportion'
 fi
 
-
+RESULTS_DIR+='-validation-array'
 RESULTS_DIR+="/$global_stm" #every backend has their own results sub-dir
 
 # example: results/ $global_stm:TinySTM - $4:wbetl
@@ -123,7 +122,7 @@ build_stm_and_benchmark(){
 #######################################################################################
 
 progout=
-RESULTS_DIR+="/$threads"
+RESULTS_DIR+="/${threads}a"
 #################### RESULTS FILE #############################
 if [[ ! -d "$RESULTS_DIR" ]]; then
     echo "Results dir \"$RESULTS_DIR\" does not exist, creating."
@@ -136,24 +135,25 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 for((sequential=0; sequential<=1;sequential++)); do
   #vary cpu validation percentage
-  for((j=100; j<=100; j++)); do
-
+  #for((j=98; j<=100; j++)); do
 
     #CPU validation proportion set and recompile
-    sed -i "s/CPU_VALIDATION_PROPORTION=.*/CPU_VALIDATION_PROPORTION=$j/g" "./$global_stm/$MAKEFILE"
+    #sed -i "s/CPU_VALIDATION_PROPORTION=.*/CPU_VALIDATION_PROPORTION=$j/g" "./$global_stm/$MAKEFILE"
 
     build_stm_and_benchmark
 
     if [[ $sequential -eq 1 ]];then
-      FILE="$RESULTS_DIR/1-sequential-cpu-$j-gpu-$((100-$j))"
+      FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/1a-sequential-cpu-validation"
+      #FILE="$RESULTS_DIR/1-sequential-cpu-$j-gpu-$((100-$j))"
     else
-      FILE="$RESULTS_DIR/1-random-cpu-$j-gpu-$((100-$j))"
+      FILE="$RESULTS_DIR/array-r99-w1-random-walk/1a-random-cpu-validation"
+      #FILE="$RESULTS_DIR/1-random-cpu-$j-gpu-$((100-$j))"
     fi
 
     #create master file with all rset sizes
     echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
 
-    for((i=512;i<=134217728;i*=2));do
+    for((i=64;i<=134217728;i*=2));do
 
       #create temp file for stddev and avg
       echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
@@ -233,5 +233,5 @@ for((sequential=0; sequential<=1;sequential++)); do
 
       echo "$i $mean_stddev_col" >> $FILE
     done
-  done
+  #done
 done

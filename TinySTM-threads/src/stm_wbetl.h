@@ -49,7 +49,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     /*set data globals*/
     val_chunk = tx->r_set.nb_entries / VAL_THREADS;
-    val_last_chunk_diff = tx->r_set.nb_entries - VAL_THREADS * chunk;//irregular parallelism (from integer division) goes to last thread, or whatever.
+    val_last_chunk_diff = tx->r_set.nb_entries - (VAL_THREADS * val_chunk);//irregular parallelism (from integer division) goes to last thread, or whatever.
     my_r_set_start = tx->r_set.entries;
     my_w_set_start = tx->w_set.entries;
     my_w_set_end   = tx->w_set.entries + tx->w_set.nb_entries;
@@ -64,14 +64,18 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     /* signal here then wait for conditions */
     pthread_mutex_lock(&validate_mutex);
-        atomic_add_explicit(&start_validate, 1, memory_order_release);
+        printf("Signaling all workers to validate\n");
+        atomic_store_explicit(&start_validate, 1, memory_order_release);
         pthread_cond_broadcast(&validate_cond);
     pthread_mutex_unlock(&validate_mutex);
 
     /*wait for all workers to complete validation*/
     pthread_mutex_lock(&currently_validating_mutex);
         /*every thread will signal and decrement this int. when it's zero i stop sleeping on this condition.*/
-        while(atomic_load_explicit(&currently_validating, memory_order_acquire) != 0){
+        printf("WAITING FOR WORKERS TO TERMINATE\n");
+        int x;
+        while((x = atomic_load_explicit(&currently_validating, memory_order_acquire)) > 0){
+            printf("WAITING FOR WORKERS TO TERMINATE\n");
             /* each worker wakes up main thread for it to check if all workers complete, and go back to bed */
             /* pthread_cond_wait regains lock when it returns. */
             /* it is safe to go to sleep if currently_validating is not 0. */
@@ -80,7 +84,7 @@ stm_wbetl_validate(stm_tx_t *tx)
             pthread_cond_wait(&currently_validating_cond, &currently_validating_mutex);
         }
     pthread_mutex_unlock(&currently_validating_mutex);
-
+    printf("ALL workers FINISHED.\n");
 #ifdef TM_STATISTICS
     /*all threads joined timer read stop*/
     TIMER_READ(stop);
@@ -88,7 +92,7 @@ stm_wbetl_validate(stm_tx_t *tx)
     if(workers_valid < VAL_THREADS){
         valid = 0;
     }else{
-        valid = 1
+        valid = 1;
     }
     tx->stat_val_succ += valid;
     tx->stat_val_fail += !valid;

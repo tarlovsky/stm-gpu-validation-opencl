@@ -21,47 +21,47 @@ set key font ",9"
 
 set title "swissTM" font ",12" tc rgb "#8f8800"
 plot newhistogram, \
-      'results-gpu/RSET-SIZE-swissTM' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
+      'results-cpu/RSET-SIZE-swissTM' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($3) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($4) t col lc rgbcolor "#808080" lt 1 fs pattern 3, \
       '' u ($5) t col lc rgbcolor "#A9A9A9" lt 1 fs pattern 3, \
       '' u ($6) t col lc rgbcolor "#C0C0C0" lt 1 fs pattern 3, \
       '' u ($7) t col lc rgbcolor "#D3D3D3" lt 1 fs pattern 3, \
       '' u ($0-1):($8):(sprintf('%d', $10)) notitle w labels rotate by 90 left font ",8",\
-       t sprintf('%d', ) lc rgb "#c9413e" 
+      25517.761194 t sprintf('%d', 1773.894737) lc rgb "#c9413e" 
 
 set title "TinySTM-wbetl" font ",12" tc rgb "#8f8800"
 plot newhistogram, \
-      'results-gpu/RSET-SIZE-TinySTM-wbetl' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
+      'results-cpu/RSET-SIZE-TinySTM-wbetl' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($3) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($4) t col lc rgbcolor "#808080" lt 1 fs pattern 3, \
       '' u ($5) t col lc rgbcolor "#A9A9A9" lt 1 fs pattern 3, \
       '' u ($6) t col lc rgbcolor "#C0C0C0" lt 1 fs pattern 3, \
       '' u ($7) t col lc rgbcolor "#D3D3D3" lt 1 fs pattern 3, \
       '' u ($0-1):($8):(sprintf('%d', $10)) notitle w labels rotate by 90 left font ",8",\
-       t sprintf('%d', ) lc rgb "#c9413e" 
+      278633.567164 t sprintf('%d', 23157.070175) lc rgb "#c9413e" 
 
 set title "norec" font ",12" tc rgb "#8f8800"
 plot newhistogram, \
-      'results-gpu/RSET-SIZE-norec' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
+      'results-cpu/RSET-SIZE-norec' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($3) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($4) t col lc rgbcolor "#808080" lt 1 fs pattern 3, \
       '' u ($5) t col lc rgbcolor "#A9A9A9" lt 1 fs pattern 3, \
       '' u ($6) t col lc rgbcolor "#C0C0C0" lt 1 fs pattern 3, \
       '' u ($7) t col lc rgbcolor "#D3D3D3" lt 1 fs pattern 3, \
       '' u ($0-1):($8):(sprintf('%d', $10)) notitle w labels rotate by 90 left font ",8",\
-       t sprintf('%d', ) lc rgb "#c9413e" 
+      1985.776119 t sprintf('%d', 126.675676) lc rgb "#c9413e" 
 
 set title "tl2" font ",12" tc rgb "#8f8800"
 plot newhistogram, \
-      'results-gpu/RSET-SIZE-tl2' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
+      'results-cpu/RSET-SIZE-tl2' u 2:xtic(1) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($3) t col lc rgbcolor "#696969" lt 1 fs pattern 3, \
       '' u ($4) t col lc rgbcolor "#808080" lt 1 fs pattern 3, \
       '' u ($5) t col lc rgbcolor "#A9A9A9" lt 1 fs pattern 3, \
       '' u ($6) t col lc rgbcolor "#C0C0C0" lt 1 fs pattern 3, \
       '' u ($7) t col lc rgbcolor "#D3D3D3" lt 1 fs pattern 3, \
       '' u ($0-1):($8):(sprintf('%d', $10)) notitle w labels rotate by 90 left font ",8",\
-       t sprintf('%d', ) lc rgb "#c9413e" 
+      3266.179104 t sprintf('%d', 264.928571) lc rgb "#c9413e" 
 
 unset multiplot
 set title "Average reads validated for all benchmark programs" font ",16"

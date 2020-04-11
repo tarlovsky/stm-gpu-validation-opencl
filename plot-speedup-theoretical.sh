@@ -48,7 +48,7 @@ full_benchmark_names=(\
                     "yada" "yada+" "yada++")
 
 declare -a thread_count=(1 2 4 8 16 32)
-#declare -a thread_count=(1a)
+#declare -a thread_count=(1a) #has to be manual
 
 declare -a blue_pallet=("69a2ff" "7dafff" "94bdff" "9cc2ff" "adcdff" "b5d2ff" "bdd7ff")
 declare -a grey_pallet=("696969" "808080" "A9A9A9" "C0C0C0" "D3D3D3" "DCDCDC" "696969")
