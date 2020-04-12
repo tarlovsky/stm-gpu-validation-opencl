@@ -1,5 +1,5 @@
 set terminal wxt size 800,1200
-set multiplot layout 4,1 rowsfirst title "Read-set sizes in lengthiest STM benchmarks" font ",16"
+set multiplot layout 4,1 rowsfirst title "Average reads validated in lengthiest STM benchmarks" font ",16"
 set datafile missing '0'
 set datafile separator whitespace
 unset border

@@ -2,8 +2,8 @@
 
 declare -a thread_count=(2 4 8 16 32)
 #declare -a STMS=("swissTM" "norec" "tl2" "TinySTM wbetl")
-declare -a STMS=("TinySTM-igpu wbetl")
-declare -a benchmarks=("sb7" "tpcc" "vacation" )
+declare -a STMS=("TinySTM wbetl")
+declare -a benchmarks=("sb7" "tpcc" "vacation")
 
 #remake rapl
 cd rapl-power && make clean 2>&1 > /dev/null;

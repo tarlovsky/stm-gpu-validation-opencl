@@ -176,12 +176,12 @@ then
 fi
 
 
-FILE="gnuplot/RSET-SIZES.gnuplot"
+FILE="gnuplot/AVG-READS-VALIDATED.gnuplot"
 
 echo "set terminal wxt size 1440,1200" > $FILE
 #echo "set output 'png/... .png'" >> $FILE
 
-echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Average read-set size in STM benchmarks\" font \",16\"" >> $FILE
+echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Average reads validated in STM benchmarks\" font \",16\"" >> $FILE
 echo "set title \"Average reads validated for all benchmark programs\" font \",16\"" >> $FILE
 echo "set datafile missing '0'" >> $FILE
 
@@ -248,7 +248,7 @@ FILE_sorted="gnuplot/RSET-SIZES-sorted-top.gnuplot"
 echo "set terminal wxt size 800,1200" > $FILE_sorted
 #echo "set output 'png/... .png'" >> $FILE_sorted
 
-echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Read-set sizes in lengthiest STM benchmarks\" font \",16\"" >> $FILE_sorted
+echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Average reads validated in lengthiest STM benchmarks\" font \",16\"" >> $FILE_sorted
 echo "set title \"Average reads validated for all benchmark programs\" font \",16\"" >> $FILE
 echo "set datafile missing '0'" >> $FILE_sorted
 

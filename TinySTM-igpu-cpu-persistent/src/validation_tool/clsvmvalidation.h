@@ -35,7 +35,7 @@
 
 /* TinySTM vars */
 #define RW_SET_SIZE             134217728  /* Initial size of read/write sets */
-#define LOCK_ARRAY_LOG_SIZE     20    /* Size of lock array: 2^20 = 1M (million)*/
+#define LOCK_ARRAY_LOG_SIZE     26    /* Size of lock array: 2^20 = 1M (million)*/
 #define LOCK_ARRAY_SIZE         (1 << LOCK_ARRAY_LOG_SIZE) /* Size in bits. ex.: 2^20=1048576*/
 
 /* Validation OCL kernel specific defines */

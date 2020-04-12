@@ -44,7 +44,8 @@ void *test(void *data)
     int my_start = id * chunk_size;
     int ops = 1;
     int i,j;
-    if(enable_sequential){
+
+    if(enable_sequential == 0){
         time_t t;
         /* Intializes enable_sequential number generator */
         srand((unsigned) time(&t));
@@ -66,10 +67,11 @@ void *test(void *data)
     }
     /* tinystm will only validate if CONCURRENT transaction incremented global clock */
     /* by writing to your own write set you do not advance global clock before commit*/
+    /* when random this works. when sequential you write to your own chunk*/
+    /* so write to someone elses */
     TM_SHARED_WRITE_P(array[my_start], id);
     TM_END();
     TM_THREAD_EXIT();
-
 
     return NULL;
 }

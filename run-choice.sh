@@ -506,7 +506,7 @@ progout=0 #initialize to something
 #  cation. [nmdiegues]
 
 if containsElement $1 ${benchmarks[@]}; then
-    for i in {0..19}; do #TODO do 20 at least.
+    for i in {0..10}; do #TODO do 20 at least.
 
         echo "Running benchmark $bench_choice with $2 threads, stm: $global_stm $4:"
 

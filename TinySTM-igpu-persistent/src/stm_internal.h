@@ -94,7 +94,7 @@
 #endif /* ! RW_SET_SIZE */
 
 #ifndef LOCK_ARRAY_LOG_SIZE
-# define LOCK_ARRAY_LOG_SIZE            20                  /* Size of lock array: 2^20 = 1M */
+# define LOCK_ARRAY_LOG_SIZE            26                  /* Size of lock array: 2^20 = 1M */
 #endif /* LOCK_ARRAY_LOG_SIZE */
 
 #ifndef LOCK_SHIFT_EXTRA

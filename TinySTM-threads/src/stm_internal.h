@@ -89,10 +89,10 @@
 # define RW_SET_SIZE                    4096                /* Initial size of read/write sets */
 #endif /* ! RW_SET_SIZE */
 
-#define VALTHREADS                     16
+/*#define VALTHREADS                      2*/
 
 #ifndef LOCK_ARRAY_LOG_SIZE
-# define LOCK_ARRAY_LOG_SIZE            20                  /* Size of lock array: 2^20 = 1M */
+# define LOCK_ARRAY_LOG_SIZE            26                  /* Size of lock array: 2^20 = 1M */
 #endif /* LOCK_ARRAY_LOG_SIZE */
 
 #ifndef LOCK_SHIFT_EXTRA
@@ -319,6 +319,8 @@ typedef struct cb_entry {               /* Callback entry */
   void *arg;                            /* Argument to be passed to function */
 } cb_entry_t;
 
+
+
 typedef struct stm_tx {                 /* Transaction descriptor */
   JMP_BUF* env;                          /* Environment for setjmp/longjmp */
   stm_tx_attr_t attr;                   /* Transaction attributes (user-specified) */
@@ -391,16 +393,14 @@ typedef struct stm_tx {                 /* Transaction descriptor */
 
     long val_chunk;
     long val_last_chunk_diff;
-
+    struct val_thread_data *val_data;
 
 } stm_tx_t;
 
-typedef struct val_thread_data {
+struct val_thread_data {
     stm_tx_t* tx;
-    unsigned int thread_id;
-} val_thread_data_t;
-
-val_thread_data_t *val_data;
+    unsigned int val_worker_id;
+};
 
 /* This structure should be ordered by hot and cold variables */
 typedef struct {
@@ -1227,7 +1227,7 @@ int_stm_WaW(stm_tx_t *tx, volatile stm_word_t *addr, stm_word_t value, stm_word_
 
 static void* stm_wbetl_validate_parallel(void *txarg)
 {
-    val_thread_data_t* data = (val_thread_data_t*) txarg;
+    struct val_thread_data* data = (struct val_thread_data*) txarg;
     int my_rset_start;
     r_entry_t *r;
     int i, n;
@@ -1237,10 +1237,14 @@ static void* stm_wbetl_validate_parallel(void *txarg)
     int val_reads;
     int Phase = 0;
     stm_tx_t* tx = data->tx;
-    int id = data->thread_id;
+    int id = data->val_worker_id; /*worker id, not tx id*/
+    //printf("WORKER THREAD %d BELONGING TO %d LAUNCHED\n", id, tx->tid);
     //printf("Thread %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->n: %d\n", id, data, (unsigned long)data->start, (unsigned long)data->start + n, data->n);
 
-    while(!tx->val_finish){
+
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+    for(;;){
 
         pthread_mutex_lock(&tx->validate_mutex);
             /*while phases are equal we sleep*/
@@ -1326,8 +1330,9 @@ ret:
         Phase++;
         /*  gather all counters  */
         /*  atomically increment */
-        atomic_fetch_add_explicit(&tx->val_reads, val_reads, memory_order_relaxed);
+        atomic_fetch_add_explicit(&tx->val_reads, val_reads, memory_order_release);
         atomic_fetch_sub_explicit(&tx->currently_validating, 1, memory_order_release);
+        //printf("TX %d WORKER THREAD %d VALIDATED: %d\n", tx->tid, id, val_reads);
         /* signal main thread you are finished */
         pthread_mutex_lock(&tx->finished_validating_mutex);
 
@@ -1384,13 +1389,18 @@ int_stm_init_thread(void)
 
  /* start all VALTHREADS */
   int err=0;
-  val_data = malloc(sizeof(val_thread_data_t) * VALTHREADS);
+  /*for each validating thread that belongs to this stm_tx_t*/
+  tx->val_data = malloc(sizeof(struct val_thread_data) * VALTHREADS);
+
+  //printf("LAUNCHED\n");
+
   for (int i = 0; i < VALTHREADS; i++){
-      val_data[i].tx = tx;
-      val_data[i].thread_id = i;
-      if((err = pthread_create(&tx->val_threads[i], &tx->val_attr, stm_wbetl_validate_parallel, (void*) &val_data[i])) != 0){
+      tx->val_data[i].tx = tx;
+      tx->val_data[i].val_worker_id = i;
+      if((err = pthread_create(&tx->val_threads[i], NULL, stm_wbetl_validate_parallel, (void*) &tx->val_data[i])) != 0){
           printf("VALDIATION WORKER PTHREADS ERROR %d\n",err);
       }
+      //printf("LAUNCHED\n");
   }
 
   /* Set attribute */
@@ -1470,7 +1480,7 @@ int_stm_init_thread(void)
     for (cb = 0; cb < _tinystm.nb_init_cb; cb++)
       _tinystm.init_cb[cb].f(_tinystm.init_cb[cb].arg);
   }
-
+  //printf("thread %d created\n", tx->tid);
   return tx;
 }
 
@@ -1483,24 +1493,24 @@ int_stm_exit_thread(stm_tx_t *tx)
 #endif /* EPOCH_GC */
 
 
-
   pthread_mutex_lock(&tx->validate_mutex);
-    tx->val_finish=1;
-    tx->start_validate = 0;
+        tx->val_finish = 1;
+        tx->start_validate = 0;
         //printf("Captured validate_mutex..\n");
-        pthread_cond_broadcast(&tx->validate_cond);
+        //pthread_cond_broadcast(&tx->validate_cond);
   pthread_mutex_unlock(&tx->validate_mutex);
 
     /* Wait for thread completion */
+  int err;
   for (int i = 0; i < VALTHREADS; i++) {
-    if (pthread_join(tx->val_threads[i], NULL) != 0) {
-      fprintf(stderr, "Error waiting for thread completion\n");
-      exit(1);
+    //if (pthread_join(tx->val_threads[i], NULL) != 0) {
+    if ((err = pthread_cancel(tx->val_threads[i])) != 0) {
+      //fprintf(stderr, "Error waiting for thread completion %d\n", err);
+      //exit(1);
     }
   }
 
-
-  free(val_data);
+  free(tx->val_data);
 
   PRINT_DEBUG("==> stm_exit_thread(%p[%lu-%lu])\n", tx, (unsigned long)tx->start, (unsigned long)tx->end);
 

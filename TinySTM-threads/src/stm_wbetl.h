@@ -64,6 +64,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     /* signal here then wait for conditions */
     pthread_mutex_lock(&tx->validate_mutex);
+        //printf("BROADCASTING NEED VALIDATION\n");
         atomic_fetch_add_explicit(&tx->start_validate, 1, memory_order_release);
         pthread_cond_broadcast(&tx->validate_cond);
     pthread_mutex_unlock(&tx->validate_mutex);
@@ -930,16 +931,32 @@ stm_wbetl_commit(stm_tx_t *tx)
     goto release_locks;
 #endif /* IRREVOCABLE_ENABLED */
 
-  /* Try to validate (only if a concurrent transaction has committed since tx->start) */
-  //if (unlikely(tx->start != t - 1 && !stm_wbetl_validate(tx))) {
-  if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
-    /* Cannot commit */
+
+  if(_tinystm.global_tid == 1){
+      /* always validate with 1 thread for thesis */
+      if (!stm_wbetl_validate(tx)) {
+          //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
+          /* Cannot commit */
 #if CM == CM_MODULAR
-    /* Abort caused by invisible reads */
+          /* Abort caused by invisible reads */
     tx->visible_reads++;
 #endif /* CM == CM_MODULAR */
-    stm_rollback(tx, STM_ABORT_VALIDATE);
-    return 0;
+          stm_rollback(tx, STM_ABORT_VALIDATE);
+          return 0;
+      }
+  }else{
+      /* Try to validate (only if a concurrent transaction has committed since tx->start) */
+      if (unlikely(tx->start != t - 1 && !stm_wbetl_validate(tx))) {
+          //if (!stm_wbetl_validate(tx)) {
+          //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
+          /* Cannot commit */
+#if CM == CM_MODULAR
+          /* Abort caused by invisible reads */
+    tx->visible_reads++;
+#endif /* CM == CM_MODULAR */
+          stm_rollback(tx, STM_ABORT_VALIDATE);
+          return 0;
+      }
   }
 
 #ifdef IRREVOCABLE_ENABLED

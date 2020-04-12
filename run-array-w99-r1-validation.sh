@@ -22,7 +22,7 @@ fi
 #######################################################################################
 
 global_stm=$1
-threads=1
+threads=$3
 
 # THREADS
 #######################################################################################
@@ -122,142 +122,146 @@ build_stm_and_benchmark(){
 #######################################################################################
 
 progout=
-RESULTS_DIR+="/${threads}a"
-#################### RESULTS FILE #############################
-if [[ ! -d "$RESULTS_DIR" ]]; then
-    echo "Results dir \"$RESULTS_DIR\" does not exist, creating."
-    mkdir -p "$RESULTS_DIR"
+
+#always validate at 1 thread
+if [[ $threads -eq 1 ]]; then
+  RESULTS_DIR+="/${threads}"
+else
+  RESULTS_DIR+="/${threads}"
 fi
+
+#################### RESULTS FILE #############################
+for APP_DIR in "$RESULTS_DIR/array-r99-w1-random-walk" "$RESULTS_DIR/array-r99-w1-sequential-walk";
+do
+  if [[ ! -d "$APP_DIR" ]]; then
+      echo "Results dir \"$APP_DIR\" does not exist, creating."
+      mkdir -p "$APP_DIR"
+  fi
+done
 
 # thread number is dir
 # example results/TinySTM-wbetl/2/intruder++
 TEMP_FILE="$RESULTS_DIR/temp"
 
-for((sequential=0; sequential<=1;sequential++)); do
-  #vary cpu validation percentage
-  #for((j=98; j<=100; j++)); do
 
-  #CPU validation proportion set and recompile
-  #sed -i "s/CPU_VALIDATION_PROPORTION=.*/CPU_VALIDATION_PROPORTION=$j/g" "./$global_stm/$MAKEFILE"
+for((j=2; j<=2; j*=2)); do
 
-  build_stm_and_benchmark
+    # go into tinystm makefile.wbetl file and change VALTHREADS=$j
+    sed -i "s/VALTHREADS=.*/VALTHREADS=$j/g" "./$global_stm/$MAKEFILE"
 
-  if [[ $sequential -eq 1 ]];then
-    FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/1a-sequential-cpu-validation-2-workers"
+    build_stm_and_benchmark
 
-    #debug
-    FILE="$RESULTS_DIR/tmp"
-    echo "$FILE"
-    #FILE="$RESULTS_DIR/1-sequential-cpu-$j-gpu-$((100-$j))"
-  else
-    FILE="$RESULTS_DIR/array-r99-w1-random-walk/1a-random-cpu-validation-2-workers"
+    for((sequential=0; sequential<=0;sequential++)); do
+        #vary cpu validation percentage
 
-    #debug
-    FILE="$RESULTS_DIR/tmp"
-    echo "$FILE"
-    #FILE="$RESULTS_DIR/1-random-cpu-$j-gpu-$((100-$j))"
-  fi
+        if [[ $sequential -eq 1 ]];then
+          FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation-$j-workers"
+          echo "$FILE"
+          #FILE="$RESULTS_DIR/1-sequential-cpu-$j-gpu-$((100-$j))"
+        else
+          FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation-$j-workers"
+          echo "$FILE"
+          #FILE="$RESULTS_DIR/1-random-cpu-$j-gpu-$((100-$j))"
+        fi
 
 
-  if [[ $global_stm == "TinySTM-igpu-cpu-persistent-wbetl" ]]; then
-    #record val_time, cpu valtime, gpu valtime
-    echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
-  else
-    echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
-  fi
+        if [[ $global_stm == "TinySTM-igpu-cpu-persistent-wbetl" ]]; then
+            #record val_time, cpu valtime, gpu valtime
+            echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
+        else
+            echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
+        fi
 
 
-  for((i=512;i<=134217728;i*=2));do
+        for((i=512;i<=134217728;i*=2));do
+
+            if [[ $global_stm == "TinySTM-igpu-cpu-persistent-wbetl" ]]; then
+                #create temp file for stddev and avg
+                echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
+            else
+                echo "\"Validation time(S)\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
+            fi
+
+            sum=0
+            avg=0
+
+            for k in {0..9}; do
+
+                if [[ $sequential -eq 1 ]];then
+                    echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i VALTHREADS:$j"
+                else
+                    echo "RUN:$((k+1)), $threads threads, random array walk, $global_stm rset:$i VALTHREADS:$j"
+                fi
+
+                #./array/array -n$threads -r$i -s$sequential
+                progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
+                echo "$progout"
+
+                threads_out=$(head -n "$threads" <<< "$progout")
+                exec_time_power=($(tail -n 2 <<< "$progout"))
+
+                # ADD validation times from individual threads = total validation time
+                val_time=$(awk '{ total += $1 } END { printf "%f", total }' <<< "$threads_out")
+                #cpu_val_time=$(awk '{ total += $2 } END { printf "%f", total }' <<< "$threads_out")
+                #gpu_val_time=$(awk '{ total += $3 } END { printf "%f", total }' <<< "$threads_out")
+                commits=$(awk '{ total += $2 } END { print total }' <<< "$threads_out")
+                aborts=$(awk '{ total += $3 } END { print total }' <<< "$threads_out")
+                val_reads=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
+                validation_succ=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
+                validation_fail=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
+
+                if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
+                #restart
+                  echo "PROGRAM DID NOT RETURN CORRECT VALUES"
+                else
+                  echo "${val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
+                fi
 
 
-    if [[ $global_stm == "TinySTM-igpu-cpu-persistent-wbetl" ]]; then
-      #create temp file for stddev and avg
-      echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
-    else
-      echo "\"Validation time(S)\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
-    fi
+            done
+            #throw mean and stdev into file
+            mean_stddev_col=$(awk '
+                NR > 1 {
+                    n=NR-1
+                    for(i=1;i<=NF;i++){
+                        sum[i]+=$i;
+                        array[n,i]=$i
+                    }
+                }
+                END {
+                    if(NR>1){
+                        NR=NR-1
+                        for(i=1;i<=NF;i++){
+                            avg[i]=sum[i]/NR;
+                        }
 
+                        for(i=1;i<=NR;i++){
+                            for(j=1;j<=NF;j++){
+                                sumsq[j]+=((array[i,j]-(sum[j]/NR))**2);
+                            }
+                        }
 
-    sum=0
-    avg=0
+                        for(i=1;i<=NF;i++){
+                            p_avg=avg[i]
+                            p_sqrt=sqrt(sumsq[i]/NR)
 
-    for ((k=0;k<20000;k++)); do
+                            f_avg="%f "
+                            f_sqrt="%f "
 
-      if [[ $sequential -eq 1 ]];then
-        echo "RUN:$((k+1)), 1 thread, sequential array walk, $global_stm rset:$i CPU_VAL_PROPORTION:$j"
-      else
-        echo "RUN:$((k+1)), 1 thread, random array walk, $global_stm rset:$i CPU_VAL_PROPORTION:$j"
-      fi
+                            if(p_avg==0){
+                                f_avg="%d "
+                            }
+                            if(p_sqrt==0){
+                                f_sqrt="%d "
+                            }
+                            #printf "%f %f ", p_avg, p_sqrt;
+                            printf f_avg f_sqrt, p_avg, p_sqrt;
+                        }
+                    }
+              }
+            ' <<< cat "$TEMP_FILE")
 
-      ./array/array -n$threads -r$i -s$sequential
-      #progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
-      #echo "$progout"
-
-      threads_out=$(head -n "$threads" <<< "$progout")
-      exec_time_power=($(tail -n 2 <<< "$progout"))
-      # ADD validation times from individual threads = total validation time
-      val_time=$(awk '{ total += $1 } END { printf "%f", total }' <<< "$threads_out")
-      cpu_val_time=$(awk '{ total += $2 } END { printf "%f", total }' <<< "$threads_out")
-      gpu_val_time=$(awk '{ total += $3 } END { printf "%f", total }' <<< "$threads_out")
-      commits=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
-      aborts=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
-      val_reads=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
-      validation_succ=$(awk '{ total += $7 } END { print total }' <<< "$threads_out")
-      validation_fail=$(awk '{ total += $8 } END { print total }' <<< "$threads_out")
-
-      if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
-      #restart
-        echo "no out ignoring line"
-      else
-        echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
-      fi
-
-
-
+            echo "$i $mean_stddev_col" >> $FILE
+        done
     done
-    #throw mean and stdev into file
-    mean_stddev_col=$(awk '
-      NR > 1 {
-          n=NR-1
-          for(i=1;i<=NF;i++){
-              sum[i]+=$i;
-              array[n,i]=$i
-          }
-      }
-      END {
-          if(NR>1){
-              NR=NR-1
-              for(i=1;i<=NF;i++){
-                  avg[i]=sum[i]/NR;
-              }
-
-              for(i=1;i<=NR;i++){
-                  for(j=1;j<=NF;j++){
-                      sumsq[j]+=((array[i,j]-(sum[j]/NR))**2);
-                  }
-              }
-
-              for(i=1;i<=NF;i++){
-                  p_avg=avg[i]
-                  p_sqrt=sqrt(sumsq[i]/NR)
-
-                  f_avg="%f "
-                  f_sqrt="%f "
-
-                  if(p_avg==0){
-                      f_avg="%d "
-                  }
-                  if(p_sqrt==0){
-                      f_sqrt="%d "
-                  }
-                  #printf "%f %f ", p_avg, p_sqrt;
-                  printf f_avg f_sqrt, p_avg, p_sqrt;
-              }
-          }
-      }
-    ' <<< cat "$TEMP_FILE")
-
-    echo "$i $mean_stddev_col" >> $FILE
-  done
-  #done
 done

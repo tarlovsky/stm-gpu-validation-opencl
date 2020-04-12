@@ -940,8 +940,8 @@ stm_wbetl_commit(stm_tx_t *tx)
 #endif /* IRREVOCABLE_ENABLED */
 
   /* Try to validate (only if a concurrent transaction has committed since tx->start) */
-  //if (unlikely(tx->start != t - 1 && !stm_wbetl_validate(tx))) {
-  if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
+  if (unlikely(tx->start != t - 1 && !stm_wbetl_validate(tx))) {
+  //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
     /* Cannot commit */
 #if CM == CM_MODULAR
     /* Abort caused by invisible reads */
