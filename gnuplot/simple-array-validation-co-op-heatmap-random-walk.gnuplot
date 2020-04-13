@@ -11,7 +11,6 @@ col_24="#c724d6"
 col_48="#44cd1"
 col_gold="#8f8800"
 set xtics nomirror rotate by 45 right scale 0 font ",8"
-set logscale x
 set title "SIMPLE ARRAY, TRANSACTIONAL RANDOM WALK CPU+IGPU CO-OP VALIDATION (ASSIGNMENT IN %)" font ",14"
 set pm3d noborder
 set style fill transparent solid 1

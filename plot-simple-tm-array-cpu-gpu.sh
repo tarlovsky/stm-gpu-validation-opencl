@@ -204,9 +204,7 @@ echo >> $FILE
 
 echo  "unset multiplot" >> $FILE
 
-#gnuplot -p $FILE
-
-
+gnuplot -p $FILE
 
 ####################################################################
 # Table the times where gpu-cpu co-op is best and show percentages #
