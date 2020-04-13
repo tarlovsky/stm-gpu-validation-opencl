@@ -37,7 +37,7 @@ echo "set datafile separator whitespace" >> $FILE
 echo "set border lc rgb \"black\"" >> $FILE
 #echo "unset border" >> $FILE
 
-echo "set style data linespoints" >> $FILE
+echo "set style data lines" >> $FILE
 
 #echo "set xlabel \"Read-set size\""  >> $FILE
 
@@ -91,26 +91,45 @@ if [[ ! -f "$BEST_FILE" ]]; then
 fi
 
 #find them all
-declare -a BEST_CO_OP=()
+declare -a BEST_CO_OP_somewhere=()
+BEST_CO_OP=
+BEST_COUNT=0
 
 val_time_col_co_op=
 
+echo
+echo "The following co-op assignments are better than TinySTM-wbetl on at least one READ-SET SIZE:"
+echo "OCCASION | FILENAME"
 for((j=0;j<=100;j++));do
   SEARCH_FILE="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-random-walk/1-random-cpu-$j-gpu-$((100-$j))"
   val_time_col_co_op=$(awk 'NR>1{printf "%f ", $2}' $SEARCH_FILE)
   val_time_col_co_op_ref=($val_time_col_co_op)
-
+  not_added_yet=1
+  COUNT=0
   #get those who have better time in $2 than BASE
   #bash doesn't deal with floats, use something else to compare like awk
-  for((i=0;i<$N_RSET_SIZES;i++));do
+  for((i=0;i < $N_RSET_SIZES;i++));do
     if [[ 1 -eq "$(echo "${val_time_col_co_op_ref[$i]} < ${val_time_col_ref[$i]}" | bc)" ]];then
-      BEST_CO_OP+=($SEARCH_FILE)
-      echo $SEARCH_FILE
-      break 1 #break 1 level
+      ((COUNT++))
+      if [[ not_added_yet -eq 1 ]]; then
+        BEST_CO_OP_somewhere+=($SEARCH_FILE)
+        not_added_yet=0 #added to BEST_CO_OP_somewhere
+      fi
+      if [[ $COUNT -gt $BEST_COUNT ]];then
+        BEST_COUNT=$COUNT
+        BEST_CO_OP=$SEARCH_FILE
+      fi
     fi
+    #continue searching for best overall
   done
+  if [[ $COUNT -gt 0 ]];then
+    echo "$COUNT | $SEARCH_FILE"
+  fi
 done
 
+echo
+echo "$BEST_CO_OP best on $BEST_COUNT occasions"
+echo
 
 #we know that there is no place better for sequential so no point in doing it.
 #######################################################################################
@@ -136,13 +155,13 @@ echo  " '$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-sequential-walk/1a-sequentia
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-sequential-GPU-48WKGPS-128WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"Persistent Kernel 48WKGPS-128WKGPSIZE-SEQ-CST, sequential array traversal\" lw 2 lc rgb col_48 pt 16,\\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-sequential-GPU-24WKGPS-224WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST, sequential array traversal\" lw 2 lc rgb col_24 pt 16, \\"  >> $FILE
 #these are temporary, for scale, to show difference between having seq_cst, acq_rel, relaxed atomic access inside opencl work-items
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle lw 2 lc rgb col_48 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new lc rgb col_48 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new1 lc rgb col_48 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new1 lc rgb col_24 pt 1"  >> $FILE
-
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle lw 2 lc rgb col_48 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new lc rgb col_48 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new1 lc rgb col_48 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new lc rgb col_24 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) notitle dt new1 lc rgb col_24 pt 1"  >> $FILE
+echo >> $FILE
 #CPU l2 1.02400 megabytes
 #CPU l1 128 KB
 echo "set title \"CPU with threaded validation \" font \",12\"" >> $FILE
@@ -173,19 +192,86 @@ echo "set style data lines" >> $FILE
 echo "set yrange [0.0000001:10]" >> $FILE
 echo "set title \"CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance\" font \",12\"" >> $FILE
 echo  "plot \\"  >> $FILE
-for i in ${BEST_CO_OP[@]}; do
+for i in ${BEST_CO_OP_somewhere[@]}; do
   t_col=$(echo $i | sed 's/.*\///')
   echo  " '$i' u (\$0 + 3):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col\" lc rgb \"#11cacaca\",\\"  >> $FILE
 done
+t_col_best_co_op="GLOBAL MINUMUM "
+t_col_best_co_op+=$(echo $BEST_CO_OP | sed 's/.*\///')
+echo  " '$BEST_CO_OP' u (\$0 + 3):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU 02 1 THREADS VALIDATING random array traversal\" lc rgb col_gold pt 17"  >> $FILE
 echo >> $FILE
 
 echo  "unset multiplot" >> $FILE
 
-
-gnuplot -p $FILE
-
+#gnuplot -p $FILE
 
 
 
+####################################################################
+# Table the times where gpu-cpu co-op is best and show percentages #
+####################################################################
+
+FILE1="gnuplot/simple-array-validation-co-op.gnuplot"
+
+#echo "set term postscript eps color solid" >> $FILE1
+#echo "set output '1.eps'" >> $FILE1
+
+echo "set terminal wxt size 3300,1080" > $FILE1
+
+echo "set multiplot layout 1,2 title \"Validating random array traversal single-threaded,  Intel 6700k CPU (73%) + Intel HD530 iGPU (27%) CO-OP vs (TinySTM-WBETL)\" font \",16\"" >> $FILE1
+
+echo "set datafile missing \" \"" >> $FILE1
+echo "set border linewidth 2" >> $FILE1
+echo "set view map" >> $FILE1
+
+echo "set grid front lc rgb \"#1c1c1c\"" >> $FILE1
+echo "set datafile separator \" \"" >> $FILE1
+echo "set cbrange [0:5]" >> $FILE1
+echo "set palette rgb -21,-22,-23" >> $FILE1
+echo "set key autotitle columnhead" >> $FILE1
+#echo "unset key" >> $FILE1
+#echo "unset xtics" >> $FILE1
+#echo "set style line 102 lc rgb'#101010' lt 0 lw 4" >> $FILE1
+#echo "set grid front ls 102" >> $FILE1
+###############################################################
+HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-random-walk/table-heat-file"
+HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-random-walk/table-heat-file-speedup"
+header=$(awk 'NR>4{print $1}' "$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation")
+header1=
+for word in ${header[@]}; do
+  header1+="\"${word}\" "
+done
+echo \"Name\" $header1 > $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
+echo \"Name\" $header1 > $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP
+cpu=$(awk 'NR>4{print $2}' "$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation")
+for i in ${BEST_CO_OP_somewhere[@]};do
+  #from each file extract column 1 and 2
+  #draw TINYSTM UNTOUCHED plane accross
+  row_name=$(echo $i | sed 's/.*\///')
+  row=$(awk 'NR>1{print $2}' $i)
+
+  JOINED=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1<$2){print $1;}else{print "-"}}')
+  JOINED_SPEEDUP=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1<$2){printf "%.2f ", $2/$1;}else{print "-"}}')
+  echo \"${row_name//1-random-/}\" $JOINED >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
+  echo \"${row_name//1-random-/}\" $JOINED_SPEEDUP >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP
+done
+
+echo \"TinySTM-wbetl\" $cpu >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
+###############################################################
+
+echo "plot '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders w image,\\" >> $FILE1
+#echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(sprintf(\"%f\",\$3)) with labels" >> $FILE1
+echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%f\",\$3)) : (sprintf(\" \")))) with labels" >> $FILE1
+echo >> $FILE1
+echo "set cbrange [1:1.35]" >> $FILE1
+echo "set palette rgb -21,-22,-23" >> $FILE1
+
+echo "plot '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP' matrix rowheaders columnheaders w image,\\" >> $FILE1
+#echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(sprintf(\"%f\",\$3)) with labels" >> $FILE1
+echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"x%.2f\",\$3)) : (sprintf(\" \")))) with labels" >> $FILE1
+echo >> $FILE1
+
+echo "unset multiplot" >> $FILE1
+gnuplot -p $FILE1
 
