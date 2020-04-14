@@ -42,9 +42,10 @@ void *test(void *data)
 {
     long id = thread_getId();
     int my_start = id * chunk_size;
+    int my_end = chunk_size + (chunk_size * id);
     int ops = 1;
     int i,j;
-
+    //printf("THREAD %d | MY_START: %d\n",id, my_start); //correct
     if(enable_sequential == 0){
         time_t t;
         /* Intializes enable_sequential number generator */
@@ -56,7 +57,7 @@ void *test(void *data)
     TM_THREAD_ENTER();
     TM_BEGIN();
     while (ops--) {
-        for (i = 0; i < chunk_size; i++) {
+        for (i = my_start; i < my_end; i++) {
             if (enable_sequential == 0) {
                 j = rand() % rset_size;
                 TM_SHARED_READ_P(array[j]);
@@ -69,7 +70,7 @@ void *test(void *data)
     /* by writing to your own write set you do not advance global clock before commit*/
     /* when random this works. when sequential you write to your own chunk*/
     /* so write to someone elses */
-    TM_SHARED_WRITE_P(array[my_start], id);
+    TM_SHARED_WRITE_P(array[my_start+4], id); // +4 because lock order covers 4 words and you dont want to write into other tx'x rset
     TM_END();
     TM_THREAD_EXIT();
 

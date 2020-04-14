@@ -13,7 +13,7 @@ declare -a gold_palette=(" " "8f8d08" "a77f0e" " " "916a09" " " " " " " "914a09"
 
 FILE="gnuplot/simple-array-multithreaded-validation-reads-validated.gnuplot"
 
-echo "set terminal wxt size 1000,800" > $FILE
+echo "set terminal wxt size 1610,800" > $FILE
 #echo "set size 1,1" >> $FILE
 #echo "set origin 0,0" >> $FILE
 echo "unset bmargin" >> $FILE
@@ -21,7 +21,7 @@ echo "unset tmargin" >> $FILE
 echo "unset rmargin" >> $FILE
 echo "unset lmargin" >> $FILE
 
-echo "set title \"Random array walk multi-threaded validation. READS VALIDATED/VALIDATION CALL Intel 6700k CPU 4cores-8threads (TinySTM-WBETL)\" font \",14\"" >> $FILE
+echo "set multiplot layout 1,2 title \"Transactional array walk application; multi-threaded validation; Total reads validated/transaction; Intel 6700k CPU 4cores-8threads vs TinySTM-WBETL untouched\" font \",14\"" >> $FILE
 #echo "set datafile missing \"x\"" >> $FILE
 #echo "unset ytics" >> $FILE
 echo "set tics scale 0"  >> $FILE
@@ -56,7 +56,7 @@ echo "set key font \",8\"" >> $FILE
 #echo "set key left Left left Left inside top" >> $FILE
 echo "set key left" >> $FILE
 
-echo "set ylabel \"Time (s)\""  >> $FILE
+echo "set ylabel \"READS VALIDATED / TRANSACTION\""  >> $FILE
 #echo "unset key" >> $FILE
 #l1
 echo  "set arrow from 5.8, graph 0 to 5.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE
@@ -131,13 +131,14 @@ echo
 t_col_best_co_op="APU CO-OP       "
 t_col_best_co_op+=$(echo $BEST_CO_OP | sed 's/.*\///')
 
+#random
 echo "set yrange [1:1000000000]" >> $FILE
-echo "set title \"$i STM threads; (READS VALIDATED/VALIDATION CALL) PER TRANSACTION\" font \",14\"" >> $FILE
+echo "set title \"RANDOM WALK\" font \",14\"" >> $FILE
 echo  "plot \\"  >> $FILE
 for i in 1 2 4 8;do
-  if [[ $i -eq 1 ]];then
-    echo  " '$BEST_CO_OP' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS $t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
-  fi
+  #if [[ $i -eq 1 ]];then
+    #echo  " '$BEST_CO_OP' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS $t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+  #fi
   #(((\$10+\$12)>0)?(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):(NaN))
   echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-8-workers' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS CPU -02 8 validation worker / STM thread\" lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
   echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
@@ -150,23 +151,29 @@ for i in 1 2 4 8;do
 done
 echo >> $FILE
 
+#sequential+always validate full read-set on every thread
+echo "set title \"SEQUENTIAL WALK\" font \",14\"" >> $FILE
+echo  "plot \\"  >> $FILE
+for i in 1 2 4 8;do
+  if [[ $i -eq 1 ]];then
+    echo  " '$BEST_CO_OP' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS $t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+  fi
+  #(((\$10+\$12)>0)?(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):(NaN))
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-8-workers' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS CPU -02 8 validation worker / STM thread\" lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-2-workers' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS CPU -02 2 validation worker / STM thread\" dt new lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
+  if [[ $i -eq 1 ]];then
+    echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS CPU -02 1 validation worker / STM thread\" lw 2 lc rgb \"#${gold_palette[$i]}\",\\"  >> $FILE
+  else
+    echo  " '$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' u (\$0):(((\$10+\$12)>0)?((\$8/(ceil(\$10+\$12)))/$i):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS CPU -02 1 validation worker / STM thread\" lw 2 lc rgb \"#${gold_palette[$i]}\",\\"  >> $FILE
+  fi
+done
 echo >> $FILE
-#echo  "unset multiplot" >> $FILE
 
-#echo "set style data lines" >> $FILE
-#echo "set yrange [0.0000001:10]" >> $FILE
-#echo "set title \"CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance\" font \",12\"" >> $FILE
+echo >> $FILE
 
-#echo  "plot \\"  >> $FILE
-#for i in ${BEST_CO_OP_somewhere[@]}; do
-  #t_col=$(echo $i | sed 's/.*\///')
-  #echo  " '$i' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col\" lc rgb \"#11cacaca\",\\"  >> $FILE
-#done
-#t_col_best_co_op="GLOBAL MINUMUM "
-#t_col_best_co_op+=$(echo $BEST_CO_OP | sed 's/.*\///')
-#echo  " '$BEST_CO_OP' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU 02 1 THREADS VALIDATING random array traversal\" lc rgb col_gold pt 17"  >> $FILE
-#echo >> $FILE
+echo  "unset multiplot" >> $FILE
+
 
 
 

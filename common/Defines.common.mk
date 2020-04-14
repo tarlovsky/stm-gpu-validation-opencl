@@ -1,6 +1,6 @@
 LIB := ../lib
 
-STM := ../TinySTM-igpu-cpu-persistent
+STM := ../TinySTM-igpu-persistent
 
 CC       := g++
 CPP      := g++

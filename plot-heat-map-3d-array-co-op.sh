@@ -50,9 +50,10 @@ CO_OP_SEQ_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-se
 HEAT_FILE_SEQ="results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/heat-file"
 HEAT_FILE_CPU_SEQ="results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/heat-file"
 
-echo "set xlabel \"READ-SET SIZE\""  | tee -a $FILE1 $FILE2
-echo "set ylabel \"CPU VALIDATION PERCENTAGE\""  | tee -a $FILE1 $FILE2
-echo "set zlabel \"Validation execution time only (s)\""  | tee -a $FILE1 $FILE2
+echo "set xlabel \"READ-SET SIZE\" offset graph 0,0,-0.02"  | tee -a $FILE1 $FILE2
+echo "set ylabel \"CPU VALIDATION PERCENTAGE\" offset graph 0,0,-0.04"  | tee -a $FILE1 $FILE2
+echo "set zlabel \"Time(s)\" offset graph 0,0,0.56"  | tee -a $FILE1 $FILE2
+
 
 echo -n > $HEAT_FILE_RAND
 echo -n > $HEAT_FILE_SEQ
@@ -88,7 +89,7 @@ echo "col_gold=\"#8f8800\"" | tee -a $FILE1 $FILE2
 #echo "set key left" >> $FILE
 #echo "set yrange [0.0000001:10]" >> $FILE
 
-echo "set xtics nomirror rotate by 45 right scale 0 font \",8\"" | tee -a $FILE1 $FILE2
+#echo "set xtics rotate by 60 right scale 0 font \",8\" offset 0,0,-0.04" | tee -a $FILE1 $FILE2
 
 #echo  "plot \\"  >> $FILE
 #normal execution
@@ -98,30 +99,32 @@ echo "set xtics nomirror rotate by 45 right scale 0 font \",8\"" | tee -a $FILE1
 #echo "set dgrid3d" >> $FILE
 
 #FILE 1
+echo "set cbrange [0:1.6]" | tee -a $FILE1 $FILE2
 
-#echo "set logscale x" >> $FILE1
-echo "set title \"SIMPLE ARRAY, TRANSACTIONAL RANDOM WALK CPU+IGPU CO-OP VALIDATION (ASSIGNMENT IN %)\" font \",14\"" >> $FILE1
+
+echo "set logscale x" >> $FILE1
+echo "set title \"TRANSACTIONAL RANDOM ARRAY WALK CPU+IGPU CO-OPERATIVE VALIDATION STATIC ASSIGNMENT IN %\" font \",14\"" >> $FILE1
 echo "set pm3d noborder" >> $FILE1
 echo "set style fill transparent solid 1" >> $FILE1
 
 #echo "set view 45, 45" >> $FILE
 echo "splot '$HEAT_FILE_RAND' u 2:1:3:xtic(1) t \"TINYSTM-WBETL CPU+GPU CO-OP VALIDATION\" with pm3d, \\" >> $FILE1
-echo "      '$HEAT_FILE_CPU_RAND' u 2:1:3:xtic(2) t \"TINYSTM-WBETL\" w surface lc \"#22b5d2ff\"" >> $FILE1
+echo "      '$HEAT_FILE_CPU_RAND' u 2:1:3:xtic(2) t \"TINYSTM-WBETL UNTOUCHED\" w surface lc \"#22b5d2ff\"" >> $FILE1
 echo >> $FILE1
 
 #FILE 2
 #logscale on read-set-size
 #echo "set logscale x" >> $FILE2
-echo "set title \"SIMPLE ARRAY, TRANSACTIONAL SEQUENTIAL WALK CPU+IGPU CO-OP VALIDATION (ASSIGNMENT IN %)\" font \",14\"" >> $FILE2
+echo "set title \"TRANSACTIONAL SEQUENTIAL ARRAY WALK CPU+IGPU CO-OPERATIVE VALIDATION STATIC ASSIGNMENT IN %\" font \",14\"" >> $FILE1
 echo "set pm3d" >> $FILE2
 echo "set style fill transparent solid 1" >> $FILE2
 #echo "set view 45, 45" >> $FILE
 echo "splot '$HEAT_FILE_SEQ' u 2:1:3:xtic(1) t \"TINYSTM-WBETL CPU+GPU CO-OP VALIDATION\" with pm3d, \\" >> $FILE2
-echo "      '$HEAT_FILE_CPU_SEQ' u 2:1:3:xtic(2) t \"TINYSTM-WBETL\" w surface lc \"#22b5d2ff\"" >> $FILE2
+echo "      '$HEAT_FILE_CPU_SEQ' u 2:1:3:xtic(2) t \"TINYSTM-WBETL UNTOUCHED\" w surface lc \"#22b5d2ff\"" >> $FILE2
 echo >> $FILE2
 
 gnuplot -p $FILE1
-gnuplot -p $FILE2
+#gnuplot -p $FILE2
 
 
 

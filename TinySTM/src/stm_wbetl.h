@@ -64,6 +64,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     /* Unlocked and still the same version? */
     if (LOCK_GET_OWNED(l)) {
+
       /* Do we own the lock? */
       w_entry_t *w = (w_entry_t *)LOCK_GET_ADDR(l);
       /* Simply check if address falls inside our write set (avoids non-faulting load) */
@@ -92,6 +93,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 #endif
         return 0;
       }
+
       /* We own the lock: OK */
     } else {
       if (LOCK_GET_TIMESTAMP(l) != r->version) {
@@ -939,7 +941,9 @@ stm_wbetl_commit(stm_tx_t *tx)
     goto release_locks;
 #endif /* IRREVOCABLE_ENABLED */
 
-  if(_tinystm.global_tid == 1){
+  //if(_tinystm.global_tid == 1){
+  if(1){
+
       /* always validate with 1 thread for thesis */
       if (!stm_wbetl_validate(tx)) {
           //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
@@ -948,6 +952,7 @@ stm_wbetl_commit(stm_tx_t *tx)
           /* Abort caused by invisible reads */
     tx->visible_reads++;
 #endif /* CM == CM_MODULAR */
+
           stm_rollback(tx, STM_ABORT_VALIDATE);
           return 0;
       }

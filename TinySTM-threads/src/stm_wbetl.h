@@ -932,7 +932,8 @@ stm_wbetl_commit(stm_tx_t *tx)
 #endif /* IRREVOCABLE_ENABLED */
 
 
-  if(_tinystm.global_tid == 1){
+  //if(_tinystm.global_tid == 1){
+  if(1){
       /* always validate with 1 thread for thesis */
       if (!stm_wbetl_validate(tx)) {
           //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/

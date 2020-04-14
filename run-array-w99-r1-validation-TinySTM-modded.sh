@@ -145,7 +145,7 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 
 #for((j=2; j<=8; j*=2)); do  #valthreads
-for((j=1; j<=100; j+=1)); do #co-op blind search
+#for((j=0; j<=100; j+=1)); do #co-op blind search
     # go into tinystm makefile.wbetl file and change VALTHREADS=$j
 
     if [[ $global_stm == "TinySTM-igpu-cpu-persistent" ]]; then
@@ -160,15 +160,18 @@ for((j=1; j<=100; j+=1)); do #co-op blind search
         #vary cpu validation percentage
 
         if [[ $sequential -eq 1 ]];then
-          #FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation-$j-workers"
-          #echo "$FILE"
-          FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/1-sequential-cpu-$j-gpu-$((100-$j))"
+          if [[ $global_stm == "TinySTM-igpu-cpu-persistent" ]]; then
+            FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/1-sequential-cpu-$j-gpu-$((100-$j))"
+          else
+            FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation-$j-workers"
+          fi
         else
-          #FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation-$j-workers"
-          #echo "$FILE"
-          FILE="$RESULTS_DIR/array-r99-w1-random-walk/1-random-cpu-$j-gpu-$((100-$j))"
+          if [[ $global_stm == "TinySTM-igpu-cpu-persistent" ]]; then
+            FILE="$RESULTS_DIR/array-r99-w1-random-walk/1-random-cpu-$j-gpu-$((100-$j))"
+          else
+            FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation-$j-workers"
+          fi
         fi
-
 
         if [[ $global_stm == "TinySTM-igpu-cpu-persistent" ]]; then
             #record val_time, cpu valtime, gpu valtime
@@ -178,7 +181,7 @@ for((j=1; j<=100; j+=1)); do #co-op blind search
         fi
 
 
-        for((i=8388608;i<=134217728;i*=2));do
+        for((i=512;i<=134217728;i*=2));do
 
             if [[ $global_stm == "TinySTM-igpu-cpu-persistent" ]]; then
                 #create temp file for stddev and avg
@@ -190,7 +193,7 @@ for((j=1; j<=100; j+=1)); do #co-op blind search
             sum=0
             avg=0
 
-            for k in {0..9}; do
+            for k in {0..10}; do
 
                 if [[ $sequential -eq 1 ]];then
                     echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
@@ -205,23 +208,42 @@ for((j=1; j<=100; j+=1)); do #co-op blind search
                 threads_out=$(head -n "$threads" <<< "$progout")
                 exec_time_power=($(tail -n 2 <<< "$progout"))
 
-                # ADD validation times from individual threads = total validation time
-                val_time=$(awk '{ total += $1 } END { printf "%f", total }' <<< "$threads_out")
-                cpu_val_time=$(awk '{ total += $2 } END { printf "%f", total }' <<< "$threads_out")  #no good for anything except co-op
-                gpu_val_time=$(awk '{ total += $3 } END { printf "%f", total }' <<< "$threads_out")  #no good for anything except co-op
-                commits=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
-                aborts=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
-                val_reads=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
-                validation_succ=$(awk '{ total += $7 } END { print total }' <<< "$threads_out")
-                validation_fail=$(awk '{ total += $8 } END { print total }' <<< "$threads_out")
+                if [[ $global_stm == "TinySTM-igpu-cpu-persistent" ]]; then
 
-                if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
-                #restart
-                  echo "PROGRAM DID NOT RETURN CORRECT VALUES"
+                    # ADD validation times from individual threads = total validation time
+                    val_time=$(awk '{ total += $1 } END { printf "%f", total }' <<< "$threads_out")
+                    cpu_val_time=$(awk '{ total += $2 } END { printf "%f", total }' <<< "$threads_out")  #no good for anything except co-op
+                    gpu_val_time=$(awk '{ total += $3 } END { printf "%f", total }' <<< "$threads_out")  #no good for anything except co-op
+                    commits=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
+                    aborts=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
+                    val_reads=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
+                    validation_succ=$(awk '{ total += $7 } END { print total }' <<< "$threads_out")
+                    validation_fail=$(awk '{ total += $8 } END { print total }' <<< "$threads_out")
+
+                    if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
+                    #restart
+                      echo "PROGRAM DID NOT RETURN CORRECT VALUES"
+                    else
+                      echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
+                    fi
                 else
-                  echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
-                fi
+                  # ADD validation times from individual threads = total validation time
+                    val_time=$(awk '{ total += $1 } END { printf "%f", total }' <<< "$threads_out")
+                    # removed cpu
+                    # removed gpu
+                    commits=$(awk '{ total += $2 } END { print total }' <<< "$threads_out")
+                    aborts=$(awk '{ total += $3 } END { print total }' <<< "$threads_out")
+                    val_reads=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
+                    validation_succ=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
+                    validation_fail=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
 
+                    if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
+                    #restart
+                      echo "PROGRAM DID NOT RETURN CORRECT VALUES"
+                    else
+                      echo "${val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
+                    fi
+                fi
 
             done
             #throw mean and stdev into file
@@ -269,4 +291,4 @@ for((j=1; j<=100; j+=1)); do #co-op blind search
             echo "$i $mean_stddev_col" >> $FILE
         done
     done
-done
+#done

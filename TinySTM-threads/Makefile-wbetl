@@ -245,7 +245,7 @@ DEFINES += -UUNIT_TX
 # DEFINES += -DMIN_BACKOFF=0x04UL
 # DEFINES += -DMAX_BACKOFF=0x80000000UL
 # DEFINES += -DVR_THRESHOLD_DEFAULT=3
-  DEFINES += -DVALTHREADS=2
+  DEFINES += -DVALTHREADS=8
 ########################################################################
 # Do not modify anything below this point!
 ########################################################################

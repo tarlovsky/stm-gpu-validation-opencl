@@ -19,7 +19,9 @@ echo "unset tmargin" >> $FILE
 echo "unset rmargin" >> $FILE
 echo "unset lmargin" >> $FILE
 
-echo "set multiplot layout 2,2 title \"Validating random array traversal multi-threaded validation, Intel 6700k CPU 4cores-8threads (TinySTM-WBETL)\" font \",14\"" >> $FILE
+
+echo "set multiplot layout 2,2 title \"Time to validate random array walk application; multi-threaded CPU validation vs TinySTM-WBETL untouched\" font \",14\"" >> $FILE
+
 echo "set datafile missing \"0\"" >> $FILE
 #echo "unset ytics" >> $FILE
 echo "set tics scale 0"  >> $FILE
@@ -57,14 +59,14 @@ echo "set yrange [0.00001:10]" >> $FILE
 echo "set ylabel \"Time (s)\""  >> $FILE
 
 #l1
-echo  "set arrow from 8.8, graph 0 to 8.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE
-echo  "set label \"\$L1: 128KB\" at 8.9,0.000014 " >> $FILE
+echo  "set arrow from 5.8, graph 0 to 5.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE
+echo  "set label \"\$L1: 128KB\" at 5.9,0.000014 " >> $FILE
 #l2
-echo  "set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb \"#bebebe\"" >> $FILE
-echo  "set label \"\$L2: 1.024MB\" at 11.9,0.000014*1.5 " >> $FILE
+echo  "set arrow from 8.8, graph 0 to 8.8, graph 1 nohead lc rgb \"#bebebe\"" >> $FILE
+echo  "set label \"\$L2: 1.024MB\" at 8.9,0.000014*1.5 " >> $FILE
 #l3
-echo  "set arrow from 14.8, graph 0 to 14.8, graph 1 nohead lc rgb \"#afafaf\"" >> $FILE
-echo  "set label \"\$L3: 8MB\" at 14.9,0.000014*2.5 " >> $FILE
+echo  "set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb \"#afafaf\"" >> $FILE
+echo  "set label \"\$L3: 8MB\" at 11.9,0.000014*2.5 " >> $FILE
 echo  "set title \"Only CPU, threaded validation, sequential walk\" font \",12\"" >> $FILE
 
 ##############################################################################################################################################################################
