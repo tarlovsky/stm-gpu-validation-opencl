@@ -14,6 +14,6 @@ set xtics nomirror rotate by 45 right scale 0 font ",8"
 set title "SIMPLE ARRAY, TRANSACTIONAL SEQUENTIAL WALK CPU+IGPU CO-OP VALIDATION (ASSIGNMENT IN %)" font ",14"
 set pm3d
 set style fill transparent solid 1
-splot 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-sequential-walk/heat-file' u 2:1:3:xtic(1) t "TINYSTM-WBETL CPU+GPU CO-OP VALIDATION" with pm3d, \
-      'results-validation-array/TinySTM-wbetl/1a/array-r99-w1-sequential-walk/heat-file' u 2:1:3:xtic(2) t "TINYSTM-WBETL" w surface lc "#22b5d2ff"
+splot 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/heat-file' u 2:1:3:xtic(1) t "TINYSTM-WBETL CPU+GPU CO-OP VALIDATION" with pm3d, \
+      'results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/heat-file' u 2:1:3:xtic(2) t "TINYSTM-WBETL" w surface lc "#22b5d2ff"
 

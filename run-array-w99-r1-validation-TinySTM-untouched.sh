@@ -153,10 +153,12 @@ for((sequential=0; sequential<=1;sequential++)); do
     #vary cpu validation percentage
 
     if [[ $sequential -eq 1 ]];then
-      FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation"
+      FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation-2-26"
+      #FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation-debug"
       echo "$FILE"
     else
-      FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation"
+      FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation-2-26"
+      #FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation-debug"
       echo "$FILE"
     fi
 
@@ -227,8 +229,8 @@ for((sequential=0; sequential<=1;sequential++)); do
                         p_avg=avg[i]
                         p_sqrt=sqrt(sumsq[i]/NR)
 
-                        f_avg="%f "
-                        f_sqrt="%f "
+                        f_avg="%.9f "
+                        f_sqrt="%.9f "
 
                         if(p_avg==0){
                             f_avg="%d "

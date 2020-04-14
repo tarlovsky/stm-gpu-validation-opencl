@@ -59,12 +59,11 @@ stm_wbetl_validate(stm_tx_t *tx)
     TIMER_T start;
     TIMER_T stop;
     int TUNABLE = 0;
-    int join = 0;
+    int gpu_enabled = 0;
     //pthread_t gpu_thread;
     long N = tx->r_set.nb_entries;
     long hundredth = (N / 100);
-    /*78 is good with sequential rset size 1048576*/
-    /*677 is good for random     rset size 1048576*/
+
     long cpu_end = hundredth * CPU_VALIDATION_PROPORTION; /* CPU_VALIDATION_PROPORTION=100 default */
     cpu_end += (N - (hundredth * 100));/*integer division remainder.*/
 
@@ -96,7 +95,7 @@ stm_wbetl_validate(stm_tx_t *tx)
             pthread_cond_signal(&validate_cond);
         pthread_mutex_unlock(&validate_mutex);
 
-        join = 1;
+        gpu_enabled = 1;
     }
 
     int i;
@@ -104,7 +103,7 @@ stm_wbetl_validate(stm_tx_t *tx)
     /* validate a chunk then increment global counter of how many chunks you have validated */
     for (i = cpu_end; i > 0; i--, r--) {
 
-        /*gone from threadComm[idx].valid check to gpu_exit_validity; cost wend down half from 1.463684 to 0.7 on cpu validation.*/
+        /*gone from threadComm[idx].valid check to gpu_exit_validity; cost wend down half from 1.463684 to 0.7 on cpu validation (130M rset).*/
         /*this reduces cpu-gpu contention*/
         if(gpu_exit_validity == 0){/*gpu told us to stop*/
             goto ret;
@@ -136,7 +135,7 @@ stm_wbetl_validate(stm_tx_t *tx)
     gpu_exit_validity = 1;
 ret:
 
-    if(join) {
+    if(gpu_enabled) {
         pthread_mutex_lock(&validate_mutex);
             while(!atomic_load_explicit(&validate_complete, memory_order_acquire)){
                 //printf("Waiting for validation to finish\n");
@@ -1055,7 +1054,6 @@ stm_wbetl_commit(stm_tx_t *tx)
 
   /* TARLOVSKY DEBUG */
   /* VALIDATE ALL THE TIME */
-
   if (unlikely(!stm_wbetl_validate(tx))) {
 
     /* Cannot commit */

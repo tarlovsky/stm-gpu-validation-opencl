@@ -25,8 +25,6 @@
 #include <string.h>
 #include <stm.h>
 
-#include "timer.h"
-
 #ifndef REDUCED_TM_API
     #include "thread.h"
 #endif
@@ -73,13 +71,17 @@
 
 #define TM_THREAD_EXIT()                \
                                         stm_get_stats("val_time", &(statistics_array[SPECIAL_THREAD_ID()].val_time_local) );\
+                                        stm_get_stats("cpu_val_time", &(statistics_array[SPECIAL_THREAD_ID()].cpu_val_time_local) );\
+                                        stm_get_stats("gpu_val_time", &(statistics_array[SPECIAL_THREAD_ID()].gpu_val_time_local) );\
                                         stm_get_stats("nb_commits", &(statistics_array[SPECIAL_THREAD_ID()].n_commits));\
                                         stm_get_stats("nb_aborts", &(statistics_array[SPECIAL_THREAD_ID()].n_aborts));\
                                         stm_get_stats("val_reads", &(statistics_array[SPECIAL_THREAD_ID()].n_val_reads));\
                                         stm_get_stats("nb_val_succ", &(statistics_array[SPECIAL_THREAD_ID()].n_val_succ));\
                                         stm_get_stats("nb_val_fail", &(statistics_array[SPECIAL_THREAD_ID()].n_val_fail));\
-                                        printf("%lf %llu %llu %llu %llu %llu\n",\
+                                        printf("%.9f %.9f %.9f %d %d %llu %d %d\n",\
                                                 statistics_array[SPECIAL_THREAD_ID()].val_time_local,\
+                                                statistics_array[SPECIAL_THREAD_ID()].cpu_val_time_local,\
+                                                statistics_array[SPECIAL_THREAD_ID()].gpu_val_time_local,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_commits,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_aborts,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_val_reads,\

@@ -1,7 +1,7 @@
 "R-Set Size" "48WKGPS-128WI-168threads SEQ-CST Normal execution (GPU)" "48WKGPS-128WI-168threads SEQ-CST No branching logic (GPU)" "48WKGPS-128WI-168threads SEQ-CST Work-items: don't load lock, load read-entry.(GPU)" "48WKGPS-128WI-168threads SEQ-CST Work-items don't load read-entry. Only calculate for loop start-end." "48WKGPS-128WI-168threads SEQ-CST No validation inside kernel. Basic kernel polling (GPU) in every WI" "Validation API func call, no work, no communication with the GPU"
-64 .00001055000000000000
-128 .00001075000000000000
-256 .00001060000000000000
+#64 .00001055000000000000
+#128 .00001075000000000000
+#256 .00001060000000000000
 512 .00001075000000000000
 1024 .00001095000000000000
 2048 .00001305000000000000

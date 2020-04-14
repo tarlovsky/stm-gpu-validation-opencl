@@ -939,16 +939,31 @@ stm_wbetl_commit(stm_tx_t *tx)
     goto release_locks;
 #endif /* IRREVOCABLE_ENABLED */
 
-  /* Try to validate (only if a concurrent transaction has committed since tx->start) */
-  if (unlikely(tx->start != t - 1 && !stm_wbetl_validate(tx))) {
-  //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
-    /* Cannot commit */
+  if(_tinystm.global_tid == 1){
+      /* always validate with 1 thread for thesis */
+      if (!stm_wbetl_validate(tx)) {
+          //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
+          /* Cannot commit */
 #if CM == CM_MODULAR
-    /* Abort caused by invisible reads */
+          /* Abort caused by invisible reads */
     tx->visible_reads++;
 #endif /* CM == CM_MODULAR */
-    stm_rollback(tx, STM_ABORT_VALIDATE);
-    return 0;
+          stm_rollback(tx, STM_ABORT_VALIDATE);
+          return 0;
+      }
+  }else{
+      /* Try to validate (only if a concurrent transaction has committed since tx->start) */
+      if (unlikely(tx->start != t - 1 && !stm_wbetl_validate(tx))) {
+          //if (!stm_wbetl_validate(tx)) {
+          //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
+          /* Cannot commit */
+#if CM == CM_MODULAR
+          /* Abort caused by invisible reads */
+    tx->visible_reads++;
+#endif /* CM == CM_MODULAR */
+          stm_rollback(tx, STM_ABORT_VALIDATE);
+          return 0;
+      }
   }
 
 #ifdef IRREVOCABLE_ENABLED

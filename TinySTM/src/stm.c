@@ -286,6 +286,7 @@ stm_init(void)
     }
   }
 #endif /* SIGNAL_HANDLER */
+  _tinystm.global_tid = 0;
   _tinystm.initialized = 1;
 }
 

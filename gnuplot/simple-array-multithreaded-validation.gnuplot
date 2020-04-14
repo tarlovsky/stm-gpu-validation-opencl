@@ -35,34 +35,34 @@ set title "Only CPU, threaded validation, sequential walk" font ",12"
 
 set title "1 validation worker threads/STM thread" font ",14"
 plot \
- 'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation' u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
- 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-random-walk/1-random-cpu-73-gpu-27' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "GLOBAL MINUMUM 1-random-cpu-73-gpu-27" dt new lc rgb "#b01313",\
+ 'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):(NaN)):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation' u ((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
+ 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-random-walk/1-random-cpu-73-gpu-27' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "GLOBAL MINUMUM 1-random-cpu-73-gpu-27" dt new lc rgb "#b01313",\
 
 
 set title "2 validation worker threads/STM thread" font ",14"
 plot \
- 'results-validation-array/TinySTM-threads-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation-8-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation-4-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation-2-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation-8-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):(NaN)):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation-4-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation-2-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-wbetl/2/array-r99-w1-random-walk/2-random-cpu-validation' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
 
 
 set title "4 validation worker threads/STM thread" font ",14"
 plot \
- 'results-validation-array/TinySTM-threads-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation-8-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation-4-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation-2-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation-8-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):(NaN)):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation-4-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation-2-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-wbetl/4/array-r99-w1-random-walk/4-random-cpu-validation' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
 
 
 set title "8 validation worker threads/STM thread" font ",14"
 plot \
- 'results-validation-array/TinySTM-threads-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation-8-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation-4-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-threads-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation-2-workers' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
- 'results-validation-array/TinySTM-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation' u ($0 + 3):2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation-8-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):(NaN)):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 8 validation worker / STM thread" lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation-4-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 4 validation worker / STM thread" dt new1 lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-threads-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation-2-workers' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 2 validation worker / STM thread" dt new lc rgb "black" pt 1,\
+ 'results-validation-array/TinySTM-wbetl/8/array-r99-w1-random-walk/8-random-cpu-validation' u ($0 + 3):((($10+$12)>0)?($8/(ceil($10)+ceil($12))):xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t "CPU -02 1 validation worker / STM thread" lw 2 lc rgb col_gold pt 1,\
 
 unset multiplot

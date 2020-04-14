@@ -27,6 +27,7 @@
 #define _STM_INTERNAL_H_
 
 #include <pthread.h>
+#include <stdatomic.h>
 #include <string.h>
 #include "tls.h"
 #include <stm.h>
@@ -369,6 +370,7 @@ typedef struct stm_tx {                 /* Transaction descriptor */
   unsigned int stat_locked_reads_failed;/* Failed reads of previous value */
 # endif /* READ_LOCKED_DATA */
 #endif /* TM_STATISTICS2 */
+  atomic_int tid;
 } stm_tx_t;
 
 /* This structure should be ordered by hot and cold variables */
@@ -406,6 +408,7 @@ typedef struct {
 #if CM == CM_MODULAR
   int (*contention_manager)(stm_tx_t *, stm_tx_t *, int);
 #endif /* CM == CM_MODULAR */
+  atomic_int global_tid;
   /* At least twice a cache line (256 bytes to be on the safe side) */
   char padding[CACHELINE_SIZE];
 } ALIGNED global_t;
@@ -1211,6 +1214,7 @@ int_stm_init_thread(void)
     perror("malloc tx");
     exit(1);
   }
+  tx->tid = atomic_fetch_add(&_tinystm.global_tid, 1);
   /* Set attribute */
   tx->attr = (stm_tx_attr_t)0;
   /* Set status (no need for CAS or atomic op) */

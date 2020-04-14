@@ -42,13 +42,13 @@ echo "set datafile separator whitespace" | tee -a $FILE1 $FILE2
 echo "set border lc rgb \"black\"" | tee -a $FILE1 $FILE2
 #echo "unset border" >> $FILE
 
-CO_OP_RAND_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-random-walk"
-HEAT_FILE_RAND="results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-random-walk/heat-file"
-HEAT_FILE_CPU_RAND="results-validation-array/TinySTM-wbetl/1a/array-r99-w1-random-walk/heat-file"
+CO_OP_RAND_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk"
+HEAT_FILE_RAND="results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/heat-file"
+HEAT_FILE_CPU_RAND="results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/heat-file"
 
-CO_OP_SEQ_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-sequential-walk"
-HEAT_FILE_SEQ="results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1a/array-r99-w1-sequential-walk/heat-file"
-HEAT_FILE_CPU_SEQ="results-validation-array/TinySTM-wbetl/1a/array-r99-w1-sequential-walk/heat-file"
+CO_OP_SEQ_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk"
+HEAT_FILE_SEQ="results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/heat-file"
+HEAT_FILE_CPU_SEQ="results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/heat-file"
 
 echo "set xlabel \"READ-SET SIZE\""  | tee -a $FILE1 $FILE2
 echo "set ylabel \"CPU VALIDATION PERCENTAGE\""  | tee -a $FILE1 $FILE2
@@ -69,10 +69,10 @@ for((i=0;i<=100;i++));do
   echo >> $HEAT_FILE_SEQ
 
   #draw TINYSTM UNTOUCHED plane accross
-  awk -vi=$i 'NR>4{print i, $1, $2}' "$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation" >> $HEAT_FILE_CPU_RAND
+  awk -vi=$i 'NR>1{print i, $1, $2}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation" >> $HEAT_FILE_CPU_RAND
   echo >> $HEAT_FILE_CPU_RAND
 
-  awk -vi=$i 'NR>4{print i, $1, $2}' "$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-sequential-walk/1a-sequential-cpu-validation" >> $HEAT_FILE_CPU_SEQ
+  awk -vi=$i 'NR>1{print i, $1, $2}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation" >> $HEAT_FILE_CPU_SEQ
   echo >> $HEAT_FILE_CPU_SEQ
 done
 

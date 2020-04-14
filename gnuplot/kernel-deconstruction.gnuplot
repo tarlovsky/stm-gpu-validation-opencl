@@ -43,6 +43,6 @@ plot \
  'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 5:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t col lw 1 lc rgb col_24 pt 1,\
  'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 6:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t col dt new lc rgb col_24 pt 8,\
  'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-ACQ-REL' u 7:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t col dt new lc rgb "black" pt 8,\
- 'results-validation-array/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation'      u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t col lc rgb col_gold pt 1,\
+ 'results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation'      u 2:xtic(sprintf("%d/ %.2fMB",$1, ($1*8)/1000000)) t col lc rgb col_gold pt 1,\
 
 unset multiplot

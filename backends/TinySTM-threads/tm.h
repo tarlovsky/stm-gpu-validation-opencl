@@ -78,7 +78,7 @@
                                         stm_get_stats("val_reads", &(statistics_array[SPECIAL_THREAD_ID()].n_val_reads));\
                                         stm_get_stats("nb_val_succ", &(statistics_array[SPECIAL_THREAD_ID()].n_val_succ));\
                                         stm_get_stats("nb_val_fail", &(statistics_array[SPECIAL_THREAD_ID()].n_val_fail));\
-                                        printf("%lf %llu %llu %llu %llu %llu\n",\
+                                        printf("%.9f %llu %llu %llu %llu %llu\n",\
                                                 statistics_array[SPECIAL_THREAD_ID()].val_time_local,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_commits,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_aborts,\
