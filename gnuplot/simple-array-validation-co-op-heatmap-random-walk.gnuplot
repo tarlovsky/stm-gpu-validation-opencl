@@ -11,7 +11,6 @@ col_24="#c724d6"
 col_48="#44cd1"
 col_gold="#8f8800"
 set cbrange [0:1.6]
-set logscale x
 set title "TRANSACTIONAL RANDOM ARRAY WALK CPU+IGPU CO-OPERATIVE VALIDATION STATIC ASSIGNMENT IN %" font ",14"
 set pm3d noborder
 set style fill transparent solid 1

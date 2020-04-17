@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 /*
  * File:
  *   stm.c
@@ -29,6 +30,7 @@
 #include <string.h>
 
 #include <pthread.h>
+
 #include <sched.h>
 
 #include "stm.h"

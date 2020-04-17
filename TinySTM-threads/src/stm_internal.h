@@ -23,9 +23,10 @@
  * under the terms of the MIT license.
  */
 
+
+
 #ifndef _STM_INTERNAL_H_
 #define _STM_INTERNAL_H_
-
 #include <pthread.h>
 #include <stdatomic.h>
 #include <string.h>
@@ -35,6 +36,8 @@
 #include "atomic.h"
 #include "gc.h"
 #include "inttypes.h"
+
+
 
 /*tarlovskyy*/
 #include "timer.h"
@@ -319,8 +322,6 @@ typedef struct cb_entry {               /* Callback entry */
   void *arg;                            /* Argument to be passed to function */
 } cb_entry_t;
 
-
-
 typedef struct stm_tx {                 /* Transaction descriptor */
   JMP_BUF* env;                          /* Environment for setjmp/longjmp */
   stm_tx_attr_t attr;                   /* Transaction attributes (user-specified) */
@@ -480,6 +481,63 @@ lock_idx_swap(unsigned int idx)
 }
 #endif /* LOCK_IDX_SWAP */
 
+/*
+ * Bind Thread
+ * */
+static int stm1[8]={1,5,2,6,3,7,0,4};
+static int stm2_2[2][2]={{4,6},{5,7}};
+static int stm2_4_8[2][4]={{0,2,4,6},{1,3,5,7}};
+
+static void bindWorkerThread(int worker_id) {
+    /* we know that SKL is 4c-8th */
+    /* try not set in your own thread IF: THREADS_TOT < 2*/
+    /* cannot place on my own core:
+     *
+     *
+     */
+    cpu_set_t cpuset;
+    pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    int tx_core = -1;
+    for(int i = 0; i < 8; i++){ /*only way of getting current cpu*/
+        if(CPU_ISSET(i, &cpuset)){
+            tx_core=i;
+            break;
+        }
+    }
+    //int cs = (worker_id * _tinystm.global_tid + VALTHREADS + tx_core) % 8;
+
+    int cs;
+    if(_tinystm.global_tid == 1){
+        /*if 1 stm thread*/
+        cs = stm1[worker_id];
+    }else if(_tinystm.global_tid == 2){
+        /*if 2 stm threads*/
+        if(VALTHREADS == 2){
+            cs = stm2_2[tx_core][worker_id];
+        }else{
+            cs = stm2_4_8[tx_core][worker_id % 4];
+        }
+    }else if(VALTHREADS == 8 && _tinystm.global_tid == 8){
+        /* map them to the same logical core because you want some degree of parallelism between transactions,
+         * because you want them to discover they must abort as soon as possible. */
+        cs = tx_core;
+    }else{
+        /* if 4,8 stm threads */
+        /*Even workers -> core 0,1,2,4; odd workers -> core 4,5,6,7*/
+        /*lay out worker_id's on the same core when processor
+         * going to be full of stm threads and worker threads anyway.*/
+        /* cpu full with 4,2 4,4 4,8; 8,2 8,4 8,8; (stm threads, workers) respectively*/
+        /* cpu has 8 hyper-threaded cores*/
+        /* might as well not interleave/mix them, and keep them on the same core for L1/L2 cache locality*/
+        cs = ((4*(worker_id % 2)+tx_core)%8);
+        //printf("%d\n", cs);
+    }
+
+    //printf("%d %d ASSIGNMENT:%d\n", tx_core, worker_id, cs);
+    CPU_ZERO(&cpuset);
+    CPU_SET(cs, &cpuset);
+    sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
+}
 
 /*
  * Initialize quiescence support.
@@ -1227,6 +1285,7 @@ int_stm_WaW(stm_tx_t *tx, volatile stm_word_t *addr, stm_word_t value, stm_word_
 
 static void* stm_wbetl_validate_parallel(void *txarg)
 {
+
     struct val_thread_data* data = (struct val_thread_data*) txarg;
     int my_rset_start;
     r_entry_t *r;
@@ -1238,11 +1297,13 @@ static void* stm_wbetl_validate_parallel(void *txarg)
     int Phase = 0;
     stm_tx_t* tx = data->tx;
     int id = data->val_worker_id; /*worker id, not tx id*/
-    //printf("WORKER THREAD %d BELONGING TO %d LAUNCHED\n", id, tx->tid);
-    //printf("Thread %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->n: %d\n", id, data, (unsigned long)data->start, (unsigned long)data->start + n, data->n);
-
 
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+    //bindWorkerThread(id);
+
+    //printf("WORKER THREAD %d BELONGING TO %d LAUNCHED\n", id, tx->tid);
+    //printf("Thread %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->n: %d\n", id, data, (unsigned long)data->start, (unsigned long)data->start + n, data->n);
 
     for(;;){
 

@@ -143,8 +143,8 @@ done
 # example results/TinySTM-wbetl/2/intruder++
 TEMP_FILE="$RESULTS_DIR/temp"
 
-
-#for((j=2; j<=8; j*=2)); do  #valthreads
+#worker threads
+for((j=2; j<=8; j*=2)); do  #valthreads
 #for((j=0; j<=100; j+=1)); do #co-op blind search
     # go into tinystm makefile.wbetl file and change VALTHREADS=$j
 
@@ -193,7 +193,7 @@ TEMP_FILE="$RESULTS_DIR/temp"
             sum=0
             avg=0
 
-            for k in {0..10}; do
+            for k in {0..30}; do
 
                 if [[ $sequential -eq 1 ]];then
                     echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
@@ -291,4 +291,4 @@ TEMP_FILE="$RESULTS_DIR/temp"
             echo "$i $mean_stddev_col" >> $FILE
         done
     done
-#done
+done

@@ -8,6 +8,7 @@ set datafile separator " "
 set cbrange [0:5]
 set palette rgb -21,-22,-23
 set key autotitle columnhead
+set xtics rotate by 45 right scale 0 font ",8" offset 0,0,-0.04
 plot 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file' matrix rowheaders columnheaders w image,\
      'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file' matrix rowheaders columnheaders using 1:2:((($3 > 0) ? (sprintf("%f",$3)) : (sprintf(" ")))) with labels
 

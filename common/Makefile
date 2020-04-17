@@ -1,5 +1,6 @@
 
-LIBS += -lstm -lrapl -lpthread -lrt -lOpenCL
+LIBS += -lstm -lrapl -lpthread -lrt
+
 
 .PHONY: default
 default: $(PROG)

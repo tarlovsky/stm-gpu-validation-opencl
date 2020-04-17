@@ -171,7 +171,7 @@ for((sequential=1; sequential<=1;sequential++)); do
         sum=0
         avg=0
 
-        for k in {0..9}; do
+        for k in {0..30}; do
 
             if [[ $sequential -eq 1 ]];then
                 echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i"

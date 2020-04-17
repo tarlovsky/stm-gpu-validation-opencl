@@ -51,7 +51,7 @@ declare -a thread_count=(1 2 4 8 16 32)
 #declare -a thread_count=(1a) #has to be manual
 
 declare -a blue_pallet=("69a2ff" "7dafff" "94bdff" "9cc2ff" "adcdff" "b5d2ff" "bdd7ff")
-declare -a grey_pallet=("696969" "808080" "A9A9A9" "C0C0C0" "D3D3D3" "DCDCDC" "696969")
+declare -a gray_pallet=("696969" "808080" "A9A9A9" "C0C0C0" "D3D3D3" "DCDCDC" "696969")
 
 if [[ -z $CACHE ]];
 then
@@ -196,9 +196,9 @@ do
     echo "set title \"${stm}\" font \",12\" tc rgb \"#8f8800\" offset 0,0" >> $FILE
     ########################################### Validation success rate #####################################################
     echo  "plot newhistogram, \\"  >> $FILE
-    echo  "      '$RESULTS_DIR/speedup-theoretical-${stm}' u 2:xtic(1) t col lc rgbcolor \"#${grey_pallet[0]}\" lt 1 fs pattern 3, \\"  >> $FILE
+    echo  "      '$RESULTS_DIR/speedup-theoretical-${stm}' u 2:xtic(1) t col lc rgbcolor \"#${gray_pallet[0]}\" lt 1 fs pattern 3, \\"  >> $FILE
     for ((i=3;i<${#thread_count[@]}+2;i++)) do
-        echo  "      '' u (\$${i}) t col lc rgbcolor \"#${grey_pallet[(($i-3 % ${#grey_pallet[@]}))]}\" lt 1 fs pattern 3, \\"  >> $FILE
+        echo  "      '' u (\$${i}) t col lc rgbcolor \"#${gray_pallet[(($i-3 % ${#gray_pallet[@]}))]}\" lt 1 fs pattern 3, \\"  >> $FILE
     done
     last_field_idx=$((${#thread_count[@]}+3))
     line_sum_idx=$((${#thread_count[@]}+2))
