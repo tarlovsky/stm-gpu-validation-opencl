@@ -418,19 +418,18 @@ typedef struct {
   stm_tx_t *threads;                    /* Head of linked list of threads */
   pthread_mutex_t quiesce_mutex;        /* Mutex to support quiescence */
   pthread_cond_t quiesce_cond;          /* Condition variable to support quiescence */
+  /*tarlovskyy*/
   pthread_mutex_t kernel_init_mutex;
   unsigned int kernel_init;
+
   /* tarlovskyy
    * How to pre-share the dynamically allocated read-sets in transactions?
-   * Allocate a huge chunk of memory and call it clsvmvalidation.c::r_entry_pool
-   * calls to stm_internal.h::stm_allocate_rs_entries(stm_tx_t *tx) return r_entry_pool[current_rset_slot]
+   * Allocate a huge chunk of memory and call it clsvmvalidation::r_entry_pool
+   * calls to stm_internal::stm_allocate_rs_entries(stm_tx_t *tx) return next atomically avail. r_entry_pool[current_rset_slot]
    * */
-  //pthread_mutex_t rset_pool_mutex;      /* Mutex to support clSVMAlloc-ed rset */
-  volatile unsigned int current_rset_slot;       /* Know which slot inside r_entry_pool to access */
+  volatile unsigned int current_rset_slot; /* Know which slot inside r_entry_pool to access */
 
-  //pthread_mutex_t validation_mutex;      /* Mutex to support clSVMAlloc-ed rset */
-
-#if CM == CM_MODULAR
+  #if CM == CM_MODULAR
   int vr_threshold;                     /* Number of retries before to switch to visible reads. */
 #endif /* CM == CM_MODULAR */
 #ifdef CONFLICT_TRACKING

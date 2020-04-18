@@ -22,28 +22,39 @@ unsigned int max_work_group_size;
 unsigned int NumberOfExecUnits;
 unsigned int NumberOfHwThreads;
 unsigned int SimdSize;
-unsigned int POS;
-unsigned int do_not_submerge;
+
+/*read-set cursor that tells where the gpu currently is */
+/*set by delegation thread in increments of MAX_OCCUPANCY (5376 on hd530)*/
+/*when cpu passes half of read-set it starts checking this variable every on read-set iteration*/
+atomic_ulong GPU_POS;
+
+
+/* tell the gpu to stop submersing into validation blocks.
+ * can be set only by transaction currently owning the gpu*/
+unsigned int halt_gpu;
+
+/* transaction threads compete for gpu at start of validation. TODO implement a try_lock_for(time) */
+/* at the moment it tries once and quits */
+atomic_flag gpu_employed;
 
 size_t global_dim[1];
 size_t lws[1];
 
-//data structures specific to this sample solution
 _Atomic unsigned int *pCommBuffer;
-volatile stm_word_t** locks; /* originally volatile */
+volatile stm_word_t** locks;
 thread_control_t* threadComm;
 r_entry_t **r_entry_pool;
-_Atomic unsigned int *shared_i;
 
-unsigned int kernel_init;
-unsigned int cl_global_phase;
+//_Atomic unsigned int *shared_i; // was replaced by GPU_POS
+
+unsigned int kernel_init;/*instant kernel initialized*/
+unsigned int cl_global_phase;/* global phase used to control igpu persistentkernel */
+
 
 /* This is a workaround fix for problem in ocl compiler: "kernel parameter cannot be declared as a pointer to a pointer". Create an array of structs and pass those as svmpointers*/
-/*  For reference:
- *  typedef struct r_entry_wrapper{
-        r_entry_t* entries; <-- these are the actual pointers to read sets memory start
-    }r_entry_wrapper_t;
- */
+/* typedef struct r_entry_wrapper{
+        r_entry_t* entries; <-- these is the actual pointer to read sets memory start
+    }r_entry_wrapper_t;*/
 r_entry_wrapper_t* r_entry_pool_cl_wrapper;
 
 unsigned int initial_rs_svm_buffers_ocl_global;
@@ -57,14 +68,25 @@ uintptr_t *debug_buffer_arg;
 uintptr_t *debug_buffer_arg1;
 uintptr_t *debug_buffer_arg2;
 
-/* specific to instant-kernel control */
+/* glogal number of workgroups occupied by instant kernel */
 unsigned int g_numWorkgroups;
 
 /* thread that waits on a condition to signal gpu validation */
-pthread_t validate_thread;
+pthread_t gpu_delegate_thread;
+
+/*used in validation to signal delegation thread to start working*/
 pthread_mutex_t validate_mutex;
-pthread_cond_t validate_cond, validate_complete_cond;
-atomic_int delegate_validate, validate_complete, need_gpu;
+
+
+pthread_cond_t validate_cond,/*gpu_delegate thread sleeps on this condition when there is no work*/
+               validate_complete_cond;/*cpu was sleeping on this condition while waiting for gpu to complete TODO unused */
+
+atomic_int delegate_validate, /*transaction doing validation signals gpu_delegation_thread*/
+           validate_complete, /*unnecessary when gpu-cpu work dynamically in opposite directions of the readset.*/
+           shutdown_gpu; /* set in --> cleanupCL() */
+
+/* trick that helps cpu-gpu co-op. reduces sharing threadComm[idx].valid. if gpu invalidates,
+* after gpu completes it sets gpu_exit_validity to 0|1.*/
 atomic_int gpu_exit_validity;
 
 /* <====================== Begin function definitions ======================> */
@@ -87,16 +109,18 @@ int initializeCL(volatile stm_word_t **locks_pointer){
         fprintf(stderr, "Error creating validation condition variable.\n");
         exit(1);
     }
+
     /*initialize atomic flag */
     atomic_store_explicit(&delegate_validate,0, memory_order_relaxed);
     atomic_store_explicit(&validate_complete,0,memory_order_relaxed);
-    atomic_store_explicit(&need_gpu,1,memory_order_relaxed);
+    atomic_store_explicit(&shutdown_gpu,0,memory_order_relaxed);
     atomic_store_explicit(&gpu_exit_validity, 1,memory_order_relaxed); /*use this variable to reduce contention on threadComm[idx].valid. set it after gpu exits with invalid state*/
+    atomic_flag_clear(&gpu_employed);
 
     cl_int status = 0;
     cl_uint platformCount = 0;
     found_cl_hardware = 0;
-    kernel_init=0;
+    kernel_init = 0;
 
     //PLATFORMS
     size_t infoSize;
@@ -472,9 +496,8 @@ int initializeDeviceData(){
     );
     memset(pCommBuffer, 0, sizeof(_Atomic unsigned int) * STATES);
 
-    shared_i = clSVMAlloc(g_clContext, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER | CL_MEM_SVM_ATOMICS,
-            sizeof(_Atomic unsigned int),
-            CACHELINE_SIZE);
+    /* replaced by GPU_POS */
+    //shared_i = clSVMAlloc(g_clContext, CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER | CL_MEM_SVM_ATOMICS,sizeof(_Atomic unsigned int),CACHELINE_SIZE);
 
     /*=======================================*/
     /* Pre-allocating a large chunk of read_entry arrays for transactions to use.          */
@@ -671,7 +694,7 @@ int launchInstantKernel(void){
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
     /*signal gpu signaler thread*/
-    pthread_create(&validate_thread, NULL, signal_gpu, (void*) i);
+    pthread_create(&gpu_delegate_thread, NULL, signal_gpu, (void*) i);
 
     return 0;
 }
@@ -679,10 +702,11 @@ int launchInstantKernel(void){
 void* signal_gpu(void *slot){
 
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-
+    int submersions;
+    int i;
     int idx = *((int *) slot); /*threadComm will be same as grabbedSlot*/
 
-    while (atomic_load_explicit(&need_gpu, memory_order_acquire)) {
+    while (!atomic_load_explicit(&shutdown_gpu, memory_order_acquire)) {
         /*wait on condition to launch validation from co-op routine*/
         pthread_mutex_lock(&validate_mutex);
             /* if no work we sleep on condition */
@@ -696,31 +720,35 @@ void* signal_gpu(void *slot){
             //printf("SIGNAL RECEIVED, VALIDATING ON GPU\n");
             threadComm[idx].reads_count = 0;
             threadComm[idx].r_pool_idx = idx; /* should put index in global comm: pcommbuffer */
-            //threadComm[idx].Phase = 0;
-            int submersions = threadComm[idx].submersions;
-            int j = 0;
 
+            submersions = threadComm[idx].submersions;
+            i = 0;
 
                 TIMER_READ(T1G);
-                while(j < submersions && !do_not_submerge){
+                while(i < submersions && !halt_gpu){
 
-                    //printf("GPU RUN %d\n", j);
-                    pCommBuffer[PHASE] = ++cl_global_phase; // TODO counters will overflow on gpu and cpu, not in my workloads though. up to 3 million read set safe. and up to 60 seconds  tpcc tested
-                    threadComm[idx].block_offset = j * global_dim[0];
+                    //printf("GPU RUN %d\n", i);
+                    /*TODO counters will overflow in long runnning tx.
+                     * Up to 3 million read set safe.
+                     * Up to 60 seconds tpcc tested*/
+                    pCommBuffer[PHASE] = ++cl_global_phase;
+                    threadComm[idx].block_offset = i * global_dim[0];
 
                     while (pCommBuffer[COMPLETE] < g_numWorkgroups);
-                    gpu_exit_validity = threadComm[idx].valid;/*store to cpu hot variable, avoid cache ping-ponging*/
+                    /*store to cpu hot variable, avoid cache ping-ponging*/
+                    gpu_exit_validity = threadComm[idx].valid;
+
                     //printf("gpu reads count %d \n",threadComm[idx].reads_count);
                     pCommBuffer[COMPLETE] = 0;
-                    POS += global_dim[0];
-                    //printf("G:%d\n", POS);
-                    j++;
+                    atomic_fetch_add_explicit(&GPU_POS, global_dim[0], memory_order_release);
+                    //GPU_POS += global_dim[0];
+                    //printf("G:%d\n", GPU_POS);
+                    i++;
                     //printf("GPU FINISHED VALIDATING\n");
                     TIMER_READ(T2G);
                 }
                 /*gpu finished parsing read set in blocks*/
                 // timer read moved to cpu stop
-
 
             //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));
         /* ##### */
@@ -792,10 +820,10 @@ int cleanupCL(void){
     //pCommBuffer[FINISH] = 1;
 
     atomic_store(&pCommBuffer[FINISH], 1);
-    atomic_store(&need_gpu,0);
-    //pthread_join(validate_thread, NULL);
-    //pthread_kill(validate_thread, 0);
-    pthread_cancel(&validate_thread);
+    atomic_store(&shutdown_gpu, 1);
+    //pthread_join(gpu_delegate_thread, NULL);
+    //pthread_kill(gpu_delegate_thread, 0);
+    pthread_cancel(&gpu_delegate_thread);
 
     clFlush(g_clCommandQueue);
 

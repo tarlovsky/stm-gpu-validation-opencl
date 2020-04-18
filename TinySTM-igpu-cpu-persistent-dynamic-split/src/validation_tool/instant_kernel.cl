@@ -186,7 +186,7 @@ __kernel void InstantKernel(
             //n = ( meta_p->nb_entries + gpu_chunk_capacity - 1 ) / gpu_chunk_capacity;//ceil, example (673+672-1)/672=2, which means every wi will look twice
             //for( int j = i * n_per_wi; j < (i * n_per_wi) + n_per_wi; j++ ){
                 /* absolutely required */
-                if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){ /* if not ordered to break. Comment during early benchmarking */
+                if(j < rset_size){ /* if not ordered to break. Comment during early benchmarking */
 
                     r_entry_t r = r_entry_wrapper_pool[0].entries[j];
 

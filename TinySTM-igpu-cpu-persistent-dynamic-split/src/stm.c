@@ -272,35 +272,24 @@ stm_init(void)
 
 
   /*===================== tarlovsky begin =====================*/
-
   /* will reserve an enormous pool of read sets to be used */
   /* initiallizeCL initializes this many read_set_slots and shares them with InstantKernel */
-  /* each slot is pointed to by thread private memory and has RW_SET_SIZE entries, aka 4096*/
-  initial_rs_svm_buffers_ocl_global = INITIAL_RS_SVM_BUFFERS_OCL + 1;//some becnhmarks like sb7 launch more txses
-    /*  mutex for grabbing allocated read_entry slots  */
-  /*if (pthread_mutex_init(&_tinystm.rset_pool_mutex, NULL) != 0) {
-    fprintf(stderr, "Error creating mutex\n");
-    exit(1);
-  }*/
+  /* each slot is pointed to by thread private memory and has RW_SET_SIZE entries, default 4096*/
+  /* some becnhmarks like sb7 launch more transactions for init (+1) */
+  initial_rs_svm_buffers_ocl_global = INITIAL_RS_SVM_BUFFERS_OCL + 1;
 
   if (pthread_mutex_init(&_tinystm.kernel_init_mutex, NULL) != 0) {
-    fprintf(stderr, "Error creating mutex\n");
-    exit(1);
+      fprintf(stderr, "Error creating mutex\n");
+      exit(1);
   }
-
-  /*if (pthread_mutex_init(&_tinystm.validation_mutex, NULL) != 0) {
-    fprintf(stderr, "Error creating mutex\n");
-    exit(1);
-  }*/
-
 
   /*  pass in _tinystm.locks reference to be passed into the intstantkernel
    *  because clsvmvalidation.c does not include stm_internal.h */
   /* insdie initializeCL:stm_word_t **locks_pointer = &(&_tinystm.locks[0]) */
   /* pointer to a pointer (&_tinystm.locks) gets created in caller's memory (here) */
   /* and persists after initializeCL returns */
-
   initializeCL(&_tinystm.locks);//current rset slot is post incremented. tells how many read_set_slots and active threads at the same time.
+  /*====================== tarlovsky end ======================*/
 
   if(_tinystm.locks == NULL){
     printf("COULD NOT INIT LOCKS - clSVMAlloc Error code: %d\n", _tinystm.locks);
@@ -312,11 +301,8 @@ stm_init(void)
 
   _tinystm.current_rset_slot = 0;
 
-
   //launchInstantKernel(); cannot stay here
   //pCommBuffer[PHASE]= ++cl_global_phase;
-
-  /*===================== tarlovsky end =====================*/
 
   CLOCK = 0;
 

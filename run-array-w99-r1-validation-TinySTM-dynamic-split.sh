@@ -170,7 +170,7 @@ for((sequential=0; sequential<=0;sequential++)); do
 
     #echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
 
-    for((i=65535;i<=134217728;i*=2));do
+    for((i=134217728;i<=134217728;i*=2));do
 
         #echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 
@@ -252,6 +252,6 @@ for((sequential=0; sequential<=0;sequential++)); do
           }
         ' <<< cat "$TEMP_FILE")
 
-        echo "$i $mean_stddev_col" >> $FILE
+        #echo "$i $mean_stddev_col" >> $FILE
     done
 done

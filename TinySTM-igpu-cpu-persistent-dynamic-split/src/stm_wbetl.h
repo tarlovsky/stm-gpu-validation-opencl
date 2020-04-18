@@ -60,58 +60,78 @@ stm_wbetl_validate(stm_tx_t *tx)
     TIMER_T stop;
     TIMER_READ(start);
 
-    int gpu_enabled=0;
-    do_not_submerge=0;
-    gpu_exit_validity = 1;
     int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
-    long halfH = N/2;
+    long halfN = N / 2;
+    int gpu_mine = 0;
     r_entry_t *r;
     stm_word_t l;
     r = ((r_entry_t*) (r_entry_pool[tx->rset_slot])) + N - 1;
-    POS = 0;
-
 
     /* don't even bother bothering GPU if read set < 512 */
     if(N >= RSET_MIN_GPU_VAL){
-        threadComm[idx].valid = 1;
-        threadComm[idx].nb_entries = N;
-        /* in how many parts can we break r_set.entries? */
 
-        /*this overshoots rset size but gets everything*/
-        //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
+        /* compete for gpu employment */
+        /* if it's not taken take it. Try once, move one */
+        if(!atomic_flag_test_and_set(&gpu_employed)) {
 
-        /*this does not overshoot. cpu will take care of tail.*/
-        threadComm[idx].submersions = N/global_dim[0];
+            //printf("winner employing gpu\n");
+            /*if off cpu does all the work and do not collect counters from gpu*/
+            gpu_mine = 1;
 
-        threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
-        threadComm[idx].w_set_end = (uintptr_t) (tx->w_set.entries + tx->w_set.nb_entries);
+            /* halted when invalidated */
+            halt_gpu = 0;
 
-        pthread_mutex_lock(&validate_mutex);
-            //printf("SIGNALING GPU SIGNALER THREAD..\n");
-            atomic_store_explicit(&delegate_validate, 1, memory_order_release);
-            pthread_cond_signal(&validate_cond);
-        pthread_mutex_unlock(&validate_mutex);
+            gpu_exit_validity = 1;
+            atomic_store_explicit(&GPU_POS, 0, memory_order_relaxed);
+            //GPU_POS = 0;
 
-        gpu_enabled = 1;
+            threadComm[idx].valid = 1;
+            threadComm[idx].nb_entries = N;
+
+            /* in how many parts can we break r_set.entries?:*/
+
+            /*this overshoots rset size but gets everything*/
+            //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
+
+            /*this does not overshoot. cpu will be fast enough to take care of gap.*/
+            threadComm[idx].submersions = N / global_dim[0];
+
+            threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
+            threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
+            halt_gpu = 0;
+
+            pthread_mutex_lock(&validate_mutex);
+                //printf("SIGNALING GPU SIGNALER THREAD..\n");
+                atomic_store_explicit(&delegate_validate, 1, memory_order_release);
+                pthread_cond_signal(&validate_cond);
+            pthread_mutex_unlock(&validate_mutex);
+        }
     }
 
-    int i;
+    int CPU_POS;
 
     TIMER_READ(T1C);
     /* validate a chunk then increment global counter of how many chunks you have validated */
     //printf("CPU [%d;%d]\n", N, i);
-    for (i = N; i > 0; i--, r--) {
+    for (CPU_POS = N - 1; CPU_POS >= 0; CPU_POS--, r--) {
+
         /* optimization: start checking two interthreaded variables only past half
          * because we know cpu is at least twice as fast than gpu */
-        if(i < halfH){
-            if(i < POS || !gpu_exit_validity){
-                printf("GPU CPU [%d,%d]\n", N-POS, POS);
+
+        //if(gpu_mine && CPU_POS < halfN){
+            //printf("GPU_POS%d\n", GPU_POS);
+            /* CPU_POS starts from 0      |    <- N-1
+             * GPU_POS starts from 0 ->      |    N-1
+             *
+             * gpu_exit_validity set when gpu re-emerges from validation */
+            if(CPU_POS < atomic_load_explicit(&GPU_POS, memory_order_relaxed) || !gpu_exit_validity){
+                printf("CPU:%d, GPU:%d WASTE:%d\n", N-1-CPU_POS, GPU_POS, MAX(GPU_POS-CPU_POS, CPU_POS-GPU_POS));
                 /*signal gpu to stop*/
-                do_not_submerge=1;
+                halt_gpu = 1;
                 goto ret;
             }
-        }
+        //}
 
         /*gone from threadComm[idx].valid check to gpu_exit_validity check; cost wend down half from 1.463684 to 0.7 on cpu validation (130M rset).*/
         /*this reduces cpu-gpu contention*/
@@ -129,22 +149,23 @@ stm_wbetl_validate(stm_tx_t *tx)
             w_entry_t *w = (w_entry_t *)LOCK_GET_ADDR(l);
             if (!(tx->w_set.entries <= w && w < tx->w_set.entries + tx->w_set.nb_entries))
             {
-                do_not_submerge=1;
-                threadComm[idx].valid = 0; /*tell gpu to stop*/
+                if(gpu_mine){halt_gpu = 1;}
+                threadComm[idx].valid = 0; /*tell gpu to stop in PRIVATE thread-validation-descriptor*/
                 goto ret;
             }
         } else {
             if (LOCK_GET_TIMESTAMP(l) != r->version) {
-                do_not_submerge=1;
-                threadComm[idx].valid = 0;/*tell gpu to stop*/
+                if(gpu_mine){halt_gpu = 1;}
+                threadComm[idx].valid = 0; /*tell gpu to stop in PRIVATE thread-validation-descriptor*/
                 goto ret;
             }
         }
     }
+
 ret:
     TIMER_READ(T2C);
 
-    //if(gpu_enabled) {
+    //if(gpu_employed) {
         //pthread_mutex_lock(&validate_mutex);
             //while(!atomic_load_explicit(&validate_complete, memory_order_acquire)){
                 //printf("Waiting for validation to finish\n");
@@ -162,6 +183,7 @@ ret:
     //tx->val_reads += threadComm[tx->rset_slot].reads_count;
 
     //printf("APU TIME: %f\n", TIMER_DIFF_SECONDS(start, stop));
+
     /* get validation start, whoever started earlier, cpu or gpu,
      * and who ever ended latest, cpu, or gpu. this way we have co-op valtime.*/
     //TIMER_T T1 = TIMER_MIN(T1C, T1G);
@@ -177,9 +199,11 @@ ret:
     tx->val_time += TIMER_DIFF_SECONDS(start, stop);
     tx->cpu_val_time += TIMER_DIFF_SECONDS(T1C, T2C);
 
-    if(do_not_submerge){
+    if(gpu_mine && halt_gpu){
         tx->val_reads_gpu += threadComm[tx->rset_slot].reads_count;
         tx->gpu_val_time += TIMER_DIFF_SECONDS(T1G, T2G);
+        /*relieve gpu of it's duty. Other transactions can now get the gpu*/
+        atomic_flag_clear_explicit(&gpu_employed, memory_order_release);
     }
 
     printf("CPU VALIDATED %d GPU VALIDATED %d\n", tx->val_reads, tx->val_reads_gpu);

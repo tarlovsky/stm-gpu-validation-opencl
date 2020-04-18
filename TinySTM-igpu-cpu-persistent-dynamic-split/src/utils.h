@@ -79,6 +79,8 @@
 # define ALIGNED                        /* None in the C standard */
 #endif /* ! (defined(__GNUC__) || defined(__INTEL_COMPILER)) */
 
+#define MAX(a,b) ((a) > (b) ? a : b)
+
 /*
  * malloc/free wrappers.
  */

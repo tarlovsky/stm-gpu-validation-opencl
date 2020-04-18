@@ -155,26 +155,47 @@ extern unsigned int max_work_group_size;
 extern unsigned int NumberOfExecUnits;
 extern unsigned int NumberOfHwThreads;
 extern unsigned int SimdSize;
-extern unsigned int POS;
-extern unsigned int do_not_submerge;
+
+/*read-set cursor that tells where the gpu currently is */
+/*set by delegation thread in increments of MAX_OCCUPANCY (5376 on hd530)*/
+/*when cpu passes half of read-set it starts checking this variable every on read-set iteration*/
+extern atomic_ulong GPU_POS;
+
+/* tell the gpu to stop submersing into validation blocks.
+ * can be set only by transaction currently owning the gpu*/
+extern unsigned int halt_gpu;
+
+/* transaction threads compete for gpu at start of validation. TODO implement a try_lock_for(time) */
+/* at the moment it tries once and quits */
+extern atomic_flag gpu_employed;
 
 //Create the NDRange
 extern size_t global_dim[1];
 extern size_t lws[1];
 extern _Atomic unsigned int *pCommBuffer;
-extern _Atomic unsigned int *shared_i;
-extern unsigned int cl_global_phase;
+//extern _Atomic unsigned int *shared_i; /*replaced by non atomic GPU_POS*/
+extern unsigned int cl_global_phase; /* global phase used to control igpu persistentkernel */
 extern unsigned int initial_rs_svm_buffers_ocl_global;
 extern r_entry_t **r_entry_pool;
 extern r_entry_wrapper_t* r_entry_pool_cl_wrapper;
 extern volatile stm_word_t **locks;
 
 /* thread that waits on a condition to signal gpu validation */
-extern pthread_t validate_thread;
+extern pthread_t gpu_delegate_thread;
+
+/*used in validation to signal delegation thread to start working*/
 extern pthread_mutex_t validate_mutex;
-extern pthread_cond_t validate_cond, validate_complete_cond;
-extern atomic_int delegate_validate, validate_complete, need_gpu;
-extern atomic_int gpu_exit_validity; /*trick that helps cpu-gpu co-op. reduces sharing threadComm[idx].valid. if gpu invalidates, after exit it sets gpu_exit_validity to 0.*/
+
+extern pthread_cond_t validate_cond,/*gpu_delegate thread sleeps on this condition when there is no work*/
+                      validate_complete_cond;/*cpu was sleeping on this condition while waiting for gpu to complete TODO unused */
+
+extern atomic_int delegate_validate, /*transaction doing validation signals gpu_delegation_thread*/
+                  validate_complete, /*unnecessary when gpu-cpu work dynamically in opposite directions of the readset TODO unused.*/
+                  shutdown_gpu; /* set in --> cleanupCL() */
+
+/* trick that helps cpu-gpu co-op. reduces sharing threadComm[idx].valid. if gpu invalidates,
+ * after gpu completes it sets gpu_exit_validity to 0|1.*/
+extern atomic_int gpu_exit_validity;
 
 /*                     Debug Buffers                      */
 extern uintptr_t *debug_buffer_arg;
@@ -185,7 +206,7 @@ extern thread_control_t* threadComm;/* meta used to pass which validation set to
 
 extern cl_kernel cl_kernel_worker;
 extern cl_kernel cl_kernel_worker_temp;
-extern unsigned int kernel_init;
+extern unsigned int kernel_init; /*instant kernel initialized*/
 
 int initializeHost(void);
 void testStatus(int status, char *errorMsg);
