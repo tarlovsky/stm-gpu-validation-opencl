@@ -58,40 +58,38 @@ stm_wbetl_validate(stm_tx_t *tx)
     //printf("R_SET_SLOT/THREAD %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d\n",tx->rset_slot, tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries);
     TIMER_T start;
     TIMER_T stop;
-    int TUNABLE = 0;
-    int gpu_enabled = 0;
-    //pthread_t gpu_thread;
+    TIMER_READ(start);
+
+    int gpu_enabled=0;
+    do_not_submerge=0;
+    gpu_exit_validity = 1;
+    int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
-    long hundredth = (N / 100);
-
-    long cpu_end = hundredth * CPU_VALIDATION_PROPORTION; /* CPU_VALIDATION_PROPORTION=100 default */
-    cpu_end += (N - (hundredth * 100));/*integer division remainder.*/
-
-    //printf("Sending %d to cpu, %d to gpu, remmainder goes to CPU %d\n", cpu_end, N-cpu_end, remainder);
-
+    long halfH = N/2;
     r_entry_t *r;
     stm_word_t l;
     r = ((r_entry_t*) (r_entry_pool[tx->rset_slot])) + N - 1;
-    int idx = tx->rset_slot;
+    POS = 0;
 
-    threadComm[idx].valid = 1;
 
-    TIMER_READ(start);
-    /*don't even bother bothering GPU if read set < 512 or cpu==100%*/
-    if(N >= RSET_MIN_GPU_VAL && CPU_VALIDATION_PROPORTION < 100){
+    /* don't even bother bothering GPU if read set < 512 */
+    if(N >= RSET_MIN_GPU_VAL){
+        threadComm[idx].valid = 1;
+        threadComm[idx].nb_entries = N;
+        /* in how many parts can we break r_set.entries? */
 
-        threadComm[idx].nb_entries = (N - cpu_end);
+        /*this overshoots rset size but gets everything*/
+        //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
+
+        /*this does not overshoot. cpu will take care of tail.*/
+        threadComm[idx].submersions = N/global_dim[0];
+
         threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
         threadComm[idx].w_set_end = (uintptr_t) (tx->w_set.entries + tx->w_set.nb_entries);
 
-        //pthread_attr_t attr;
-        //pthread_attr_init(&attr);
-        //pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-        /*signal gpu signaler thread*/
-        //pthread_create(&gpu_thread, NULL, signal_gpu, (void*) i);
         pthread_mutex_lock(&validate_mutex);
             //printf("SIGNALING GPU SIGNALER THREAD..\n");
-            atomic_store_explicit(&validate, 1, memory_order_release);
+            atomic_store_explicit(&delegate_validate, 1, memory_order_release);
             pthread_cond_signal(&validate_cond);
         pthread_mutex_unlock(&validate_mutex);
 
@@ -99,15 +97,25 @@ stm_wbetl_validate(stm_tx_t *tx)
     }
 
     int i;
+
     TIMER_READ(T1C);
     /* validate a chunk then increment global counter of how many chunks you have validated */
-    for (i = cpu_end; i > 0; i--, r--) {
-
-        /*gone from threadComm[idx].valid check to gpu_exit_validity; cost wend down half from 1.463684 to 0.7 on cpu validation (130M rset).*/
-        /*this reduces cpu-gpu contention*/
-        if(gpu_exit_validity == 0){/*gpu told us to stop*/
-            goto ret;
+    //printf("CPU [%d;%d]\n", N, i);
+    for (i = N; i > 0; i--, r--) {
+        /* optimization: start checking two interthreaded variables only past half
+         * because we know cpu is at least twice as fast than gpu */
+        if(i < halfH){
+            if(i < POS || !gpu_exit_validity){
+                printf("GPU CPU [%d,%d]\n", N-POS, POS);
+                /*signal gpu to stop*/
+                do_not_submerge=1;
+                goto ret;
+            }
         }
+
+        /*gone from threadComm[idx].valid check to gpu_exit_validity check; cost wend down half from 1.463684 to 0.7 on cpu validation (130M rset).*/
+        /*this reduces cpu-gpu contention*/
+
 
 #ifdef TM_STATISTICS
         tx->val_reads++;
@@ -121,33 +129,37 @@ stm_wbetl_validate(stm_tx_t *tx)
             w_entry_t *w = (w_entry_t *)LOCK_GET_ADDR(l);
             if (!(tx->w_set.entries <= w && w < tx->w_set.entries + tx->w_set.nb_entries))
             {
+                do_not_submerge=1;
                 threadComm[idx].valid = 0; /*tell gpu to stop*/
                 goto ret;
             }
         } else {
             if (LOCK_GET_TIMESTAMP(l) != r->version) {
+                do_not_submerge=1;
                 threadComm[idx].valid = 0;/*tell gpu to stop*/
                 goto ret;
             }
         }
     }
-    TIMER_READ(T2C);
-    gpu_exit_validity = 1;
 ret:
+    TIMER_READ(T2C);
 
-    if(gpu_enabled) {
-        pthread_mutex_lock(&validate_mutex);
-            while(!atomic_load_explicit(&validate_complete, memory_order_acquire)){
+    //if(gpu_enabled) {
+        //pthread_mutex_lock(&validate_mutex);
+            //while(!atomic_load_explicit(&validate_complete, memory_order_acquire)){
                 //printf("Waiting for validation to finish\n");
-                pthread_cond_wait(&validate_complete_cond, &validate_mutex);
-            };
-            atomic_store_explicit(&validate_complete, 0, memory_order_release);//for next iteration
-        pthread_mutex_unlock(&validate_mutex);
+                //pthread_cond_wait(&validate_complete_cond, &validate_mutex);
+            //};
+            //atomic_store_explicit(&validate_complete, 0, memory_order_release);//for next iteration
+        //pthread_mutex_unlock(&validate_mutex);
 
         //printf("GPU VALIDATED %d\n", threadComm[tx->rset_slot].reads_count);
-        tx->val_reads += threadComm[tx->rset_slot].reads_count;
-    }
+        //tx->val_reads += threadComm[tx->rset_slot].reads_count;
+    //}
     TIMER_READ(stop);
+
+    //printf("GPU VALIDATED %d\n", threadComm[tx->rset_slot].reads_count);
+    //tx->val_reads += threadComm[tx->rset_slot].reads_count;
 
     //printf("APU TIME: %f\n", TIMER_DIFF_SECONDS(start, stop));
     /* get validation start, whoever started earlier, cpu or gpu,
@@ -158,18 +170,22 @@ ret:
     //printf("CPU [%lld.%.9ld %lld.%.9ld]\n", (long long) (T1C).tv_sec, (T1C).tv_nsec, (long long) (T2C).tv_sec , (T2C).tv_nsec);
     //printf("GPU [%lld.%.9ld %lld.%.9ld]\n", (long long) (T1G).tv_sec, (T1G).tv_nsec, (long long) (T2G).tv_sec , (T2G).tv_nsec);
     //printf("APU [%lld.%.9ld %lld.%.9ld]\n", (long long) (T1).tv_sec , T1.tv_nsec, (long long) (T2).tv_sec , T2.tv_nsec);
-    //printf("VAL_READS_CPU:%d, VAL_READS_GPU:%d \n", tx->val_reads, tx->val_reads_gpu);
     //printf("APU TIME: %f\n", TIMER_DIFF_SECONDS(T1, T2));
-    //printf("CPU VALIDATED %d GPU VALIDATED %d\n", tx->val_reads, tx->val_reads_gpu);
+
     //tx->val_time += TIMER_DIFF_SECONDS(TIMER_MIN(T1C, T1G), TIMER_MAX(T2C, T2G));
+
     tx->val_time += TIMER_DIFF_SECONDS(start, stop);
     tx->cpu_val_time += TIMER_DIFF_SECONDS(T1C, T2C);
-    tx->gpu_val_time += TIMER_DIFF_SECONDS(T1G, T2G);
+
+    if(do_not_submerge){
+        tx->val_reads_gpu += threadComm[tx->rset_slot].reads_count;
+        tx->gpu_val_time += TIMER_DIFF_SECONDS(T1G, T2G);
+    }
+
+    printf("CPU VALIDATED %d GPU VALIDATED %d\n", tx->val_reads, tx->val_reads_gpu);
+
     tx->stat_val_succ += threadComm[idx].valid ;//faster than a branch i guess, v is either 1 or 0
     tx->stat_val_fail += !threadComm[idx].valid;//
-
-    //pCommBuffer[FINISH]=1;
-    //exit(1);
 
     return threadComm[tx->rset_slot].valid;
 }

@@ -5,6 +5,8 @@
 
 typedef struct padded_statistics {
     double val_time_local;
+    double cpu_val_time_local;
+    double gpu_val_time_local;
     unsigned long n_commits;
     unsigned long n_aborts;
     unsigned long long n_val_reads;

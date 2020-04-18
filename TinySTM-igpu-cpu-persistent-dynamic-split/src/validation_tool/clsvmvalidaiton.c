@@ -22,6 +22,8 @@ unsigned int max_work_group_size;
 unsigned int NumberOfExecUnits;
 unsigned int NumberOfHwThreads;
 unsigned int SimdSize;
+unsigned int POS;
+unsigned int do_not_submerge;
 
 size_t global_dim[1];
 size_t lws[1];
@@ -62,7 +64,7 @@ unsigned int g_numWorkgroups;
 pthread_t validate_thread;
 pthread_mutex_t validate_mutex;
 pthread_cond_t validate_cond, validate_complete_cond;
-atomic_int validate, validate_complete, need_gpu;
+atomic_int delegate_validate, validate_complete, need_gpu;
 atomic_int gpu_exit_validity;
 
 /* <====================== Begin function definitions ======================> */
@@ -86,7 +88,7 @@ int initializeCL(volatile stm_word_t **locks_pointer){
         exit(1);
     }
     /*initialize atomic flag */
-    atomic_store_explicit(&validate,0, memory_order_relaxed);
+    atomic_store_explicit(&delegate_validate,0, memory_order_relaxed);
     atomic_store_explicit(&validate_complete,0,memory_order_relaxed);
     atomic_store_explicit(&need_gpu,1,memory_order_relaxed);
     atomic_store_explicit(&gpu_exit_validity, 1,memory_order_relaxed); /*use this variable to reduce contention on threadComm[idx].valid. set it after gpu exits with invalid state*/
@@ -637,14 +639,14 @@ int launchInstantKernel(void){
     pCommBuffer[FINISH] = 0;
     pCommBuffer[COMPLETE] = 0;
 
-    if(CPU_VALIDATION_PROPORTION < 100) {
-        status = clEnqueueNDRangeKernel(g_clCommandQueue, cl_kernel_worker, 1, NULL, global_dim, lws, 0, NULL, NULL);
-        //testStatus(status, "clEnqueueNDRangeKernel error");
-        clFlush(g_clCommandQueue);
 
-        //wait before GPU is ready , each thread will signal
-        while (pCommBuffer[SPIN] < NumberOfHwThreads);
-    }
+    status = clEnqueueNDRangeKernel(g_clCommandQueue, cl_kernel_worker, 1, NULL, global_dim, lws, 0, NULL, NULL);
+    //testStatus(status, "clEnqueueNDRangeKernel error");
+    clFlush(g_clCommandQueue);
+
+    //wait before GPU is ready , each thread will signal
+    while (pCommBuffer[SPIN] < NumberOfHwThreads);
+
     //TIMER_READ(stop1);
     //printf("kernel exec time %f\n", TIMER_DIFF_SECONDS(start1, stop1));
     //clFlush(g_clCommandQueue);
@@ -676,13 +678,15 @@ int launchInstantKernel(void){
 
 void* signal_gpu(void *slot){
 
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
     int idx = *((int *) slot); /*threadComm will be same as grabbedSlot*/
 
     while (atomic_load_explicit(&need_gpu, memory_order_acquire)) {
         /*wait on condition to launch validation from co-op routine*/
         pthread_mutex_lock(&validate_mutex);
             /* if no work we sleep on condition */
-            while (!atomic_load_explicit(&validate, memory_order_acquire)) {
+            while (!atomic_load_explicit(&delegate_validate, memory_order_acquire)) {
                 pthread_cond_wait(&validate_cond, &validate_mutex);
             }
         pthread_mutex_unlock(&validate_mutex);/*should release lock after cond wait checked, because main thread cant get cond signaled*/
@@ -690,33 +694,45 @@ void* signal_gpu(void *slot){
         /* ##### */
             /*do work*/
             //printf("SIGNAL RECEIVED, VALIDATING ON GPU\n");
-            threadComm[idx].n_per_wi = (threadComm[idx].nb_entries + global_dim[0] - 1) / global_dim[0];//ceil division of work left for GPU. total work-cpu work = gpu work
-
             threadComm[idx].reads_count = 0;
             threadComm[idx].r_pool_idx = idx; /* should put index in global comm: pcommbuffer */
-            threadComm[idx].complete = 0;
             //threadComm[idx].Phase = 0;
+            int submersions = threadComm[idx].submersions;
+            int j = 0;
 
-            /* ALL OF THIS HAS TO BE SEQ_CST, overhead is not so large. IF YOU REMOVE SEQ_CST ANYWHERE,
-             * KERNEL BREAKS WHEN THERE IS NO VALIDATION LOGIC TO SERIALIZE SOME PARTS OF THE KERNEL */
 
-            pCommBuffer[PHASE] = ++cl_global_phase; // TODO counters will overflow on gpu and cpu, not in my workloads though. up to 3 million read set safe. and up to 60 seconds  tpcc tested
-            TIMER_READ(T1G);
-                while (pCommBuffer[COMPLETE] < g_numWorkgroups);
-            TIMER_READ(T2G);
-            gpu_exit_validity = threadComm[idx].valid; //atomic_store_explicit(&gpu_exit_validity, threadComm[idx].valid, memory_order_release);
+                TIMER_READ(T1G);
+                while(j < submersions && !do_not_submerge){
+
+                    //printf("GPU RUN %d\n", j);
+                    pCommBuffer[PHASE] = ++cl_global_phase; // TODO counters will overflow on gpu and cpu, not in my workloads though. up to 3 million read set safe. and up to 60 seconds  tpcc tested
+                    threadComm[idx].block_offset = j * global_dim[0];
+
+                    while (pCommBuffer[COMPLETE] < g_numWorkgroups);
+                    gpu_exit_validity = threadComm[idx].valid;/*store to cpu hot variable, avoid cache ping-ponging*/
+                    //printf("gpu reads count %d \n",threadComm[idx].reads_count);
+                    pCommBuffer[COMPLETE] = 0;
+                    POS += global_dim[0];
+                    //printf("G:%d\n", POS);
+                    j++;
+                    //printf("GPU FINISHED VALIDATING\n");
+                    TIMER_READ(T2G);
+                }
+                /*gpu finished parsing read set in blocks*/
+                // timer read moved to cpu stop
+
 
             //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));
-            pCommBuffer[COMPLETE] = 0;
         /* ##### */
 
-        pthread_mutex_lock(&validate_mutex);
-            atomic_store_explicit(&validate_complete, 1, memory_order_release);
-            pthread_cond_signal(&validate_complete_cond);
-            atomic_store_explicit(&validate, 0, memory_order_release);/*so that i dont start again*/
-        pthread_mutex_unlock(&validate_mutex);
+        //pthread_mutex_lock(&validate_mutex);
+            //atomic_store_explicit(&validate_complete, 1, memory_order_release);
+            //pthread_cond_signal(&validate_complete_cond);
+            atomic_store_explicit(&delegate_validate, 0, memory_order_release);/*so that i dont start again*/
+        //pthread_mutex_unlock(&validate_mutex);
 
     }
+
     pCommBuffer[FINISH]=1;
 
 #ifdef DEBUG_VALIDATION
@@ -779,7 +795,7 @@ int cleanupCL(void){
     atomic_store(&need_gpu,0);
     //pthread_join(validate_thread, NULL);
     //pthread_kill(validate_thread, 0);
-    //pthread_cancel(&validate_thread);
+    pthread_cancel(&validate_thread);
 
     clFlush(g_clCommandQueue);
 
@@ -813,7 +829,7 @@ int cleanupCL(void){
 
     clSVMFree(g_clContext, *locks);
     clSVMFree(g_clContext, threadComm);
-    clSVMFree(g_clContext, pCommBuffer);
+    //clSVMFree(g_clContext, pCommBuffer);
     clSVMFree(g_clContext, r_entry_pool_cl_wrapper);
     clSVMFree(g_clContext, r_entry_pool);
 

@@ -1306,6 +1306,8 @@ int_stm_init_thread(void)
   tx->stat_val_succ = 0;
   tx->stat_val_fail = 0;
   tx->val_time = 0.0;
+  tx->cpu_val_time = 0.0;
+  tx->gpu_val_time = 0.0;
   //tx->rset_slot = 0;
   tx->rset_slot = AO_fetch_and_add_full(&_tinystm.current_rset_slot, 1);
   //printf("TX SLOT %d\n", tx->rset_slot);

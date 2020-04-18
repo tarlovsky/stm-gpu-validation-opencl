@@ -27,23 +27,15 @@ else
 fi
 #######################################################################################
 
-global_stm="TinySTM"
-
-if [[ -z "$1" ]]
-then
-  threads=$1
-else
-  threads=$1
-fi
-
-mode="wbetl"
+global_stm="TinySTM-igpu-cpu-persistent-dynamic-split"
+threads=1
+mode=wbetl
 # THREADS
 #######################################################################################
 # ST
 if [[ -z "$global_stm" ]]
 then
     echo "Third argument must be an STM (case sensitive): TinySTM, TinySTM-igpu"
-    exit;
 fi
 
 #if STM-MODE set add it to results dir and Makefile to lookup when compiling with that specific makefile
@@ -52,16 +44,27 @@ then
     #add stm mode to end of it's specific makefile name
     MAKEFILE+="-$mode"
     echo "Stm makefile is $MAKEFILE."
-else
-    echo "MUST specify stm mode for makefile"
-    exit;
 fi
 
+#######################################################################################
+#change makefile of the selected STM + mode only for OpenCL igpu validation
+#check if results dir is cpu or gpu
+
+if [[ "$global_stm" == *"TinySTM-igpu"* ]];
+then
+    # sets compiler define that is read within stm_init() in TinySTM.
+    sed -i "s/INITIAL_RS_SVM_BUFFERS_OCL=.*/INITIAL_RS_SVM_BUFFERS_OCL=$threads/g" "./$global_stm/$MAKEFILE"
+    # this can be moved to run-benches to run only once
+    rm ./$global_stm/src/validation_tool/instant_kernel.bin #remove it on first run then it gets built again
+    rm ./$global_stm/src/validation_tool/regular_kernel.bin #remove it on first run then it gets built again
+fi
 
 RESULTS_DIR+='-validation-array'
 RESULTS_DIR+="/$global_stm" #every backend has their own results sub-dir
 
-
+# example: results/ $global_stm:TinySTM - $4:wbetl
+#######################################################################################
+#if STM-MODE set add it to results dir and Makefile to lookup when compiling with that specific makefile
 if [[ ! -z "$mode" ]]
 then
     echo $mode
@@ -146,60 +149,65 @@ done
 # example results/TinySTM-wbetl/2/intruder++
 TEMP_FILE="$RESULTS_DIR/temp"
 
+#worker threads
+
+#for((j=0; j<=100; j+=1)); do #co-op blind search
+    # go into tinystm makefile.wbetl file and change VALTHREADS=$j
+
+
+#sed -i "s/CPU_VALIDATION_PROPORTION=.*/CPU_VALIDATION_PROPORTION=$j/g" "./$global_stm/$MAKEFILE"
+
 build_stm_and_benchmark
 
-for((sequential=0; sequential<=1;sequential++)); do
+for((sequential=0; sequential<=0;sequential++)); do
     #vary cpu validation percentage
 
     if [[ $sequential -eq 1 ]];then
-      FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation"
-      #FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation-debug"
-      echo "$FILE"
+        FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-sequential-cpu-validation"
     else
-      FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation"
-      #FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation-debug"
-      echo "$FILE"
+        FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation"
     fi
 
-    echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
+    #echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
 
-    for((i=512;i<=134217728;i*=2));do
+    for((i=65535;i<=134217728;i*=2));do
 
-        echo "\"Validation time(S)\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
+        #echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 
         sum=0
         avg=0
 
-        for k in {0..30}; do
+        for k in {0..5}; do
 
             if [[ $sequential -eq 1 ]];then
-                echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i"
+                echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
             else
-                echo "RUN:$((k+1)), $threads threads, random array walk, $global_stm rset:$i"
+                echo "RUN:$((k+1)), $threads threads, random array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
             fi
 
-            #./array/array -n$threads -r$i -s$sequential
-            progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
-            echo "$progout"
+            ./array/array -n$threads -r$i -s$sequential
+            #progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
+            #echo "$progout"
 
             threads_out=$(head -n "$threads" <<< "$progout")
             exec_time_power=($(tail -n 2 <<< "$progout"))
 
             # ADD validation times from individual threads = total validation time
             val_time=$(awk '{ total += $1 } END { printf "%f", total }' <<< "$threads_out")
-            commits=$(awk '{ total += $2 } END { print total }' <<< "$threads_out")
-            aborts=$(awk '{ total += $3 } END { print total }' <<< "$threads_out")
-            val_reads=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
-            validation_succ=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
-            validation_fail=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
+            cpu_val_time=$(awk '{ total += $2 } END { printf "%f", total }' <<< "$threads_out")  #no good for anything except co-op
+            gpu_val_time=$(awk '{ total += $3 } END { printf "%f", total }' <<< "$threads_out")  #no good for anything except co-op
+            commits=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
+            aborts=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
+            val_reads=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
+            validation_succ=$(awk '{ total += $7 } END { print total }' <<< "$threads_out")
+            validation_fail=$(awk '{ total += $8 } END { print total }' <<< "$threads_out")
 
             if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
             #restart
               echo "PROGRAM DID NOT RETURN CORRECT VALUES"
             else
-              echo "${val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
+              echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
             fi
-
 
         done
         #throw mean and stdev into file
@@ -228,8 +236,8 @@ for((sequential=0; sequential<=1;sequential++)); do
                         p_avg=avg[i]
                         p_sqrt=sqrt(sumsq[i]/NR)
 
-                        f_avg="%.9f "
-                        f_sqrt="%.9f "
+                        f_avg="%f "
+                        f_sqrt="%f "
 
                         if(p_avg==0){
                             f_avg="%d "

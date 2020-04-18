@@ -77,8 +77,8 @@ typedef struct thread_control{
     atomic_int reads_count; /* stats */
     atomic_int valid;
     atomic_int Phase;
-    atomic_int complete;
-    unsigned int n_per_wi;
+    unsigned long submersions;
+    unsigned int block_offset;
     unsigned int nb_entries;
 } thread_control_t;
 
@@ -122,7 +122,7 @@ __kernel void InstantKernel(
         atomic_fetch_add_explicit(
                 &SVMComm[SPIN],
                 1,
-                memory_order_release,
+                memory_order_seq_cst,
                 memory_scope_all_svm_devices);
     }
 
@@ -150,8 +150,9 @@ __kernel void InstantKernel(
 	/* initialize SLM for work-group communication */
 	__local int Finish;
 	__local long ReqPhase;
-    __local uint n;
-    __local uint n_per_wi;
+    __local uint block_offset;
+    __local uint rset_size;
+    __local atomic_int reads_validated;
 
 	Finish = 0;
 	ReqPhase = 0;
@@ -160,16 +161,19 @@ __kernel void InstantKernel(
 
 	__private uint Phase = 0;
     __private uint i = get_global_id(0);
+    __private uint j;
 
 	while(1){
 
 		if ( get_local_id(0) == 0 ) {
+		    atomic_store_explicit(&reads_validated, 0, memory_order_release, memory_scope_work_group);
             /* acquire memory fence is inserted right before atomic operation, so all write results of other work-items
              * within operation scope become visible to current work-item before atomic operation starts.*/
-            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_acquire, memory_scope_all_svm_devices);
-			ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_acquire, memory_scope_all_svm_devices);
-            n = threadComm->nb_entries;
-            n_per_wi = threadComm->n_per_wi;
+            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_release, memory_scope_all_svm_devices);
+			ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_release, memory_scope_all_svm_devices);
+            block_offset = threadComm->block_offset;
+            rset_size = threadComm->nb_entries;
+            //n_per_wi = threadComm->n_per_wi;
 		}
 
 		barrier( CLK_LOCAL_MEM_FENCE );
@@ -177,16 +181,17 @@ __kernel void InstantKernel(
 		if(Finish != 0) return;
 
         if( Phase < ReqPhase ){//some thread subscribed to this work-group
-
+                j = (i + block_offset);
             //how many read entries will each WI do: n
             //n = ( meta_p->nb_entries + gpu_chunk_capacity - 1 ) / gpu_chunk_capacity;//ceil, example (673+672-1)/672=2, which means every wi will look twice
-            for( int j = i * n_per_wi; j < (i * n_per_wi) + n_per_wi; j++ ){
+            //for( int j = i * n_per_wi; j < (i * n_per_wi) + n_per_wi; j++ ){
                 /* absolutely required */
-                if(j < n && atomic_load_explicit(&threadComm->valid, memory_order_acquire, memory_scope_all_svm_devices) == 1){ /* if not ordered to break. Comment during early benchmarking */
+                if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){ /* if not ordered to break. Comment during early benchmarking */
 
                     r_entry_t r = r_entry_wrapper_pool[0].entries[j];
 
-                    atomic_fetch_add(&threadComm->reads_count, 1);
+                    //increment in Shared Local Memory, work leader notifies world later
+                    atomic_fetch_add_explicit(&reads_validated, 1, memory_order_relaxed, memory_scope_work_group);
 
                     stm_word_t l = (*((volatile size_t *)(r.lock)));
 
@@ -212,7 +217,7 @@ __kernel void InstantKernel(
                         /* Simply check if address falls inside our write set */
                         if( !(threadComm->w_set_base <= w && w < threadComm->w_set_end) ){
                             /*it does not: locked by another transactions: cannot validate*/
-                            atomic_store_explicit(&threadComm->valid, 0, memory_order_release, memory_scope_all_svm_devices);
+                            atomic_store_explicit(&threadComm->valid, 0, memory_order_acq_rel, memory_scope_all_svm_devices);
                         }
                         /* We own the lock: OK */
                     } else {
@@ -225,14 +230,14 @@ __kernel void InstantKernel(
                         #endif
                         if (LOCK_GET_TIMESTAMP(l) != r.version) {
                             /* Other version: cannot validate */
-                            atomic_store_explicit(&threadComm->valid, 0, memory_order_release, memory_scope_all_svm_devices);
+                            atomic_store_explicit(&threadComm->valid, 0, memory_order_acq_rel, memory_scope_all_svm_devices);
                         }
                         /* Same version: OK */
                     }
 
                 } /*i < threadComm->nb_entries*/
 
-            }//end for
+            //}//end for
 
             Phase++;//private to every WI//prevent each WI from doing more work. This validation is done.
 
@@ -241,7 +246,12 @@ __kernel void InstantKernel(
 
             if( get_local_id(0) == 0 ){
                 //atomic_fetch_add_explicit(&comp_wkgps[get_group_id(0)],1,memory_order_seq_cst,memory_scope_all_svm_devices);
-                atomic_fetch_add_explicit(&SVMComm[COMPLETE], 1, memory_order_release, memory_scope_all_svm_devices);
+                atomic_fetch_add_explicit(&SVMComm[COMPLETE], 1, memory_order_acq_rel, memory_scope_all_svm_devices);
+                atomic_fetch_add_explicit(
+                        &threadComm->reads_count,
+                        atomic_load_explicit(&reads_validated, memory_order_acquire, memory_scope_work_item),
+                        memory_order_relaxed,
+                        memory_scope_all_svm_devices);
             }
 
 		}//end reqphase

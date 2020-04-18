@@ -40,19 +40,19 @@
 
 /* Validation OCL kernel specific defines */
 #define HW_THREADS_PER_EU 7
-#define BIN_KERNEL_INSTANT "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-persistent/src/validation_tool/instant_kernel.bin"
-#define CL_KERNEL_INSTANT "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-persistent/src/validation_tool/instant_kernel.cl"
+#define BIN_KERNEL_INSTANT "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-cpu-persistent-dynamic-split/src/validation_tool/instant_kernel.bin"
+#define CL_KERNEL_INSTANT "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-cpu-persistent-dynamic-split/src/validation_tool/instant_kernel.cl"
 #define CL_KERNEL_INSTANT_DEBUG "instant_kernel_debug.cl"
 #define CL_KERNEL_INSTANT_NAME "InstantKernel"
 
-#define BIN_KERNEL_REGULAR "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-persistent/src/validation_tool/regular_kernel.bin"
-#define CL_KERNEL_REGULAR "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-persistent/src/validation_tool/regular_kernel.cl"
+#define BIN_KERNEL_REGULAR "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-cpu-persistent-dynamic-split/src/validation_tool/regular_kernel.bin"
+#define CL_KERNEL_REGULAR "/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-cpu-persistent-dynamic-split/src/validation_tool/regular_kernel.cl"
 #define CL_KERNEL_REGULAR_NAME "RegularKernel"
 
 /* vtune */
-//#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-persistent/src/validation_tool -g -s " CL_KERNEL_INSTANT " -cl-std=CL2.0" //added I flag to share debug_validation header and define.
+//#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-cpu-persistent-dynamic-split/src/validation_tool -g -s " CL_KERNEL_INSTANT " -cl-std=CL2.0" //added I flag to share debug_validation header and define.
 /* normal exec */
-#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-persistent/src/validation_tool -cl-std=CL2.0" //added I flag to share debug_validation header and define.
+#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/oleksiy/Desktop/stm-validation-study/TinySTM-igpu-cpu-persistent-dynamic-split/src/validation_tool -cl-std=CL2.0" //added I flag to share debug_validation header and define.
 
 #define PERF_TEST_ZERO_COPY 1 //don't forget to also decide if you want aligned or unaligned malloc
 #define ALIGNED_ALLOCATION 1
@@ -135,8 +135,8 @@ typedef struct thread_control{
     atomic_int reads_count; /* stats */
     atomic_int valid;
     atomic_int Phase;
-    atomic_int complete;
-    unsigned int n_per_wi;
+    unsigned long submersions;
+    unsigned int block_offset;
     unsigned int nb_entries;
 } thread_control_t;
 
@@ -155,6 +155,8 @@ extern unsigned int max_work_group_size;
 extern unsigned int NumberOfExecUnits;
 extern unsigned int NumberOfHwThreads;
 extern unsigned int SimdSize;
+extern unsigned int POS;
+extern unsigned int do_not_submerge;
 
 //Create the NDRange
 extern size_t global_dim[1];
@@ -171,7 +173,7 @@ extern volatile stm_word_t **locks;
 extern pthread_t validate_thread;
 extern pthread_mutex_t validate_mutex;
 extern pthread_cond_t validate_cond, validate_complete_cond;
-extern atomic_int validate, validate_complete, need_gpu;
+extern atomic_int delegate_validate, validate_complete, need_gpu;
 extern atomic_int gpu_exit_validity; /*trick that helps cpu-gpu co-op. reduces sharing threadComm[idx].valid. if gpu invalidates, after exit it sets gpu_exit_validity to 0.*/
 
 /*                     Debug Buffers                      */

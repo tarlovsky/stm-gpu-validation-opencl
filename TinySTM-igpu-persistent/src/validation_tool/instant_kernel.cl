@@ -115,7 +115,7 @@ __kernel void InstantKernel(
         atomic_fetch_add_explicit(
                 &SVMComm[SPIN],
                 1,
-                memory_order_release,
+                memory_order_acq_rel,
                 memory_scope_all_svm_devices);
     }
 
@@ -267,7 +267,7 @@ __kernel void InstantKernel(
 
             if( get_local_id(0) == 0 ){
                 //atomic_fetch_add_explicit(&comp_wkgps[get_group_id(0)],1,memory_order_release,memory_scope_all_svm_devices);
-                atomic_fetch_add_explicit(&SVMComm[COMPLETE], 1, memory_order_release, memory_scope_all_svm_devices);
+                atomic_fetch_add_explicit(&SVMComm[COMPLETE], 1, memory_order_acq_rel, memory_scope_all_svm_devices);
             }
 
 		}//end reqphase

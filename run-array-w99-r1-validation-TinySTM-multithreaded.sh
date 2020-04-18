@@ -13,6 +13,12 @@ MAX_RETRY=4
 
 
 ################################### needed for rapl ###################################
+#remake rapl
+cd rapl-power && make clean 2>&1 > /dev/null;
+make 2>&1 > /dev/null;
+cd ..;
+
+#needed for rapl
 if lsmod | grep msr &> /dev/null ; then
   echo "msr is loaded"
 else
@@ -21,9 +27,9 @@ else
 fi
 #######################################################################################
 
-global_stm=$1
-threads=$3
-
+global_stm="TinySTM-threads"
+threads=$1
+mode="wbetl"
 # THREADS
 #######################################################################################
 # ST
@@ -33,10 +39,10 @@ then
 fi
 
 #if STM-MODE set add it to results dir and Makefile to lookup when compiling with that specific makefile
-if [[ ! -z "$2" ]]
+if [[ ! -z "$mode" ]]
 then
     #add stm mode to end of it's specific makefile name
-    MAKEFILE+="-$2"
+    MAKEFILE+="-$mode"
     echo "Stm makefile is $MAKEFILE."
 fi
 
@@ -59,11 +65,11 @@ RESULTS_DIR+="/$global_stm" #every backend has their own results sub-dir
 # example: results/ $global_stm:TinySTM - $4:wbetl
 #######################################################################################
 #if STM-MODE set add it to results dir and Makefile to lookup when compiling with that specific makefile
-if [[ ! -z "$2" ]]
+if [[ ! -z "$mode" ]]
 then
-    echo $2
+    echo $mode
     #add stm mode to end of dirname
-    RESULTS_DIR+="-$2"
+    RESULTS_DIR+="-$mode"
 fi
 
 #######################################################################################

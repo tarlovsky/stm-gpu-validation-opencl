@@ -39,6 +39,9 @@ __thread long threadID;
 
         THREAD_LOCAL_SET(global_threadId, (long)threadId);
 
+        //TODO ADD BINDING WHEN RUNNING MULTITHREADED STMS
+        //REMOVED THIS SHIT WHEN IT FUCKED WITH CO-OP VALIDATION, HAD TO RESTART AGAIN
+        //MULTITHREADED VALIDATION BROKEN TOO
         //bindThread(threadId);
 
         while (1) {
