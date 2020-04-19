@@ -1,6 +1,7 @@
 
 set terminal wxt size 1440,1080
 set title "Validation with varied cpu-gpu validation assignment (in %)" font ",16"
+set decimal locale "en_US.UTF-8"; show locale
 set datafile separator whitespace
 set border lc rgb "black"
 set xlabel "READ-SET SIZE" offset graph 0,0,-0.02

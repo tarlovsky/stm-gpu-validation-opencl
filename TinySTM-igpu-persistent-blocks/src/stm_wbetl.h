@@ -62,7 +62,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
-    int i, blocks, val_reads_local;
+    int b, blocks, val_reads_local;
 
     threadComm[idx].valid = 1;
     threadComm[idx].nb_entries = N;
@@ -73,7 +73,8 @@ stm_wbetl_validate(stm_tx_t *tx)
     threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
     threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
 
-    while(i < blocks){
+    b = 0;
+    while(b < blocks){
 
         //printf("GPU RUN %d\n", i);
         /*TODO counters will overflow in long runnning tx.
@@ -81,9 +82,43 @@ stm_wbetl_validate(stm_tx_t *tx)
          * Up to 60 seconds tpcc tested*/
         pCommBuffer[PHASE] = ++cl_global_phase;
 
-        threadComm[idx].block_offset = i * global_dim[0];
+        threadComm[idx].block_offset = b * global_dim[0];
 
         while (pCommBuffer[COMPLETE] < g_numWorkgroups);
+
+
+#ifdef DEBUG_VALIDATION
+        #if (DEBUG_VALIDATION)
+
+                    /* CHECKED LOCKS GET INTO THE FREAKING KERNEL AND ARE DEREFERENCED OK!*/
+                    for(int i = 0; i < global_dim[0]; i++){
+                        r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
+                        stm_word_t l = *((volatile stm_word_t*)(r.lock));
+                        //if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
+                        //printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
+                        printf("work item i %4d: LOCK GPU:%016" PRIXPTR " LOCK CPU:%016" PRIXPTR ",  MY WSET [%016" PRIXPTR " %016" PRIXPTR "] \n", i, debug_buffer_arg[i], l, threadComm[idx].w_set_base, threadComm[idx].w_set_end);
+                        //}
+                    }
+
+                    //printf("VALIDATION RESULT: %d\n", threadComm[idx].valid);
+
+                    /*for(int j = 0; j < global_dim[0]; j++){
+                        //verified work inside
+                        printf("work item i %4d writes: %llu, %016" PRIXPTR "] [%016" PRIXPTR ",  %016" PRIXPTR "] \n", j, debug_buffer_arg[j], debug_buffer_arg1[j], threadComm[idx].w_set_base, threadComm[idx].w_set_end);
+                    }*/
+
+                    /* TDD */
+                    /* PASS - LOCKS APPEAR AS OUTSIDE. */
+                    /* PASS - LOCKS ARE PASSING OUT OF KERNEL AS LONG AS DEBUG_BUFFER IS STM_WORD_T */
+
+                    /* reset kernel debug array on every iteration */
+                    memset(debug_buffer_arg, 0, sizeof(stm_word_t*) * RW_SET_SIZE);
+                    memset(debug_buffer_arg1, 0, sizeof(stm_word_t) * RW_SET_SIZE);
+                    memset(debug_buffer_arg2, 0, sizeof(stm_word_t) * RW_SET_SIZE);
+
+#endif /*DEBUG_VALIDATION == 1*/
+#endif /*DEBUG_VALIDATION*/
+
 
         val_reads_local+=5376;
 
@@ -95,7 +130,7 @@ stm_wbetl_validate(stm_tx_t *tx)
          * if cpu invalidated while we were working
          * or one of work-items just invalidated: exit
          * removes expensive check in every work item */
-        if(!threadComm[idx].valid){break;}else{i++;}
+        if(!threadComm[idx].valid){break;}else{b++;}
     }
     TIMER_READ(stop);
 

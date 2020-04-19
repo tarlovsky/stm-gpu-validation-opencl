@@ -101,7 +101,7 @@ __kernel void InstantKernel(
 #ifdef DEBUG_VALIDATION
 #if (DEBUG_VALIDATION == 1)
         ,
-        __global long* debug_buffer,
+        __global uintptr_t* debug_buffer,
         __global stm_word_t* debug_buffer1,
         __global stm_word_t* debug_buffer2
 #endif
@@ -210,16 +210,9 @@ __kernel void InstantKernel(
 
                     #ifdef DEBUG_VALIDATION
                     #if (DEBUG_VALIDATION == 1)
-                        debug_buffer[i] = j;
-                        debug_buffer1[i] = l;
-                    #endif
-                    #endif
-
-                    #ifdef DEBUG_VALIDATION
-                    #if (DEBUG_VALIDATION)
-                        //debug_buffer[j]=i; // who did element j
-                        //debug_buffer1[j]=l;
-                        //debug_buffer2[j]=r.version;
+                    debug_buffer[j] = l;
+                    debug_buffer1[j] = threadComm->w_set_base;
+                    debug_buffer2[j] = threadComm->w_set_end;
                     #endif
                     #endif
 
@@ -227,12 +220,7 @@ __kernel void InstantKernel(
                         /* Do we own the lock? */
                         uintptr_t w = (uintptr_t) LOCK_GET_ADDR(l);
 
-                        #ifdef DEBUG_VALIDATION
-                        #if (DEBUG_VALIDATION == 1)
-                        //debug_buffer1[j] = threadComm->w_set_base;
-                        //debug_buffer2[j] = threadComm->w_set_end;
-                        #endif
-                        #endif
+
 
                         /* Simply check if address falls inside our write set */
                         if( !(threadComm->w_set_base <= w && w < threadComm->w_set_end) ){

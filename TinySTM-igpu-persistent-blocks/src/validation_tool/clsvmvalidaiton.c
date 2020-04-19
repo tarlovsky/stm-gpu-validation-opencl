@@ -64,7 +64,7 @@ struct timespec T2C;
 struct timespec T1G;
 struct timespec T2G;
 
-long *debug_buffer_arg;
+uintptr_t *debug_buffer_arg;
 uintptr_t *debug_buffer_arg1;
 uintptr_t *debug_buffer_arg2;
 
@@ -506,13 +506,13 @@ int initializeDeviceData(){
     debug_buffer_arg = (uintptr_t*) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-            RW_SET_SIZE * sizeof(long),
+            RW_SET_SIZE * sizeof(uintptr_t),
             CACHELINE_SIZE
     );
     if(debug_buffer_arg == NULL){
         printf("could not allocate debug_buffer_arg \n");
     }
-    memset(debug_buffer_arg, 0, sizeof(long) * RW_SET_SIZE);
+    memset(debug_buffer_arg, 0, sizeof(uintptr_t) * RW_SET_SIZE);
 
     debug_buffer_arg1 = (stm_word_t *) clSVMAlloc(
             g_clContext,

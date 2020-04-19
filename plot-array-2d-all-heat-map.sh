@@ -12,6 +12,7 @@ declare -a all_pallet=("33ccff" "ccccff" "009933" "ff9900" "ff6666" "0033cc" "cc
 FILE="gnuplot/simple-array-validation.gnuplot"
 
 echo "set terminal wxt size 3350,800" > $FILE
+
 #echo "set size 1,1" >> $FILE
 #echo "set origin 0,0" >> $FILE
 echo "unset bmargin" >> $FILE
@@ -20,6 +21,7 @@ echo "unset rmargin" >> $FILE
 echo "unset lmargin" >> $FILE
 
 echo "set multiplot layout 1,4 title \"Validating random/sequential array traversal single-threaded, Intel 6700k CPU, Intel HD530 iGPU, (TinySTM-WBETL)\" font \",16\"" >> $FILE
+echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE
 echo "set datafile missing '0'" >> $FILE
 #echo "unset ytics" >> $FILE
 echo "set tics scale 0"  >> $FILE
@@ -138,50 +140,50 @@ echo
 echo "set title \"CPU worker threads; GPU Persistent Kernel threads;CPU+GPU co-operation\" font \",12\"" >> $FILE
 echo  "plot \\"  >> $FILE
 #tinystm-gpu-persistent threads validation
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-NAIVE-CALL-KERNEL-EVERYTIME'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal\" lw 2 lc rgb \"#3cde33\" pt 16,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal\" lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-48wkgps-128wi-each-acq-rel'    u 0:2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"Persistent Kernel 48WKGPS-128WKGPSIZE-ACQ-REL , random array traversal\" lw 2 lc rgb col_48,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-24wkgps-224wi-each-acq-rel'    u 0:2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal\" lw 2 lc rgb col_24,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-24wkgps-224wiperwkgp-acq-rel'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , sequential array traversal\" dt new lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-RELAXED'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-128WKGPSIZE-RELAXED, random array traversal\" dt new1 lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-48WKGPS-128WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 48WKGPS-128WKGPSIZE-SEQ-CST , random array traversal\" lw 1 lc rgb col_48 pt 16,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-48wkgps-128wiperwkgp-acq-rel'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 48WKGPS-128WKGPSIZE-ACQ-REL , sequential array traversal\" dt new lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-NAIVE-CALL-KERNEL-EVERYTIME'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal\" lw 2 lc rgb \"#3cde33\" pt 16,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal\" lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-48wkgps-128wi-each-acq-rel'    u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"Persistent Kernel 48WKGPS-128WKGPSIZE-ACQ-REL , random array traversal\" lw 2 lc rgb col_48,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-24wkgps-224wi-each-acq-rel'    u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal\" lw 2 lc rgb col_24,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-24wkgps-224wiperwkgp-acq-rel'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , sequential array traversal\" dt new lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-24WKGPS-224WKGPSIZE-RELAXED'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-128WKGPSIZE-RELAXED, random array traversal\" dt new1 lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-48WKGPS-128WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 48WKGPS-128WKGPSIZE-SEQ-CST , random array traversal\" lw 1 lc rgb col_48 pt 16,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-48wkgps-128wiperwkgp-acq-rel'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 48WKGPS-128WKGPSIZE-ACQ-REL , sequential array traversal\" dt new lw 1 lc rgb col_24 pt 16,\\"  >> $FILE
 #untouched TINYSTM
-echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 0:2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) with yerrorlines t \"CPU 02 1 THREADS VALIDATING random array traversal\" lc rgb col_gold,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) with yerrorlines t \"CPU 02 1 THREADS VALIDATING random array traversal\" lc rgb col_gold,\\"  >> $FILE
 #tinystm with threads
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u (\$0):2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 2 THREADS VALIDATING random array traversal\" dt new lc rgb \"black\",\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u (\$0):2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 4 THREADS VALIDATING random array traversal\" dt new1 lc rgb \"black\",\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u (\$0):2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 8 THREADS VALIDATING random array traversal\" lc rgb \"black\",\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-sequential-GPU-48WKGPS-128WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 48WKGPS-128WKGPSIZE-SEQ-CST, sequential array traversal\" lw 2 lc rgb col_48 pt 16,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-sequential-GPU-24WKGPS-224WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST, sequential array traversal\" lw 2 lc rgb col_24 pt 16, \\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 0:2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 1 THREADS VALIDATING sequential array traversal\" dt new lc rgb col_gold pt 17,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u (\$0):2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 2 THREADS VALIDATING random array traversal\" dt new lc rgb \"black\",\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u (\$0):2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 4 THREADS VALIDATING random array traversal\" dt new1 lc rgb \"black\",\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u (\$0):2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 8 THREADS VALIDATING random array traversal\" lc rgb \"black\",\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-sequential-GPU-48WKGPS-128WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 48WKGPS-128WKGPSIZE-SEQ-CST, sequential array traversal\" lw 2 lc rgb col_48 pt 16,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-sequential-GPU-24WKGPS-224WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST, sequential array traversal\" lw 2 lc rgb col_24 pt 16, \\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 1 THREADS VALIDATING sequential array traversal\" dt new lc rgb col_gold pt 17,\\"  >> $FILE
 #co-op
-echo  " '$BEST_CO_OP' u 0:2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+echo  " '$BEST_CO_OP' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
 #persistent kernel
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"24WKGPS 224WI/WKGP NO VALIDATION LOGIC, PERSISTENT KERNEL POLLING OVERHEAD\" dt new lc rgb col_24 pt 8,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"24WKGPS 224WI/WKGP NO VALIDATION LOGIC, PERSISTENT KERNEL POLLING OVERHEAD\" dt new lc rgb col_24 pt 8,\\"  >> $FILE
 #these are temporary, for scale, to show difference between having seq_cst, acq_rel, relaxed atomic access inside opencl work-items
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) notitle lw 2 lc rgb col_48 pt 1,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) notitle dt new lc rgb col_48 pt 1,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) notitle dt new1 lc rgb col_48 pt 1,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) notitle lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) notitle dt new lc rgb col_24 pt 1,\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) notitle dt new1 lc rgb col_24 pt 1"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) notitle lw 2 lc rgb col_48 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) notitle dt new lc rgb col_48 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) notitle dt new1 lc rgb col_48 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) notitle lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) notitle dt new lc rgb col_24 pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) notitle dt new1 lc rgb col_24 pt 1"  >> $FILE
 echo >> $FILE
 #CPU l2 1.02400 megabytes
 #CPU l1 128 KB
 echo "set title \"CPU with threaded validation \" font \",12\"" >> $FILE
 echo  "plot \\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-16-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02 16 THREADS VALIDATING\"  lc rgb \"black\" pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   1 THREADS VALIDATING\" lw 2 lc rgb \"black\" pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   2 THREADS VALIDATING\" dt new lc rgb \"black\" pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   4 THREADS VALIDATING\" dt new1 lc rgb \"black\" pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   8 THREADS VALIDATING\" lc rgb \"black\" pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-16-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02 16 THREADS VALIDATING\"  lc rgb \"black\" pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   1 THREADS VALIDATING\" lw 2 lc rgb \"black\" pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   2 THREADS VALIDATING\" dt new lc rgb \"black\" pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   4 THREADS VALIDATING\" dt new1 lc rgb \"black\" pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   8 THREADS VALIDATING\" lc rgb \"black\" pt 1,\\"  >> $FILE
 
-#echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1a/array-r99-w1-sequential-walk/1-sequential-cpu-validation-16-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2 16 THREADS VALIDATING\" lc rgb col_gold pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2   1 THREADS VALIDATING\" lw 2 dt new lc rgb col_gold pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-2-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU 02   2 THREADS VALIDATING\" dt new lc rgb col_gold pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-4-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2   4 THREADS VALIDATING\" dt new1 lc rgb col_gold pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-8-workers' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2   8 THREADS VALIDATING\" lc rgb col_gold pt 1,\\"  >> $FILE
+#echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1a/array-r99-w1-sequential-walk/1-sequential-cpu-validation-16-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2 16 THREADS VALIDATING\" lc rgb col_gold pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2   1 THREADS VALIDATING\" lw 2 dt new lc rgb col_gold pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-2-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU 02   2 THREADS VALIDATING\" dt new lc rgb col_gold pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-4-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2   4 THREADS VALIDATING\" dt new1 lc rgb col_gold pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation-8-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"sequential walk CPU O2   8 THREADS VALIDATING\" lc rgb col_gold pt 1,\\"  >> $FILE
 echo >> $FILE
 
 echo "set style data linespoints" >> $FILE
@@ -189,12 +191,12 @@ echo "set style data linespoints" >> $FILE
 echo "set yrange [0.0000001:0.0001]" >> $FILE
 echo "set title \"GPU C11 ATOMICS MEMORY ORDER COMPARISON + DIFFERENT GPU OCCUPANCY \" font \",12\"" >> $FILE
 echo  "plot \\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP SEQ-CST Persistent Kernel polling\" lw 2 lc rgb col_48 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP REL-ACQ Persistent Kernel polling\" dt new lc rgb col_48 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP RELAXED Persistent Kernel polling\" dt new1 lc rgb col_48 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"24WKGPS-224WI/WKGP SEQ-CST Persistent Kernel polling\" lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"24WKGPS-224WI/WKGP REL-ACQ Persistent Kernel polling\" dt new lc rgb col_24 pt 1,\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) t \"24WKGPS-224WI/WKGP RELAXED Persistent Kernel polling\" dt new1 lc rgb col_24 pt 1"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP SEQ-CST Persistent Kernel polling\" lw 2 lc rgb col_48 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP REL-ACQ Persistent Kernel polling\" dt new lc rgb col_48 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP RELAXED Persistent Kernel polling\" dt new1 lc rgb col_48 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"24WKGPS-224WI/WKGP SEQ-CST Persistent Kernel polling\" lw 2 lc rgb col_24 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"24WKGPS-224WI/WKGP REL-ACQ Persistent Kernel polling\" dt new lc rgb col_24 pt 1,\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"24WKGPS-224WI/WKGP RELAXED Persistent Kernel polling\" dt new1 lc rgb col_24 pt 1"  >> $FILE
 
 #best_co-op
 echo "set style data lines" >> $FILE
@@ -203,12 +205,12 @@ echo "set title \"CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance\"
 echo  "plot \\"  >> $FILE
 for i in ${BEST_CO_OP_somewhere[@]}; do
   t_col=$(echo $i | sed 's/.*\///')
-  echo  " '$i' u (\$0):2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) notitle lc rgb \"#11cacaca\",\\"  >> $FILE
+  echo  " '$i' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) notitle lc rgb \"#11cacaca\",\\"  >> $FILE
 done
 t_col_best_co_op="GLOBAL MINUMUM "
 t_col_best_co_op+=$(echo $BEST_CO_OP | sed 's/.*\///')
-echo  " '$BEST_CO_OP' u (\$0):2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
-echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 0:2:3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 1 THREADS VALIDATING random array traversal\" lc rgb col_gold pt 17"  >> $FILE
+echo  " '$BEST_CO_OP' u (\$0):2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 1 THREADS VALIDATING random array traversal\" lc rgb col_gold pt 17"  >> $FILE
 echo >> $FILE
 echo  "unset multiplot" >> $FILE
 
@@ -270,7 +272,6 @@ echo \"TinySTM-wbetl\" $cpu >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
 ###############################################################
 
 echo "set xtics rotate by 45 right scale 0 font \",8\" offset 0,0,-0.04" >> $FILE1
-
 
 echo "plot '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders w image,\\" >> $FILE1
 #echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(sprintf(\"%f\",\$3)) with labels" >> $FILE1

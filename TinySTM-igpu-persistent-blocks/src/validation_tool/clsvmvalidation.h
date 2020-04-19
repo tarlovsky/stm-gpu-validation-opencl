@@ -169,7 +169,7 @@ extern r_entry_wrapper_t* r_entry_pool_cl_wrapper;
 extern volatile stm_word_t **locks;
 
 /*                     Debug Buffers                      */
-extern long *debug_buffer_arg;
+extern uintptr_t *debug_buffer_arg;
 extern uintptr_t *debug_buffer_arg1;
 extern uintptr_t *debug_buffer_arg2;
 

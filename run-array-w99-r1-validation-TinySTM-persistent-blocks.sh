@@ -149,7 +149,7 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 build_stm_and_benchmark
 
-for((sequential=1; sequential<=1;sequential++)); do
+for((sequential=0; sequential<=1;sequential++)); do
     #vary cpu validation percentage
 
     if [[ $sequential -eq 1 ]];then

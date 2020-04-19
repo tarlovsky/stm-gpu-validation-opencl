@@ -21,7 +21,7 @@ echo "unset lmargin" >> $FILE
 
 
 echo "set multiplot layout 2,2 title \"Time to validate random array walk application; multi-threaded CPU validation vs TinySTM-WBETL untouched\" font \",14\"" >> $FILE
-
+echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE
 echo "set datafile missing \"0\"" >> $FILE
 #echo "unset ytics" >> $FILE
 echo "set tics scale 0"  >> $FILE
@@ -75,14 +75,14 @@ echo  "set title \"Only CPU, threaded validation, sequential walk\" font \",12\"
 # plot the fastest CO-OP over the first graph
 
 #get baseline TinySTM-wbetl seinglethreaded
-BASELINE_FILE="$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation"
+BASELINE_FILE="$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation"
 
 val_time_col=$(awk 'NR>1{printf "%f ", $2}' $BASELINE_FILE) #skip NR>4: header, 64,128,256. start at 512
 val_time_col_ref=($val_time_col)
 N_RSET_SIZES=${#val_time_col_ref[@]} #get number of rows in file
 
-####### RANDOM #######
-BEST_FILE="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-gpu-best"
+####### sequential #######
+BEST_FILE="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-gpu-best"
 if [[ ! -f "$BEST_FILE" ]]; then
   #create file
   echo -n > $BEST_FILE
@@ -99,7 +99,7 @@ echo
 echo "The following co-op assignments are better than TinySTM-wbetl on at least one READ-SET SIZE:"
 echo "OCCASION | FILENAME"
 for((j=0;j<=100;j++));do
-  SEARCH_FILE="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-$j-gpu-$((100-$j))"
+  SEARCH_FILE="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-$j-gpu-$((100-$j))"
   val_time_col_co_op=$(awk 'NR>1{printf "%f ", $2}' $SEARCH_FILE)
   val_time_col_co_op_ref=($val_time_col_co_op)
   not_added_yet=1
@@ -134,34 +134,19 @@ for i in 1 2 4 8;do
   echo >> $FILE
   echo "set title \"$i validation worker threads/STM thread\" font \",14\"" >> $FILE
   echo  "plot \\"  >> $FILE
-  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-8-workers' u (\$0):(\$2/$i):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU -02 8 validation worker / STM thread\" lc rgb \"black\",\\"  >> $FILE
-  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-4-workers' u (\$0):(\$2/$i):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"black\" ,\\"  >> $FILE
-  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-2-workers' u (\$0):(\$2/$i):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU -02 2 validation worker / STM thread\" dt new lc rgb \"black\" ,\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-8-workers' u (\$0):(\$2/$i):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 8 validation worker / STM thread\" lc rgb \"black\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(\$2/$i):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"black\" ,\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-2-workers' u (\$0):(\$2/$i):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 2 validation worker / STM thread\" dt new lc rgb \"black\" ,\\"  >> $FILE
   if [[ $i -eq 1 ]];then
-    echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb col_gold ,\\"  >> $FILE
-    echo  " '$BEST_CO_OP' u (\$0):(\$2/$i):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+    echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb col_gold ,\\"  >> $FILE
+    echo  " '$BEST_CO_OP' u (\$0):(\$2/$i):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
   else
-    echo  " '$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation' u (\$0):(\$2/$i):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb col_gold ,\\"  >> $FILE
+    echo  " '$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' u (\$0):(\$2/$i):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb col_gold ,\\"  >> $FILE
   fi
   echo >> $FILE
 done
 
 echo  "unset multiplot" >> $FILE
-
-#echo "set style data lines" >> $FILE
-#echo "set yrange [0.0000001:10]" >> $FILE
-#echo "set title \"CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance\" font \",12\"" >> $FILE
-
-#echo  "plot \\"  >> $FILE
-#for i in ${BEST_CO_OP_somewhere[@]}; do
-  #t_col=$(echo $i | sed 's/.*\///')
-  #echo  " '$i' u (\$0):(\$2/$i):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col\" lc rgb \"#11cacaca\",\\"  >> $FILE
-#done
-#t_col_best_co_op="GLOBAL MINUMUM "
-#t_col_best_co_op+=$(echo $BEST_CO_OP | sed 's/.*\///')
-#echo  " '$BEST_CO_OP' u (\$0):(\$2/$i):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
-#echo  " '$RESULTS_DIR/TinySTM-wbetl/1a/array-r99-w1-random-walk/1a-random-cpu-validation' u 2:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU 02 1 THREADS VALIDATING random array traversal\" lc rgb col_gold pt 17"  >> $FILE
-#echo >> $FILE
 
 
 

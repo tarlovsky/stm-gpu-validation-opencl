@@ -22,6 +22,8 @@ echo "unset rmargin" >> $FILE
 echo "unset lmargin" >> $FILE
 
 echo "set multiplot layout 2,2 title \"Sequential array walk: READS VALIDATED / VALIDATION CALL / THREAD / SECOND (THROUGHPUT); (higher is better)\" font \",14\"" >> $FILE
+
+echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE
 #echo "set datafile missing \"x\"" >> $FILE
 #echo "unset ytics" >> $FILE
 echo "set tics scale 0"  >> $FILE
@@ -131,28 +133,35 @@ echo
 t_col_best_co_op="GLOBAL MINUMUM "
 t_col_best_co_op+=$(echo $BEST_CO_OP | sed 's/.*\///')
 
-echo "set yrange [10000:10000000000]" >> $FILE
+echo "set yrange [100000:10000000000]" >> $FILE
 
 for i in 1 2 4 8;do
+
   echo "set title \"$i STM threads\" font \",12\"" >> $FILE
   echo  "plot \\"  >> $FILE
 
   if [[ $i -eq 1 && $BEST_CO_OP -ne " " ]];then
-    echo  " '$BEST_CO_OP' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) / (\$2/$i) ):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+    echo  " '$BEST_CO_OP' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) / (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
   fi
+
   #(((\$10+\$12)>0)?(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):(NaN))
 
-  #"( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ) "
-  #CUSTOM THREAD PINNING
-  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-8-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CUSTOM PINNING CPU -02 8 validation worker / STM thread\" lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
-  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CUSTOM PINNING CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
-  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-2-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CUSTOM PINNING CPU -02 2 validation worker / STM thread\" dt new lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
+  #  8-valreads
+  #  10+12 - val enters
+  #  $i STM-threads
+  # (\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)
+  # /$i can be simplified but the formula is harder to grasp
+
   #AUTO-SCHED
-  #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-AUTO-SCHED/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-8-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) w yerrorlines t \"AUTO-SCHED CPU -02 8 validation worker / STM thread\" lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
-  #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-AUTO-SCHED/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) w yerrorlines t \"AUTO-SCHED CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
-  #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-AUTO-SCHED/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-2-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) w yerrorlines t \"AUTO-SCHED CPU -02 2 validation worker / STM thread\" dt new lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-8-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"AUTO-SCHED CPU -02 8 validation worker / STM thread\" lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"AUTO-SCHED CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-2-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"AUTO-SCHED CPU -02 2 validation worker / STM thread\" dt new lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
+  #CUSTOM THREAD PINNING
+  #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-CUSTOM-PINNING/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-8-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) w yerrorlines t \"CUSTOM PINNING CPU -02 8 validation worker / STM thread\" lc rgb \"#${blue_palette[$i]}\",\\"  >> $FILE
+  #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-CUSTOM-PINNING/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) w yerrorlines t \"CUSTOM PINNING CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${blue_palette[$i]}\",\\"  >> $FILE
+  #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-CUSTOM-PINNING/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-2-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) w yerrorlines t \"CUSTOM PINNING CPU -02 2 validation worker / STM thread\" dt new lc rgb \"#${blue_palette[$i]}\",\\"  >> $FILE
   #sequential execution
-  echo  " '$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%d/ %.2fMB\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
 
   echo >> $FILE
 done
