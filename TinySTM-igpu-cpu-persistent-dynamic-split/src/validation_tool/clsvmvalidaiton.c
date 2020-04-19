@@ -31,7 +31,7 @@ atomic_ulong GPU_POS;
 
 /* tell the gpu to stop submersing into validation blocks.
  * can be set only by transaction currently owning the gpu*/
-unsigned int halt_gpu;
+atomic_int halt_gpu;
 
 /* transaction threads compete for gpu at start of validation. TODO implement a try_lock_for(time) */
 /* at the moment it tries once and quits */
@@ -64,7 +64,7 @@ struct timespec T2C;
 struct timespec T1G;
 struct timespec T2G;
 
-uintptr_t *debug_buffer_arg;
+long *debug_buffer_arg;
 uintptr_t *debug_buffer_arg1;
 uintptr_t *debug_buffer_arg2;
 
@@ -545,13 +545,13 @@ int initializeDeviceData(){
     debug_buffer_arg = (uintptr_t*) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-            RW_SET_SIZE * sizeof(r_entry_t),
+            RW_SET_SIZE * sizeof(long),
             CACHELINE_SIZE
     );
     if(debug_buffer_arg == NULL){
         printf("could not allocate debug_buffer_arg \n");
     }
-    memset(debug_buffer_arg, 0, sizeof(r_entry_t) * RW_SET_SIZE);
+    memset(debug_buffer_arg, 0, sizeof(long) * RW_SET_SIZE);
 
     debug_buffer_arg1 = (stm_word_t *) clSVMAlloc(
             g_clContext,
@@ -713,11 +713,10 @@ void* signal_gpu(void *slot){
             while (!atomic_load_explicit(&delegate_validate, memory_order_acquire)) {
                 pthread_cond_wait(&validate_cond, &validate_mutex);
             }
-        pthread_mutex_unlock(&validate_mutex);/*should release lock after cond wait checked, because main thread cant get cond signaled*/
+        pthread_mutex_unlock(&validate_mutex);
 
-        /* ##### */
-            /*do work*/
-            //printf("SIGNAL RECEIVED, VALIDATING ON GPU\n");
+        /*do work*/
+
             threadComm[idx].reads_count = 0;
             threadComm[idx].r_pool_idx = idx; /* should put index in global comm: pcommbuffer */
 
@@ -725,33 +724,72 @@ void* signal_gpu(void *slot){
             i = 0;
 
                 TIMER_READ(T1G);
-                while(i < submersions && !halt_gpu){
+                while(!atomic_load(&halt_gpu) && i < submersions){
 
                     //printf("GPU RUN %d\n", i);
                     /*TODO counters will overflow in long runnning tx.
                      * Up to 3 million read set safe.
                      * Up to 60 seconds tpcc tested*/
                     pCommBuffer[PHASE] = ++cl_global_phase;
+
                     threadComm[idx].block_offset = i * global_dim[0];
 
                     while (pCommBuffer[COMPLETE] < g_numWorkgroups);
+#ifdef DEBUG_VALIDATION
+#if (DEBUG_VALIDATION)
+                    /*for(int i = 0; i < global_dim[0]; i++){
+                        r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
+                        stm_word_t l = *((volatile stm_word_t*)(r.lock));
+                        //if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
+                            printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
+                        //}
+                    }*/
+
+                    //printf("VALIDATION RESULT: %d\n", threadComm[idx].valid);
+
+                    for(int j = 0; j < global_dim[0]; j++){
+                        //verified work inside
+                        printf("work item i %4d writes: %llu, %016" PRIXPTR "] [%016" PRIXPTR ",  %016" PRIXPTR "] \n", j, debug_buffer_arg[j], debug_buffer_arg1[j], threadComm[idx].w_set_base, threadComm[idx].w_set_end);
+                    }
+
+                    /* TDD */
+                    /* PASS - LOCKS APPEAR AS OUTSIDE. */
+                    /* PASS - LOCKS ARE PASSING OUT OF KERNEL AS LONG AS DEBUG_BUFFER IS STM_WORD_T */
+
+                    /* reset kernel debug array on every iteration */
+                    memset(debug_buffer_arg, 0, sizeof(long*) * RW_SET_SIZE);
+                    memset(debug_buffer_arg1, 0, sizeof(stm_word_t) * RW_SET_SIZE);
+                    memset(debug_buffer_arg2, 0, sizeof(stm_word_t) * RW_SET_SIZE);
+
+#endif /*DEBUG_VALIDATION == 1*/
+#endif /*DEBUG_VALIDATION*/
+
                     /*store to cpu hot variable, avoid cache ping-ponging*/
+                    /*bad  alternative is to make cpu check threadComm[idx].valid all the time*/
+                    /*gpu writes to threadComm[idx].valid in kernel when invalid*/
                     gpu_exit_validity = threadComm[idx].valid;
 
-                    //printf("gpu reads count %d \n",threadComm[idx].reads_count);
-                    pCommBuffer[COMPLETE] = 0;
-                    atomic_fetch_add_explicit(&GPU_POS, global_dim[0], memory_order_release);
-                    //GPU_POS += global_dim[0];
-                    //printf("G:%d\n", GPU_POS);
-                    i++;
-                    //printf("GPU FINISHED VALIDATING\n");
-                    TIMER_READ(T2G);
-                }
-                /*gpu finished parsing read set in blocks*/
-                // timer read moved to cpu stop
+                    /*same information in GPU_POS*/
+                    //atomic_fetch_add_explicit(&threadComm->reads_count, global_dim[0], memory_order_relaxed);
 
-            //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));
-        /* ##### */
+                    /*this triggers cpu to stop, make all counter submit before*/
+                    atomic_fetch_add_explicit(&GPU_POS, global_dim[0], memory_order_release);
+
+                    pCommBuffer[COMPLETE] = 0;
+                    /* while gpu was vaidating, cpu might have invalidated tx. Break */
+                    /* otherwise submerge into another round */
+                    TIMER_READ(T2G); /* always read timer. never know when it is going to be our last :'-( */
+
+                    /*BLOCK-level synchronisation
+                     * if cpu invalidated while we were working
+                     * or one of work-items just invalidated: exit
+                     * removes expensive check in every work item */
+                    if(!threadComm[idx].valid){break;}else{i++;}
+                }
+
+        /*gpu finished parsing read set in blocks*/
+
+        //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));
 
         //pthread_mutex_lock(&validate_mutex);
             //atomic_store_explicit(&validate_complete, 1, memory_order_release);
@@ -762,37 +800,6 @@ void* signal_gpu(void *slot){
     }
 
     pCommBuffer[FINISH]=1;
-
-#ifdef DEBUG_VALIDATION
-#if (DEBUG_VALIDATION)
-    //TEST IF IN EQUAL OUT
-    //if(r_set_entires_n >= 5376){
-        /*for(int i = 0; i < r_set_entires_n; i++){
-            r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
-            stm_word_t l = *((volatile stm_word_t*)(r.lock));
-            if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
-                printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
-            }
-        }*/
-    //}
-
-    //printf("VALIDATION RESULT: %d\n", retval);
-
-    for(int i = 0; i < r_set_entires_n; i++){
-        //verified work inside
-        printf("work item i %4d writes: [%016" PRIXPTR ", %016" PRIXPTR "] [%016" PRIXPTR ",  %016" PRIXPTR "] \n", i, debug_buffer_arg1[i], debug_buffer_arg2[i], threadComm[idx].w_set_base, threadComm[idx].w_set_end);
-    }
-
-    /* TDD */
-    /* PASS - LOCKS APPEAR AS OUTSIDE. */
-    /* PASS - LOCKS ARE PASSING OUT OF KERNEL AS LONG AS DEBUG_BUFFER IS STM_WORD_T */
-
-    /* reset kernel debug array on every iteration */
-    memset(debug_buffer_arg, 0, sizeof(r_entry_t*) * RW_SET_SIZE);
-    memset(debug_buffer_arg1, 0, sizeof(stm_word_t) * RW_SET_SIZE);
-    memset(debug_buffer_arg2, 0, sizeof(stm_word_t) * RW_SET_SIZE);
-#endif /*DEBUG_VALIDATION == 1*/
-#endif /*DEBUG_VALIDATION*/
 
     return "SOMESTRING";
 }

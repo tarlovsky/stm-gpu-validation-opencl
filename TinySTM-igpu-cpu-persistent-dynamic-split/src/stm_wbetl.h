@@ -59,10 +59,10 @@ stm_wbetl_validate(stm_tx_t *tx)
     TIMER_T start;
     TIMER_T stop;
     TIMER_READ(start);
-
+    double gt;
     int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
-    long halfN = N / 2;
+    long twoThirdsN = N - N / 3;
     int gpu_mine = 0;
     r_entry_t *r;
     stm_word_t l;
@@ -74,7 +74,7 @@ stm_wbetl_validate(stm_tx_t *tx)
         /* compete for gpu employment */
         /* if it's not taken take it. Try once, move one */
         if(!atomic_flag_test_and_set(&gpu_employed)) {
-
+            //printf("THREAD %d WON GPU !\n", idx);
             //printf("winner employing gpu\n");
             /*if off cpu does all the work and do not collect counters from gpu*/
             gpu_mine = 1;
@@ -106,7 +106,10 @@ stm_wbetl_validate(stm_tx_t *tx)
                 atomic_store_explicit(&delegate_validate, 1, memory_order_release);
                 pthread_cond_signal(&validate_cond);
             pthread_mutex_unlock(&validate_mutex);
+        }else{
+            //printf("THREAD %d LOST GPU !\n", idx);
         }
+
     }
 
     int CPU_POS;
@@ -118,28 +121,24 @@ stm_wbetl_validate(stm_tx_t *tx)
 
         /* optimization: start checking two interthreaded variables only past half
          * because we know cpu is at least twice as fast than gpu */
-
-        //if(gpu_mine && CPU_POS < halfN){
+        //if(gpu_mine && CPU_POS < twoThirdsN){
+        if(gpu_mine){
             //printf("GPU_POS%d\n", GPU_POS);
             /* CPU_POS starts from 0      |    <- N-1
              * GPU_POS starts from 0 ->      |    N-1
              *
              * gpu_exit_validity set when gpu re-emerges from validation */
-            if(CPU_POS < atomic_load_explicit(&GPU_POS, memory_order_relaxed) || !gpu_exit_validity){
-                printf("CPU:%d, GPU:%d WASTE:%d\n", N-1-CPU_POS, GPU_POS, MAX(GPU_POS-CPU_POS, CPU_POS-GPU_POS));
-                /*signal gpu to stop*/
-                halt_gpu = 1;
-                goto ret;
+            if( CPU_POS <= atomic_load_explicit(&GPU_POS, memory_order_relaxed)
+                || !gpu_exit_validity ){
+                    //printf("CPU:%d, GPU:%d WASTE:%d\n", N-1-CPU_POS, GPU_POS, MAX(GPU_POS-CPU_POS, CPU_POS-GPU_POS));
+                    /*signal gpu to stop*/
+                    atomic_store(&halt_gpu, 1);
+                    goto ret;
             }
-        //}
+        }
 
         /*gone from threadComm[idx].valid check to gpu_exit_validity check; cost wend down half from 1.463684 to 0.7 on cpu validation (130M rset).*/
         /*this reduces cpu-gpu contention*/
-
-
-#ifdef TM_STATISTICS
-        tx->val_reads++;
-#endif
 
         //printf("CPU VALIDATED %d ENTRIES\n", tx->val_reads);
         //printf("%d [%016" PRIXPTR "]\n", i, r);
@@ -198,15 +197,42 @@ ret:
 
     tx->val_time += TIMER_DIFF_SECONDS(start, stop);
     tx->cpu_val_time += TIMER_DIFF_SECONDS(T1C, T2C);
+    tx->cpu_validated += N-CPU_POS;
 
-    if(gpu_mine && halt_gpu){
-        tx->val_reads_gpu += threadComm[tx->rset_slot].reads_count;
-        tx->gpu_val_time += TIMER_DIFF_SECONDS(T1G, T2G);
+    /*add cpu_pos always, gpu_pos later if gpu employed*/
+    tx->val_reads += N-CPU_POS;
+
+    if(gpu_mine){
+        /*gpu is mine but CPU was so fast that gpu didnt meet it at the end*/
+        /*stop gpu from going forward*/
+        atomic_store(&halt_gpu, 1);
+
+        /*might underflow if cpu is to fast
+         * make it 0 if cpu completed faster than T2G was ever read*/
+        gt = TIMER_DIFF_SECONDS(T1G, T2G);
+        tx->gpu_val_time += (gt < 0 ? 0 : gt);
+
+        /*need to know N to print gpu average validation time per function call per function call*/
+        tx->gpu_employed_times += 1;
+
+
+        /*GPU_POS increments in blocks of MAX_OCCUPANCY*/
+
+        tx->gpu_validated += atomic_load_explicit(&GPU_POS, memory_order_relaxed);
+
+        tx->waste_double_validated += ABS(GPU_POS-CPU_POS);
+
+        /*total val_reads like in any other benchmark*/
+        /*keep it as a standard across all benchmarks*/
+        tx->val_reads+=GPU_POS;
+
+        //printf("CPU %d + GPU %d = %d\n", N-1-CPU_POS, GPU_POS, CPU_POS + GPU_POS);
+
+        /*submit counters before release fence*/
         /*relieve gpu of it's duty. Other transactions can now get the gpu*/
         atomic_flag_clear_explicit(&gpu_employed, memory_order_release);
     }
 
-    printf("CPU VALIDATED %d GPU VALIDATED %d\n", tx->val_reads, tx->val_reads_gpu);
 
     tx->stat_val_succ += threadComm[idx].valid ;//faster than a branch i guess, v is either 1 or 0
     tx->stat_val_fail += !threadComm[idx].valid;//

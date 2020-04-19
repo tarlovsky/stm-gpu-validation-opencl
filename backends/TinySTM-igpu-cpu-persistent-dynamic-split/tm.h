@@ -76,15 +76,23 @@
                                         stm_get_stats("nb_commits", &(statistics_array[SPECIAL_THREAD_ID()].n_commits));\
                                         stm_get_stats("nb_aborts", &(statistics_array[SPECIAL_THREAD_ID()].n_aborts));\
                                         stm_get_stats("val_reads", &(statistics_array[SPECIAL_THREAD_ID()].n_val_reads));\
+                                        stm_get_stats("cpu_validated", &(statistics_array[SPECIAL_THREAD_ID()].cpu_validated));\
+                                        stm_get_stats("gpu_validated", &(statistics_array[SPECIAL_THREAD_ID()].gpu_validated));\
+                                        stm_get_stats("waste_double_validated", &(statistics_array[SPECIAL_THREAD_ID()].waste_double_validated));\
+                                        stm_get_stats("gpu_employed_times", &(statistics_array[SPECIAL_THREAD_ID()].gpu_employed_times));\
                                         stm_get_stats("nb_val_succ", &(statistics_array[SPECIAL_THREAD_ID()].n_val_succ));\
                                         stm_get_stats("nb_val_fail", &(statistics_array[SPECIAL_THREAD_ID()].n_val_fail));\
-                                        printf("%.9f %.9f %.9f %d %d %llu %d %d\n",\
+                                        printf("%.9f %.9f %.9f %llu %llu %llu %llu %llu %llu %llu %d %d\n",\
                                                 statistics_array[SPECIAL_THREAD_ID()].val_time_local,\
                                                 statistics_array[SPECIAL_THREAD_ID()].cpu_val_time_local,\
                                                 statistics_array[SPECIAL_THREAD_ID()].gpu_val_time_local,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_commits,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_aborts,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_val_reads,\
+                                                statistics_array[SPECIAL_THREAD_ID()].cpu_validated,\
+                                                statistics_array[SPECIAL_THREAD_ID()].gpu_validated,\
+                                                statistics_array[SPECIAL_THREAD_ID()].waste_double_validated,\
+                                                statistics_array[SPECIAL_THREAD_ID()].gpu_employed_times,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_val_succ,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_val_fail);\
                                         stm_exit_thread()

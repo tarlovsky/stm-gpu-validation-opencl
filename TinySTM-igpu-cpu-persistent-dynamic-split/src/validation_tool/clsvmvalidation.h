@@ -163,7 +163,7 @@ extern atomic_ulong GPU_POS;
 
 /* tell the gpu to stop submersing into validation blocks.
  * can be set only by transaction currently owning the gpu*/
-extern unsigned int halt_gpu;
+extern atomic_int halt_gpu;
 
 /* transaction threads compete for gpu at start of validation. TODO implement a try_lock_for(time) */
 /* at the moment it tries once and quits */
@@ -198,7 +198,7 @@ extern atomic_int delegate_validate, /*transaction doing validation signals gpu_
 extern atomic_int gpu_exit_validity;
 
 /*                     Debug Buffers                      */
-extern uintptr_t *debug_buffer_arg;
+extern long *debug_buffer_arg;
 extern uintptr_t *debug_buffer_arg1;
 extern uintptr_t *debug_buffer_arg2;
 

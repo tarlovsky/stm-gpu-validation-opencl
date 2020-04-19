@@ -4,7 +4,7 @@
 
 #include "thread.h"
 
-__attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t statistics_array[32];
+__attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t statistics_array[16];
 
 __thread unsigned short thread_id;
 

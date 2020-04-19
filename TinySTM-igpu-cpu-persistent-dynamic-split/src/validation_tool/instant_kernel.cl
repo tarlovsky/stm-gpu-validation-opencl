@@ -101,7 +101,7 @@ __kernel void InstantKernel(
 #ifdef DEBUG_VALIDATION
 #if (DEBUG_VALIDATION == 1)
         ,
-        __global uintptr_t* debug_buffer,
+        __global long* debug_buffer,
         __global stm_word_t* debug_buffer1,
         __global stm_word_t* debug_buffer2
 #endif
@@ -182,27 +182,47 @@ __kernel void InstantKernel(
 
         if( Phase < ReqPhase ){//some thread subscribed to this work-group
                 j = (i + block_offset);
+
             //how many read entries will each WI do: n
             //n = ( meta_p->nb_entries + gpu_chunk_capacity - 1 ) / gpu_chunk_capacity;//ceil, example (673+672-1)/672=2, which means every wi will look twice
             //for( int j = i * n_per_wi; j < (i * n_per_wi) + n_per_wi; j++ ){
                 /* absolutely required */
-                if(j < rset_size){ /* if not ordered to break. Comment during early benchmarking */
+
+                /* if not ordered to break. Comment during early benchmarking */
+                //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
+
+                /*optimization difference:
+                 *
+                 * at 16384 read sets the time varies between 0.0000010
+                 *                                            0.0000016 with threadComm->valid check
+                 * difference: will validate more elements at high contention than should have
+                 * but at large read-set sizes we will experience a performance gain.
+                 * this implies: can only tell if invalid at block (5376) level granularity
+                 * */
+                if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
+                //if(j < rset_size){
 
                     r_entry_t r = r_entry_wrapper_pool[0].entries[j];
 
                     //increment in Shared Local Memory, work leader notifies world later
-                    atomic_fetch_add_explicit(&reads_validated, 1, memory_order_relaxed, memory_scope_work_group);
 
                     stm_word_t l = (*((volatile size_t *)(r.lock)));
 
+                    #ifdef DEBUG_VALIDATION
+                    #if (DEBUG_VALIDATION == 1)
+                        debug_buffer[i] = j;
+                        debug_buffer1[i] = l;
+                    #endif
+                    #endif
 
                     #ifdef DEBUG_VALIDATION
                     #if (DEBUG_VALIDATION)
-                    //debug_buffer[j]=i; // who did element j
-                    //debug_buffer1[j]=l;
-                    //debug_buffer2[j]=r.version;
+                        //debug_buffer[j]=i; // who did element j
+                        //debug_buffer1[j]=l;
+                        //debug_buffer2[j]=r.version;
                     #endif
                     #endif
+
                     if( LOCK_GET_OWNED(l) ) {
                         /* Do we own the lock? */
                         uintptr_t w = (uintptr_t) LOCK_GET_ADDR(l);
@@ -247,11 +267,13 @@ __kernel void InstantKernel(
             if( get_local_id(0) == 0 ){
                 //atomic_fetch_add_explicit(&comp_wkgps[get_group_id(0)],1,memory_order_seq_cst,memory_scope_all_svm_devices);
                 atomic_fetch_add_explicit(&SVMComm[COMPLETE], 1, memory_order_acq_rel, memory_scope_all_svm_devices);
-                atomic_fetch_add_explicit(
-                        &threadComm->reads_count,
-                        atomic_load_explicit(&reads_validated, memory_order_acquire, memory_scope_work_item),
-                        memory_order_relaxed,
-                        memory_scope_all_svm_devices);
+
+                //atomic_fetch_add_explicit(
+                //        &threadComm->reads_count,
+                //        get_local_size(0), /*i removed the individial work-item aromic counter and placed it here. overvalidate but better performance*/
+                        /*atomic_load_explicit(&reads_validated, memory_order_acquire, memory_scope_work_item),*/
+                //        memory_order_relaxed,
+                //        memory_scope_all_svm_devices);
             }
 
 		}//end reqphase

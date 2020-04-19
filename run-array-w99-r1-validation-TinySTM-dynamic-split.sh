@@ -159,7 +159,7 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 build_stm_and_benchmark
 
-for((sequential=0; sequential<=0;sequential++)); do
+for((sequential=0; sequential<=1;sequential++)); do
     #vary cpu validation percentage
 
     if [[ $sequential -eq 1 ]];then
@@ -168,16 +168,16 @@ for((sequential=0; sequential<=0;sequential++)); do
         FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation"
     fi
 
-    #echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
+    echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"CPU Val Reads\" \"stddev\" \"GPU Val Reads\" \"stddev\" \"Wasted Val Reads\" \"stddev\" \"GPU employment times\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
 
-    for((i=134217728;i<=134217728;i*=2));do
+    for((i=512;i<=134217728;i*=2));do
 
-        #echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
+        echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"CPU Val Reads\" \"GPU Val Reads\" \"Wasted Val Reads\" \"GPU employment times\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 
         sum=0
         avg=0
 
-        for k in {0..5}; do
+        for k in {0..30}; do
 
             if [[ $sequential -eq 1 ]];then
                 echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
@@ -185,9 +185,9 @@ for((sequential=0; sequential<=0;sequential++)); do
                 echo "RUN:$((k+1)), $threads threads, random array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
             fi
 
-            ./array/array -n$threads -r$i -s$sequential
-            #progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
-            #echo "$progout"
+            #./array/array -n$threads -r$i -s$sequential
+            progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
+            echo "$progout"
 
             threads_out=$(head -n "$threads" <<< "$progout")
             exec_time_power=($(tail -n 2 <<< "$progout"))
@@ -199,14 +199,18 @@ for((sequential=0; sequential<=0;sequential++)); do
             commits=$(awk '{ total += $4 } END { print total }' <<< "$threads_out")
             aborts=$(awk '{ total += $5 } END { print total }' <<< "$threads_out")
             val_reads=$(awk '{ total += $6 } END { print total }' <<< "$threads_out")
-            validation_succ=$(awk '{ total += $7 } END { print total }' <<< "$threads_out")
-            validation_fail=$(awk '{ total += $8 } END { print total }' <<< "$threads_out")
+            cpu_val_reads=$(awk '{ total += $7 } END { print total }' <<< "$threads_out")
+            gpu_val_reads=$(awk '{ total += $8 } END { print total }' <<< "$threads_out")
+            waste_val_reads=$(awk '{ total += $9 } END { print total }' <<< "$threads_out")
+            gpu_employment_times=$(awk '{ total += $10 } END { print total }' <<< "$threads_out")
+            validation_succ=$(awk '{ total += $11 } END { print total }' <<< "$threads_out")
+            validation_fail=$(awk '{ total += $12 } END { print total }' <<< "$threads_out")
 
             if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
             #restart
               echo "PROGRAM DID NOT RETURN CORRECT VALUES"
             else
-              echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
+              echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${cpu_val_reads} ${gpu_val_reads} ${waste_val_reads} ${gpu_employment_times} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
             fi
 
         done
@@ -252,6 +256,6 @@ for((sequential=0; sequential<=0;sequential++)); do
           }
         ' <<< cat "$TEMP_FILE")
 
-        #echo "$i $mean_stddev_col" >> $FILE
+        echo "$i $mean_stddev_col" >> $FILE
     done
 done
