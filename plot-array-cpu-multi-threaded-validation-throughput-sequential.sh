@@ -57,18 +57,18 @@ echo "col_gold=\"#8f8800\"" >> $FILE
 echo "set key font \",8\"" >> $FILE
 #echo "set key left Left left Left inside top" >> $FILE
 echo "set key inside bottom right" >> $FILE
-
+echo "set yrange [100000:10000000000]" >> $FILE
 echo "set ylabel \"READS VALIDATED / VALIDATION CALL / THREAD / SECOND\""  >> $FILE
 #echo "unset key" >> $FILE
 #l1
 echo  "set arrow from 5.8, graph 0 to 5.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE
-echo  "set label \"\$L1: 128KB\" at 5.9,0.00014 " >> $FILE
+echo  "set label \"\$L1: 128KB\" at 5.9, 1000000+100000 " >> $FILE
 #l2
 echo  "set arrow from 8.8, graph 0 to 8.8, graph 1 nohead lc rgb \"#bebebe\"" >> $FILE
-echo  "set label \"\$L2: 1.024MB\" at 8.9,0.00014*1.5 " >> $FILE
+echo  "set label \"\$L2: 1.024MB\" at 8.9, 1000000+100000*10 " >> $FILE
 #l3
 echo  "set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb \"#afafaf\"" >> $FILE
-echo  "set label \"\$L3: 8MB\" at 11.9,0.00014*2.5 " >> $FILE
+echo  "set label \"\$L3: 8MB\" at 11.9, 1000000+100000*20 " >> $FILE
 echo  "set title \"Only CPU, threaded validation, sequential walk\" font \",12\"" >> $FILE
 
 ##############################################################################################################################################################################
@@ -133,25 +133,34 @@ echo
 t_col_best_co_op="GLOBAL MINUMUM "
 t_col_best_co_op+=$(echo $BEST_CO_OP | sed 's/.*\///')
 
-echo "set yrange [100000:10000000000]" >> $FILE
-
 for i in 1 2 4 8;do
 
   echo "set title \"$i STM threads\" font \",12\"" >> $FILE
   echo  "plot \\"  >> $FILE
 
-  if [[ $i -eq 1 && $BEST_CO_OP -ne " " ]];then
-    echo  " '$BEST_CO_OP' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) / (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+  # \$2 = valtime
+  #  $i STM-threads
+  if [[ $i -eq 1 ]];then
+    # 12 valreads
+    # 14+16=val enters
+    #echo  " '$BEST_CO_OP' u (\$0):(((\$14+\$16)>0)?(((\$12/(ceil(\$14+\$16)))/\$2)/$i):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"$i STM THREADS $t_col_best_co_op\" lw 2 lc rgb \"#b01313\",\\"  >> $FILE
+    #  12 valreads
+    #  14 CPU VAL READS
+    #  16 GPU VAL READS
+    #  18 WASTED VAL READS
+    #  20 GPU employment times
+    #  22 Val success
+    #  24 Val fail
+    echo  " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' \\" >> $FILE
+    echo  "u (\$0):(((\$22+\$24)>0)?(((\$12/(ceil(\$22+\$24)))/\$2)/$i):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"$i STM CPU+GPU DYNAMIC CO-OP - BLOCKS\" lw 2 lc rgb \"#${blue_palette[$i]}\" ,\\"  >> $FILE
+    echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-blocks-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-igpu' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"Intel iGPU HD530 PERSISTENT KERNEL - BLOCKS\" dt new lw 2 lc rgb \"#${blue_palette[$i]}\" ,\\"  >> $FILE
   fi
 
+  #  8 valreads
+  #  10+12 = val enters
   #(((\$10+\$12)>0)?(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):(NaN))
-
-  #  8-valreads
-  #  10+12 - val enters
-  #  $i STM-threads
-  # (\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)
-  # /$i can be simplified but the formula is harder to grasp
-
+  #                                     (\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)
+  # (/$i) can be simplified out but the formula is harder to explain
   #AUTO-SCHED
   echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-8-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"AUTO-SCHED CPU -02 8 validation worker / STM thread\" lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
   echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"AUTO-SCHED CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
@@ -161,7 +170,7 @@ for i in 1 2 4 8;do
   #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-CUSTOM-PINNING/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) w yerrorlines t \"CUSTOM PINNING CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${blue_palette[$i]}\",\\"  >> $FILE
   #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl-CUSTOM-PINNING/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation-2-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) w yerrorlines t \"CUSTOM PINNING CPU -02 2 validation worker / STM thread\" dt new lc rgb \"#${blue_palette[$i]}\",\\"  >> $FILE
   #sequential execution
-  echo  " '$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE
+  echo  " '$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 1 validation worker / STM thread\" lw 2 lc rgb \"#${gold_palette[$i]}\",\\"  >> $FILE
 
   echo >> $FILE
 done

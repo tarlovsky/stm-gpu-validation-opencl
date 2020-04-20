@@ -1616,6 +1616,7 @@ void bindThread(long threadId) {
     sched_setaffinity(0, sizeof(cpu_set_t), &my_set);
 }
 
+
 __inline__ unsigned long long tick()
 {
   unsigned hi, lo;

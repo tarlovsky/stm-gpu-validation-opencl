@@ -72,9 +72,9 @@ echo  "set label \"\$L2: 1.024MB\" at 9.9,0.00000014*1.5 " >> $FILE
 #l3
 echo  "set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb \"#afafaf\"" >> $FILE
 echo  "set label \"\$L3: 8MB\" at 11.9,0.00000014*2.5 " >> $FILE
+
+
 echo  "set title \"Only CPU, threaded validation, sequential walk\" font \",12\"" >> $FILE
-
-
 #######################################################################################
 # out of all the data inside TinySTM-igpu-cpu-persistend (CO-OP) validation
 # find the fastest percentage. it is somewhere between 55-85% CPU validation assignment
@@ -246,6 +246,7 @@ echo "set grid" >> $FILE
 #echo "set style line 102 lc rgb'#101010' lt 0 lw 4" >> $FILE1
 #echo "set grid front ls 102" >> $FILE1
 ###############################################################
+#        CREATE THE HEATMAPS FOR VAL_TIME AND SPEEDUP         #
 HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file"
 HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file-speedup"
 header=$(awk 'NR>1{print $1}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
@@ -259,12 +260,17 @@ cpu=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-wal
 for i in ${BEST_CO_OP_somewhere[@]};do
   #from each file extract column 1 and 2
   #draw TINYSTM UNTOUCHED plane accross
-  row_name=$(echo $i | sed 's/.*\///')
-  row=$(awk 'NR>1{print $2}' $i)
+  row_name=$(echo $i | sed 's/.*\///') #strip all filepath, get only name of file
+  row=$(awk 'NR>1{print $2}' $i)       # get only val_time from cpu column 2
 
+  # join cpu val_time and BEST_SOMEWHERE valtime into one variable, look for smaller valtime in BEST_SOMEWHERE. if larger then print "-"
   JOINED=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1<$2){print $1;}else{print "-"}}')
+  # join cpu val_time and BEST_SOMEWHERE valtime into one variable, if no speedup then print "-"
+  # speedup is larger number over the other. how much faster is BEST_SOMEWHERE than our BASELINE cpu
   JOINED_SPEEDUP=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1<$2){printf "%.2f ", $2/$1;}else{print "-"}}')
+  #echo entire line into heat file with BEST_SOMEWHERE file name as column $1
   echo \"${row_name//1-random-/}\" $JOINED >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
+  #echo entire speedup line into heat file with BEST_SOMEWHERE file name as column $1
   echo \"${row_name//1-random-/}\" $JOINED_SPEEDUP >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP
 done
 

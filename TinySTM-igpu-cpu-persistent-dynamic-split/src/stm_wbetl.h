@@ -62,7 +62,8 @@ stm_wbetl_validate(stm_tx_t *tx)
     double gt;
     int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
-    long twoThirdsN = N - N / 3;
+    /*some known chunk where it is known that the GPU is never fast enough to reech*/
+    //long THRESHOLD = N - N / 3;
     int gpu_mine = 0;
     r_entry_t *r;
     stm_word_t l;
@@ -121,7 +122,11 @@ stm_wbetl_validate(stm_tx_t *tx)
 
         /* optimization: start checking two interthreaded variables only past half
          * because we know cpu is at least twice as fast than gpu */
-        //if(gpu_mine && CPU_POS < twoThirdsN){
+
+        /**/
+        /* this is useful because loads to GPU_POS are evaded by checking on a constant */
+        /* if(gpu_mine && CPU_POS < THRESHOLD){ */
+
         if(gpu_mine){
             //printf("GPU_POS%d\n", GPU_POS);
             /* CPU_POS starts from 0      |    <- N-1
