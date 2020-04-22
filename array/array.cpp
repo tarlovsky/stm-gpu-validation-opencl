@@ -56,22 +56,23 @@ void *test(void *data)
 
     TM_THREAD_ENTER();
     TM_BEGIN();
-    while (ops--) {
-        for (i = my_start; i < my_end; i++) {
-            if (enable_sequential == 0) {
-                j = rand() % rset_size;
-                TM_SHARED_READ_P(array[j]);
-            } else {
-                TM_SHARED_READ_P(array[i]);
+        while (ops--) {
+            for (i = my_start; i < my_end; i++) {
+                if (enable_sequential == 0) {
+                    j = rand() % rset_size;
+                    TM_SHARED_READ_P(array[j]);
+                } else {
+                    TM_SHARED_READ_P(array[i]);
+                }
             }
         }
-    }
-    /* tinystm will only validate if CONCURRENT transaction incremented global clock */
-    /* by writing to your own write set you do not advance global clock before commit*/
-    /* when random this works. when sequential you write to your own chunk*/
-    /* so write to someone elses */
-    TM_SHARED_WRITE_P(array[my_start+4], id); // +4 because lock order covers 4 words and you dont want to write into other tx'x rset
+        /* tinystm will only validate if CONCURRENT transaction incremented global clock */
+        /* by writing to your own write set you do not advance global clock before commit*/
+        /* when random this works. when sequential you write to your own chunk*/
+        /* so write to someone elses */
+        TM_SHARED_WRITE_P(array[my_start+4], id); // +4 because lock order covers 4 words and you dont want to write into other tx'x rset
     TM_END();
+
     TM_THREAD_EXIT();
 
     return NULL;

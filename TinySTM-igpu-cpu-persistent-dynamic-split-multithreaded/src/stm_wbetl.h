@@ -62,6 +62,7 @@ stm_wbetl_validate(stm_tx_t *tx)
     double gt;
     int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
+    threadComm[idx].valid = 1;
     /*some known chunk where it is known that the GPU is never fast enough to reech*/
     //long THRESHOLD = N - N / 3;
     int gpu_mine = 0;
@@ -74,39 +75,43 @@ stm_wbetl_validate(stm_tx_t *tx)
 
         /* compete for gpu employment */
         /* if it's not taken take it. Try once, move one */
-        if(!atomic_flag_test_and_set(&gpu_employed)) {
-            //printf("THREAD %d WON GPU !\n", idx);
-            //printf("winner employing gpu\n");
-            /*if off cpu does all the work and do not collect counters from gpu*/
-            gpu_mine = 1;
+        if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == -1) {
+            atomic_store_explicit(&gpu_employed, idx, memory_order_acq_rel);
+            /*was someone was faster than us?*/
+            if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == idx) {
 
-            /* halted when invalidated */
-            halt_gpu = 0;
+                //printf("THREAD %d WON GPU !\n", idx);
+                //printf("winner employing gpu\n");
+                /*if off cpu does all the work and do not collect counters from gpu*/
+                gpu_mine = 1;
 
-            gpu_exit_validity = 1;
-            atomic_store_explicit(&GPU_POS, 0, memory_order_relaxed);
-            //GPU_POS = 0;
+                /* halted when invalidated */
+                halt_gpu = 0;
 
-            threadComm[idx].valid = 1;
-            threadComm[idx].nb_entries = N;
+                gpu_exit_validity = 1;
+                atomic_store_explicit(&GPU_POS, 0, memory_order_relaxed);
+                //GPU_POS = 0;
 
-            /* in how many parts can we break r_set.entries?:*/
+                threadComm[idx].nb_entries = N;
 
-            /*this overshoots rset size but gets everything*/
-            //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
+                /* in how many parts can we break r_set.entries?:*/
 
-            /*this does not overshoot. cpu will be fast enough to take care of gap.*/
-            threadComm[idx].submersions = N / global_dim[0];
+                /*this overshoots rset size but gets everything*/
+                //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
 
-            threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
-            threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
-            halt_gpu = 0;
+                /*this does not overshoot. cpu will be fast enough to take care of gap.*/
+                threadComm[idx].submersions = N / global_dim[0];
 
-            pthread_mutex_lock(&validate_mutex);
+                threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
+                threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
+                halt_gpu = 0;
+
+                pthread_mutex_lock(&validate_mutex);
                 //printf("SIGNALING GPU SIGNALER THREAD..\n");
-                atomic_store_explicit(&delegate_validate, 1, memory_order_release);
-                pthread_cond_signal(&validate_cond);
-            pthread_mutex_unlock(&validate_mutex);
+                    atomic_store_explicit(&delegate_validate, 1, memory_order_release);
+                    pthread_cond_signal(&validate_cond);
+                pthread_mutex_unlock(&validate_mutex);
+            }
         }else{
             //printf("THREAD %d LOST GPU !\n", idx);
         }
@@ -205,6 +210,7 @@ ret:
     tx->cpu_validated += N-CPU_POS;
 
     /*add cpu_pos always, gpu_pos later if gpu employed*/
+    printf("%d CPU_N %d\n", idx, N-CPU_POS);
     tx->val_reads += N-CPU_POS;
 
     if(gpu_mine){
@@ -236,11 +242,12 @@ ret:
 
         /*submit counters before release fence*/
         /*relieve gpu of it's duty. Other transactions can now get the gpu*/
-        atomic_flag_clear_explicit(&gpu_employed, memory_order_release);
+        //printf("CLEARING GPU_EMPLOYED %d\n", idx);
+        atomic_store_explicit(&gpu_employed, -1, memory_order_release);
     }
 
 
-    tx->stat_val_succ += threadComm[idx].valid ;//faster than a branch i guess, v is either 1 or 0
+    tx->stat_val_succ += threadComm[idx].valid;//faster than a branch i guess, v is either 1 or 0
     tx->stat_val_fail += !threadComm[idx].valid;//
 
     return threadComm[tx->rset_slot].valid;

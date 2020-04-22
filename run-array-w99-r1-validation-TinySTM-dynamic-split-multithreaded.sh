@@ -161,11 +161,12 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 
 
-for((sequential=1 ; sequential<=1;sequential++)); do
+for((sequential=1; sequential<=1;sequential++)); do
     #vary cpu validation percentage
 
 
     sed -i "s/SEQUENTIAL=.*/SEQUENTIAL=${sequential}/g" "./$global_stm/$MAKEFILE"
+
     build_stm_and_benchmark
 
     if [[ $sequential -eq 1 ]];then
@@ -176,7 +177,7 @@ for((sequential=1 ; sequential<=1;sequential++)); do
 
     echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"CPU Val Reads\" \"stddev\" \"GPU Val Reads\" \"stddev\" \"Wasted Val Reads\" \"stddev\" \"GPU employment times\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
 
-    for((i=512;i<=134217728;i*=2));do
+    for((i=134217728;i<=134217728;i*=2));do
 
         echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"CPU Val Reads\" \"GPU Val Reads\" \"Wasted Val Reads\" \"GPU employment times\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 

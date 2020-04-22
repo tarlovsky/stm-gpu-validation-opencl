@@ -35,7 +35,7 @@ atomic_int halt_gpu;
 
 /* transaction threads compete for gpu at start of validation. TODO implement a try_lock_for(time) */
 /* at the moment it tries once and quits */
-atomic_flag gpu_employed;
+atomic_int gpu_employed;
 
 size_t global_dim[1];
 size_t lws[1];
@@ -115,7 +115,7 @@ int initializeCL(volatile stm_word_t **locks_pointer){
     atomic_store_explicit(&validate_complete,0,memory_order_relaxed);
     atomic_store_explicit(&shutdown_gpu,0,memory_order_relaxed);
     atomic_store_explicit(&gpu_exit_validity, 1,memory_order_relaxed); /*use this variable to reduce contention on threadComm[idx].valid. set it after gpu exits with invalid state*/
-    atomic_flag_clear(&gpu_employed);
+    atomic_store_explicit(&gpu_employed, -1, memory_order_relaxed);
 
     cl_int status = 0;
     cl_uint platformCount = 0;
@@ -518,7 +518,6 @@ int initializeDeviceData(){
             RW_SET_SIZE * sizeof(r_entry_t), //4096 is the default size in tinystm
             CACHELINE_SIZE
         );
-
     }
 
     /* fix for error: "kernel parameter cannot be declared as a pointer to a pointer" */
@@ -688,29 +687,31 @@ int launchInstantKernel(void){
 
     /*initialize thread that will wait for co-op validation signal*/
 
-    int *i = malloc(sizeof(*i));
-    *i = 0; /*dynamically set this as global later, for single threaded validation it is set here.*/
+    //int *i = malloc(sizeof(*i));
+    //*i = 0; /*dynamically set this as global later, for single threaded validation it is set here.*/
     pthread_attr_t attr;
-    pthread_attr_init(&attr);
+    pthread_attr_init(&attr); // sets default values
     /*STM threads are pinned down to cores in round robin 0,1,2,3,4,5,6,7*/
     /*if we want gpu proxy thread to run in parallel we must alter it's shed policy otherwise it will be also pinned down to this core*/
 
+    /*do not confuse scheduling policy with thread/core pinning/binding*/
     //pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
     //pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     //pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
     /*create gpu signaler thread*/
-    pthread_create(&gpu_delegate_thread, &attr, signal_gpu, (void*) i);
+    pthread_create(&gpu_delegate_thread, &attr, signal_gpu, NULL);
 
     return 0;
 }
 
-void* signal_gpu(void *slot){
+void* signal_gpu(void){
 
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
     int submersions;
     int i;
-    int idx = *((int *) slot); /*threadComm will be same as grabbedSlot*/
+    int idx;
 
     while (!atomic_load_explicit(&shutdown_gpu, memory_order_acquire)) {
         /*wait on condition to launch validation from co-op routine*/
@@ -719,6 +720,9 @@ void* signal_gpu(void *slot){
             while (!atomic_load_explicit(&delegate_validate, memory_order_acquire)) {
                 pthread_cond_wait(&validate_cond, &validate_mutex);
             }
+            /*who is the current employer*/
+            idx = atomic_load_explicit(&gpu_employed, memory_order_acquire); /*threadComm will be same as grabbedSlot*/
+            printf("WORKING FOR %d\n", idx);
         pthread_mutex_unlock(&validate_mutex);
 
         /*do work*/
@@ -790,6 +794,7 @@ void* signal_gpu(void *slot){
                      * if cpu invalidated while we were working
                      * or one of work-items just invalidated: exit
                      * removes expensive check in every work item */
+                    printf("FINISHED HELPING %d\n", idx);
                     if(!threadComm[idx].valid){break;}else{i++;}
                 }
 

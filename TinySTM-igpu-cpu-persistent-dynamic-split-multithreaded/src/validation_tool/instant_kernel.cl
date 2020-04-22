@@ -80,6 +80,7 @@ typedef struct thread_control{
     unsigned long submersions;
     unsigned int block_offset;
     unsigned int nb_entries;
+    char padding[CACHELINE_SIZE]; /*avoid false sharing*/
 } thread_control_t;
 
 /* clSetKernelExecInfo(..., CL_KERNEL_EXEC_INFO_SVM_PTRS,...) for each p in clsvmvalidation.c::r_entry_wrapper_t array
@@ -199,8 +200,8 @@ __kernel void InstantKernel(
                  * but at large read-set sizes we will experience a performance gain.
                  * this implies: can only tell if invalid at block (5376) level granularity
                  * */
-                if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
-                //if(j < rset_size){
+                //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
+                if(j < rset_size){
 
                     r_entry_t r = r_entry_wrapper_pool[0].entries[j];
 

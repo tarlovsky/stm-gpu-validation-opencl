@@ -21,7 +21,7 @@ echo "unset tmargin" >> $FILE
 echo "unset rmargin" >> $FILE
 echo "unset lmargin" >> $FILE
 
-echo "set multiplot layout 1,2 title \"Transactional array walk application; multi-threaded validation; READS VALIDATED / VALIDATE CALL / THREAD / SECOND; Intel 6700k CPU 4cores-8threads vs TinySTM-WBETL untouched\" font \",14\"" >> $FILE
+echo "set multiplot layout 1,2 title \"Transactional array walk application; multi-threaded validation; READS VALIDATED / VALIDATE CALL / SECOND; Intel 6700k CPU 4cores-8threads vs TinySTM-WBETL untouched\" font \",14\"" >> $FILE
 echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE
 #echo "set datafile missing \"x\"" >> $FILE
 #echo "unset ytics" >> $FILE
@@ -57,7 +57,7 @@ echo "set key font \",8\"" >> $FILE
 #echo "set key left Left left Left inside top" >> $FILE
 echo "set key left" >> $FILE
 
-echo "set ylabel \"READS VALIDATED / FUNCTION CALL / THREAD / SECOND\""  >> $FILE
+echo "set ylabel \"READS VALIDATED / FUNCTION CALL / SECOND\""  >> $FILE
 #echo "unset key" >> $FILE
 #l1
 echo  "set arrow from 5.8, graph 0 to 5.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE

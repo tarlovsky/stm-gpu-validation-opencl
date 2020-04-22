@@ -138,6 +138,7 @@ typedef struct thread_control{
     unsigned long submersions;
     unsigned int block_offset;
     unsigned int nb_entries;
+    char padding[CACHELINE_SIZE]; /*avoid false sharing*/
 } thread_control_t;
 
 typedef struct r_entry_wrapper{
@@ -167,7 +168,7 @@ extern atomic_int halt_gpu;
 
 /* transaction threads compete for gpu at start of validation. TODO implement a try_lock_for(time) */
 /* at the moment it tries once and quits */
-extern atomic_flag gpu_employed;
+extern atomic_int gpu_employed;
 
 //Create the NDRange
 extern size_t global_dim[1];
@@ -212,7 +213,7 @@ int initializeHost(void);
 void testStatus(int status, char *errorMsg);
 int initializeCL(volatile stm_word_t **lock_pointer);
 int launchInstantKernel(void);
-void* signal_gpu(void *);
+void* signal_gpu(void);
 
 int cleanupCL(void);
 int cleanupHost();

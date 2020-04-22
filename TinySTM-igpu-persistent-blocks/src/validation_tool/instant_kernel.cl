@@ -80,6 +80,7 @@ typedef struct thread_control{
     unsigned long submersions;
     unsigned int block_offset;
     unsigned int nb_entries;
+    unsigned int n_per_wi; /*K*/
 } thread_control_t;
 
 /* clSetKernelExecInfo(..., CL_KERNEL_EXEC_INFO_SVM_PTRS,...) for each p in clsvmvalidation.c::r_entry_wrapper_t array
@@ -101,9 +102,9 @@ __kernel void InstantKernel(
 #ifdef DEBUG_VALIDATION
 #if (DEBUG_VALIDATION == 1)
         ,
-        __global uintptr_t* debug_buffer,
-        __global stm_word_t* debug_buffer1,
-        __global stm_word_t* debug_buffer2
+        __global int* debug_buffer,
+        __global int* debug_buffer1,
+        __global int* debug_buffer2
 #endif
 #endif
         )
@@ -153,6 +154,7 @@ __kernel void InstantKernel(
     __local uint block_offset;
     __local uint rset_size;
     __local atomic_int reads_validated;
+    __local int n_per_wi;
 
 	Finish = 0;
 	ReqPhase = 0;
@@ -162,34 +164,50 @@ __kernel void InstantKernel(
 	__private uint Phase = 0;
     __private uint i = get_global_id(0);
     __private uint j;
+    __private uint start;
 
 	while(1){
 
 		if ( get_local_id(0) == 0 ) {
-		    atomic_store_explicit(&reads_validated, 0, memory_order_release, memory_scope_work_group);
+            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_release, memory_scope_all_svm_devices);
+		    block_offset = threadComm->block_offset;
+            rset_size = threadComm->nb_entries;
+            n_per_wi = threadComm->n_per_wi;
+
+		    //atomic_store_explicit(&reads_validated, 0, memory_order_release, memory_scope_work_group);
             /* acquire memory fence is inserted right before atomic operation, so all write results of other work-items
              * within operation scope become visible to current work-item before atomic operation starts.*/
-            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_release, memory_scope_all_svm_devices);
+
 			ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_release, memory_scope_all_svm_devices);
-            block_offset = threadComm->block_offset;
-            rset_size = threadComm->nb_entries;
-            //n_per_wi = threadComm->n_per_wi;
 		}
 
 		barrier( CLK_LOCAL_MEM_FENCE );
 
 		if(Finish != 0) return;
 
-        if( Phase < ReqPhase ){//some thread subscribed to this work-group
-                j = (i + block_offset);
+        if( Phase < ReqPhase ){ //some thread subscribed to this work-group
+            //j = i + block_offset;
+            //start = i * n_per_wi; /*actually speeds up performance*/
 
             //how many read entries will each WI do: n
             //n = ( meta_p->nb_entries + gpu_chunk_capacity - 1 ) / gpu_chunk_capacity;//ceil, example (673+672-1)/672=2, which means every wi will look twice
-            //for( int j = i * n_per_wi; j < (i * n_per_wi) + n_per_wi; j++ ){
-                /* absolutely required */
 
+            /*coalesced memory access*/
+            //for(j = start + block_offset; j < start + n_per_wi + block_offset; j++){
+
+            /*strided mem access in stride of 32*/
+            for(int k = 0; k < n_per_wi;k++){
+                j=(get_group_id(0)*7+get_sub_group_id())+(168*(k+get_sub_group_local_id()));
                 /* if not ordered to break. Comment during early benchmarking */
                 //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
+
+                #ifdef DEBUG_VALIDATION
+                #if (DEBUG_VALIDATION == 1)
+                debug_buffer[i] = j;
+                debug_buffer1[i] = (get_group_id(0)*7+get_sub_group_id());//;
+                debug_buffer2[i] = get_sub_group_local_id();
+                #endif
+                #endif
 
                 /*optimization difference:
                  *
@@ -208,19 +226,11 @@ __kernel void InstantKernel(
 
                     stm_word_t l = (*((volatile size_t *)(r.lock)));
 
-                    #ifdef DEBUG_VALIDATION
-                    #if (DEBUG_VALIDATION == 1)
-                    debug_buffer[j] = l;
-                    debug_buffer1[j] = threadComm->w_set_base;
-                    debug_buffer2[j] = threadComm->w_set_end;
-                    #endif
-                    #endif
+
 
                     if( LOCK_GET_OWNED(l) ) {
                         /* Do we own the lock? */
                         uintptr_t w = (uintptr_t) LOCK_GET_ADDR(l);
-
-
 
                         /* Simply check if address falls inside our write set */
                         if( !(threadComm->w_set_base <= w && w < threadComm->w_set_end) ){
@@ -242,15 +252,13 @@ __kernel void InstantKernel(
                         }
                         /* Same version: OK */
                     }
-
                 } /*i < threadComm->nb_entries*/
-
-            //}//end for
+            }//end for
 
             Phase++;//private to every WI//prevent each WI from doing more work. This validation is done.
 
             /* All work-items in a work-group must execute this function before any are allowed to continue execution beyond the barrier. */
-            barrier( CLK_GLOBAL_MEM_FENCE );//on global memory containing atomic control
+            //barrier( CLK_GLOBAL_MEM_FENCE );//workgroup barrier on global memory containing atomic control
 
             if( get_local_id(0) == 0 ){
                 //atomic_fetch_add_explicit(&comp_wkgps[get_group_id(0)],1,memory_order_seq_cst,memory_scope_all_svm_devices);

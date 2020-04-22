@@ -138,6 +138,7 @@ typedef struct thread_control{
     unsigned long submersions;
     unsigned int block_offset;
     unsigned int nb_entries;
+    unsigned int n_per_wi; /*K*/
 } thread_control_t;
 
 typedef struct r_entry_wrapper{
@@ -169,9 +170,9 @@ extern r_entry_wrapper_t* r_entry_pool_cl_wrapper;
 extern volatile stm_word_t **locks;
 
 /*                     Debug Buffers                      */
-extern uintptr_t *debug_buffer_arg;
-extern uintptr_t *debug_buffer_arg1;
-extern uintptr_t *debug_buffer_arg2;
+extern int *debug_buffer_arg;
+extern int *debug_buffer_arg1;
+extern int *debug_buffer_arg2;
 
 extern thread_control_t* threadComm;/* meta used to pass which validation set to validate between host and device */
 

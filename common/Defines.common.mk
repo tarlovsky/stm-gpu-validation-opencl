@@ -1,6 +1,6 @@
 LIB := ../lib
 
-STM := ../TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded
+STM := ../TinySTM-igpu-persistent-blocks
 
 CC       := g++
 CPP      := g++

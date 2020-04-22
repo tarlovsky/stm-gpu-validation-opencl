@@ -58,7 +58,7 @@ echo "set key font \",8\"" >> $FILE
 echo "set key inside bottom right" >> $FILE
 
 echo "set yrange [100000:10000000000]" >> $FILE
-echo "set ylabel \"READS VALIDATED / VALIDATION CALL / THREAD / SECOND\""  >> $FILE
+echo "set ylabel \"READS VALIDATED / VALIDATION CALL / SECOND\""  >> $FILE
 #echo "unset key" >> $FILE
 #l1
 echo  "set arrow from 5.8, graph 0 to 5.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE

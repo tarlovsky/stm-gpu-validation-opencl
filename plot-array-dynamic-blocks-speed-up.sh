@@ -82,7 +82,46 @@ for i in 1 2 4 8; do
     #plot
     # RSET SIZE
     #
-    echo "set title \"$i STM threads ($mode array walk) - time in seconds\" font \",16\"" >> $FILE1
+    echo "set title \"$i STM threads CPU+GPU ONLY ($mode array walk) - time in seconds\" font \",16\"" >> $FILE1
+    echo "plot '$RESUL_FILE_SPEEDUP' matrix rowheaders columnheaders w image,\\" >> $FILE1
+    echo "     '$RESUL_FILE_SPEEDUP' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"x%.2f\",\$3)) : (sprintf(\"-\")))) with labels font \",11.5\",\\" >> $FILE1
+    echo "     '$RESUL_FILE' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%f\",\$3)) : (sprintf(\" \")))):xtic(1) with labels,\\" >> $FILE1
+    echo >> $FILE1
+    ################################################################################################################
+    ################################################################################################################
+    ########################################   GPU ONLY PERSISTENT BLOCKS   ########################################
+    ################################################################################################################
+    ################################################################################################################
+    #folder of config we are comparing agains baseline tinystm
+    #store all intermedeiate files here because they belong to them
+    TARGET_FOLDER="$RESULTS_DIR/TinySTM-igpu-persistent-blocks-wbetl/$i/array-r99-w1-$mode-walk"
+
+    #get cpu-only val_time
+    cpu_val_time=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation")
+    #get current config valtime
+    co_op_val_time=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-igpu-persistent-blocks-wbetl/$i/array-r99-w1-$mode-walk/1-$mode-igpu")
+    #parse speedup between them
+    SPEEDUP=$(paste <(echo "$co_op_val_time") <(echo "$cpu_val_time") | awk '{if($1<$2){printf "%.2f ", $2/$1;}else{print "-"}}')
+
+    RESUL_FILE="$TARGET_FOLDER/tabled-data"
+    RESUL_FILE_SPEEDUP="$TARGET_FOLDER/tabled-data-speedup"
+
+    #such a fucking hack. create two files in order to FORMAT plots them differently, lol
+    #one with speedups %.2f, and one with time in seconds.
+    echo "\"NAME\"" $rset_sizes > $RESUL_FILE_SPEEDUP
+    echo $SPEEDUP
+    echo "\"SPEED-UP\"" $SPEEDUP >> $RESUL_FILE_SPEEDUP
+    echo "\"TINYSTM-COOPERATIVE-VALIDATION\"" $empty_line >> $RESUL_FILE_SPEEDUP
+    echo "\"TINYSTM-BASELINE\"" $empty_line >> $RESUL_FILE_SPEEDUP
+
+    echo "\"NAME\"" $rset_sizes > $RESUL_FILE
+    echo "\"Speed-up\"" $empty_line >> $RESUL_FILE
+    echo "\"Cooperative-validation\"" $co_op_val_time >> $RESUL_FILE
+    echo "\"Unaltered\"" $cpu_val_time >> $RESUL_FILE
+    #plot
+    # RSET SIZE
+    #
+    echo "set title \"$i STM threads GPU ONLY ($mode array walk) - time in seconds\" font \",16\"" >> $FILE1
     echo "plot '$RESUL_FILE_SPEEDUP' matrix rowheaders columnheaders w image,\\" >> $FILE1
     echo "     '$RESUL_FILE_SPEEDUP' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"x%.2f\",\$3)) : (sprintf(\"-\")))) with labels font \",11.5\",\\" >> $FILE1
     echo "     '$RESUL_FILE' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%f\",\$3)) : (sprintf(\" \")))):xtic(1) with labels,\\" >> $FILE1

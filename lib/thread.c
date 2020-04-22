@@ -4,7 +4,7 @@
 
 #include "thread.h"
 
-__attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t statistics_array[16];
+__attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t statistics_array[32];
 
 __thread unsigned short thread_id;
 
@@ -39,10 +39,7 @@ __thread long threadID;
 
         THREAD_LOCAL_SET(global_threadId, (long)threadId);
 
-        //TODO ADD BINDING WHEN RUNNING MULTITHREADED STMS
-        //REMOVED THIS SHIT WHEN IT FUCKED WITH CO-OP VALIDATION, HAD TO RESTART AGAIN
-        //MULTITHREADED VALIDATION BROKEN TOO
-        //bindThread(threadId);
+        bindThread(threadId);
 
         while (1) {
             THREAD_BARRIER(global_barrierPtr, threadId); /* wait for start parallel */
@@ -95,7 +92,6 @@ __thread long threadID;
 
         /* Set up pool */
         THREAD_ATTR_INIT(global_threadAttr);
-
         for (i = 1; i < numThread; i++) {
             THREAD_CREATE(global_threads[i],
                           global_threadAttr,

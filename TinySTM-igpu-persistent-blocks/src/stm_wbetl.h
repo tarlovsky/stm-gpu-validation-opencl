@@ -33,7 +33,7 @@
 //need to print uintptr
 #include "inttypes.h"
 #include "timer.h"
-
+#include <math.h>
 #if CM == CM_MODULAR
 /* Function declaration */
 static NOINLINE void stm_drop(stm_tx_t *tx);
@@ -62,19 +62,54 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
-    int b, blocks, val_reads_local;
+    int b, val_reads_local;
+    int n_per_wi = CONSTANTK;
 
     threadComm[idx].valid = 1;
+
+    /*set K*/
+    /*global_dim[0] = 5376 on intel hd530 GT2*/
+
+    /*
+     * 134217728 / 5376 = 24966 (integer div)
+     * 134217216 = 5376 * 24966
+     * r = 512
+     */
+    int elements_in_block = n_per_wi * global_dim[0];
+
+    /* Divide N over elements to be validated per block
+     * estimate iterations to capture all entries. */
+    int upper_block_lim = threadComm[idx].submersions = (N + elements_in_block - 1) / (elements_in_block);
+
+    /*we overshoot in block count anyway (prev line)*/
+    //int r = N - (upper_block_lim * global_dim[0]); /*remainder/irregular parallelism/tail/do last/extra small block*/
+
+    /*
+     * e.g.:
+     * N=16384
+     * min_blocks=3
+     * r=256
+     * n_per_wi = ceil( 3 * (K/100) )
+     *          = ceil(0.03)
+     *          = 1
+     * blocks = ceil( N / (5376*n_per_wi) )
+     *        = ceil( 16384 / (5376*1) ) [integer div]
+     *        = 3
+     * ***********************************************
+     *
+     *
+     *
+     * */
+
+    //printf("N=%d BLOCKS=%d n_per_wi=%d ELEMENTS_IN_BLOCK=%d TOTAL_VALIDATIONS=%d ENTERED IN EXCESS=%d\n", N, upper_block_lim, n_per_wi, elements_in_block, upper_block_lim*elements_in_block, upper_block_lim*elements_in_block - N);
     threadComm[idx].nb_entries = N;
-
-    /*enter one ceil division times*/
-    blocks = threadComm[idx].submersions = (N + global_dim[0] - 1)/global_dim[0];
-
+    threadComm[idx].n_per_wi = n_per_wi;
     threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
     threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
 
+
     b = 0;
-    while(b < blocks){
+    while(b < upper_block_lim){
 
         //printf("GPU RUN %d\n", i);
         /*TODO counters will overflow in long runnning tx.
@@ -82,21 +117,22 @@ stm_wbetl_validate(stm_tx_t *tx)
          * Up to 60 seconds tpcc tested*/
         pCommBuffer[PHASE] = ++cl_global_phase;
 
-        threadComm[idx].block_offset = b * global_dim[0];
+        threadComm[idx].block_offset = b * elements_in_block;
 
         while (pCommBuffer[COMPLETE] < g_numWorkgroups);
-
+        //printf("just finished block=%d N=%d BLOCKS=%d n_per_wi=%d ELEMENTS_IN_BLOCK=%d TOTAL_VALIDATIONS=%d ENTERED IN EXCESS=%d\n", b, N, upper_block_lim, n_per_wi, elements_in_block, upper_block_lim*elements_in_block, upper_block_lim*elements_in_block - N);
 
 #ifdef DEBUG_VALIDATION
         #if (DEBUG_VALIDATION)
 
                     /* CHECKED LOCKS GET INTO THE FREAKING KERNEL AND ARE DEREFERENCED OK!*/
                     for(int i = 0; i < global_dim[0]; i++){
-                        r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
-                        stm_word_t l = *((volatile stm_word_t*)(r.lock));
+                        //r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
+                        //stm_word_t l = *((volatile stm_word_t*)(r.lock));
                         //if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
+                        printf("wi:%4d %6d %6d %6d\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], debug_buffer_arg2[i]);
                         //printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
-                        printf("work item i %4d: LOCK GPU:%016" PRIXPTR " LOCK CPU:%016" PRIXPTR ",  MY WSET [%016" PRIXPTR " %016" PRIXPTR "] \n", i, debug_buffer_arg[i], l, threadComm[idx].w_set_base, threadComm[idx].w_set_end);
+                        //printf("work item i %4d: LOCK GPU:%016" PRIXPTR " LOCK CPU:%016" PRIXPTR ",  MY WSET [%016" PRIXPTR " %016" PRIXPTR "] \n", i, debug_buffer_arg[i], l, threadComm[idx].w_set_base, threadComm[idx].w_set_end);
                         //}
                     }
 
@@ -120,7 +156,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 #endif /*DEBUG_VALIDATION*/
 
 
-        val_reads_local+=5376;
+        val_reads_local+=elements_in_block;
 
         pCommBuffer[COMPLETE] = 0;
         /* while gpu was vaidating, cpu might have invalidated tx. Break */

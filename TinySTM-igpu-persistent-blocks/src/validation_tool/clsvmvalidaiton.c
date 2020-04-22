@@ -64,9 +64,9 @@ struct timespec T2C;
 struct timespec T1G;
 struct timespec T2G;
 
-uintptr_t *debug_buffer_arg;
-uintptr_t *debug_buffer_arg1;
-uintptr_t *debug_buffer_arg2;
+int *debug_buffer_arg;
+int *debug_buffer_arg1;
+int *debug_buffer_arg2;
 
 /* glogal number of workgroups occupied by instant kernel */
 unsigned int g_numWorkgroups;
@@ -506,35 +506,35 @@ int initializeDeviceData(){
     debug_buffer_arg = (uintptr_t*) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-            RW_SET_SIZE * sizeof(uintptr_t),
+            RW_SET_SIZE * sizeof(int),
             CACHELINE_SIZE
     );
     if(debug_buffer_arg == NULL){
         printf("could not allocate debug_buffer_arg \n");
     }
-    memset(debug_buffer_arg, 0, sizeof(uintptr_t) * RW_SET_SIZE);
+    memset(debug_buffer_arg, 0, sizeof(int) * RW_SET_SIZE);
 
     debug_buffer_arg1 = (stm_word_t *) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-            RW_SET_SIZE * sizeof(stm_word_t),
+            RW_SET_SIZE * sizeof(int),
             CACHELINE_SIZE
     );
     if(debug_buffer_arg1 == NULL){
         printf("could not allocate debug_buffer_arg1 \n");
     }
-    memset(debug_buffer_arg1, 0, sizeof(stm_word_t) * RW_SET_SIZE);
+    memset(debug_buffer_arg1, 0, sizeof(int) * RW_SET_SIZE);
 
     debug_buffer_arg2 = (uintptr_t*) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
-            RW_SET_SIZE * sizeof(uintptr_t),
+            RW_SET_SIZE * sizeof(int),
             CACHELINE_SIZE
     );
     if(debug_buffer_arg2 == NULL){
         printf("could not allocate debug_buffer_arg2 \n");
     }
-    memset(debug_buffer_arg2, 0, sizeof(uintptr_t) * RW_SET_SIZE);
+    memset(debug_buffer_arg2, 0, sizeof(int) * RW_SET_SIZE);
 
 #endif /*DEBUG_VALIDATION == 1*/
 #endif /*DEBUG_VALIDATION*/
