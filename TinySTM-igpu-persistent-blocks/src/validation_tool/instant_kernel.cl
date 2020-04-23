@@ -205,9 +205,9 @@ __kernel void InstantKernel(
 
                 #ifdef DEBUG_VALIDATION
                 #if (DEBUG_VALIDATION == 1)
-                debug_buffer[i] = j;
-                debug_buffer1[i] = get_sub_group_local_id();//simd element
-                debug_buffer2[i] = get_group_id(0)*7+get_sub_group_id(); /*global */
+                debug_buffer[i] = j; /*global_id i->element to acccess*/
+                debug_buffer1[i] = get_sub_group_local_id();//simd element index
+                debug_buffer2[i] = hw_thread_id; /*globalhw thread id */
                 #endif
                 #endif
 

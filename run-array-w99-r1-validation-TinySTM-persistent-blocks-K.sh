@@ -150,17 +150,18 @@ TEMP_FILE="$RESULTS_DIR/temp"
 # 200 is where things get really slow. around 70 seconds validating at N=16777216
 # 2 seems to be the best performance
 # TODO investigate why
-#declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100 200)
-declare -a KARRAY=(200)
+declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100 200)
+declare -a KARRAY=(20 40 50 100 200) #re-do
 declare -a RSET=(4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728)
 N_SAMPLES=10
-SEQ_ENABLED=1 #do both seq and rand
+SEQ_ENABLED=0 #do both seq and rand
 
 #debug
 DEBUG=0
+#debug params
 if [[ DEBUG -eq 1 ]]; then
-  declare -a KARRAY=(1)
-  declare -a RSET=(8192)
+  declare -a KARRAY=(1 2 3 4 5 10 20 50 100)
+  declare -a RSET=(5376)
   SEQ_ENABLED=0
   N_SAMPLES=1
 fi
@@ -169,7 +170,7 @@ fi
 for K in ${KARRAY[@]}; do #co-op blind search
   echo "===================== $K ====================="
 
-  for((sequential=1; sequential<=$SEQ_ENABLED;sequential++)); do
+  for((sequential=0; sequential<=$SEQ_ENABLED;sequential++)); do
       #vary cpu validation percentage
 
       if [[ $sequential -eq 1 ]]; then
