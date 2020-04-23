@@ -164,7 +164,9 @@ __kernel void InstantKernel(
 	__private uint Phase = 0;
     __private uint i = get_global_id(0);
     __private uint j;
-    __private uint start;
+//    __private uint start;
+    __private uint sub_local_id = get_sub_group_local_id();
+    __private uint hw_thread_id = (get_group_id(0)*7+get_sub_group_id());
 
 	while(1){
 
@@ -187,25 +189,25 @@ __kernel void InstantKernel(
 
         if( Phase < ReqPhase ){ //some thread subscribed to this work-group
             //j = i + block_offset;
-            //start = i * n_per_wi; /*actually speeds up performance*/
-
-            //how many read entries will each WI do: n
-            //n = ( meta_p->nb_entries + gpu_chunk_capacity - 1 ) / gpu_chunk_capacity;//ceil, example (673+672-1)/672=2, which means every wi will look twice
+            //start = i * n_per_wi; /*actually speeds up performance having calculated it once, stupid intel compiler*/
 
             /*coalesced memory access*/
             //for(j = start + block_offset; j < start + n_per_wi + block_offset; j++){
 
-            /*strided mem access in stride of 32*/
+            /*strided mem access in stride of 32. BEST PERFORMANCE EVER*/
             for(int k = 0; k < n_per_wi;k++){
-                j=(get_group_id(0)*7+get_sub_group_id())+(168*(k+get_sub_group_local_id()));
+                /*godly cheat memory access*/
+                /* first term is "global hw thread id" */
+                /* this only works if IDs are invariant for kernel execution*/
+                j=hw_thread_id+(168*(k+sub_local_id)) + block_offset;
                 /* if not ordered to break. Comment during early benchmarking */
                 //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
 
                 #ifdef DEBUG_VALIDATION
                 #if (DEBUG_VALIDATION == 1)
                 debug_buffer[i] = j;
-                debug_buffer1[i] = (get_group_id(0)*7+get_sub_group_id());//;
-                debug_buffer2[i] = get_sub_group_local_id();
+                debug_buffer1[i] = get_sub_group_local_id();//simd element
+                debug_buffer2[i] = get_group_id(0)*7+get_sub_group_id(); /*global */
                 #endif
                 #endif
 

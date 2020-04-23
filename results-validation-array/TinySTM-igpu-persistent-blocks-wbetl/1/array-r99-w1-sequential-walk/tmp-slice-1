@@ -1,0 +1,17 @@
+"NAME" "4096"
+"1-STM-threads-strided-K=1" 0.000011
+"1-STM-threads-strided-K=2" 0.000016
+"1-STM-threads-strided-K=3" 0.000020
+"1-STM-threads-strided-K=4" 0.000024
+"1-STM-threads-strided-K=5" 0.000028
+"1-STM-threads-strided-K=6" 0.000032
+"1-STM-threads-strided-K=7" 0.000037
+"1-STM-threads-strided-K=8" 0.000040
+"1-STM-threads-strided-K=9" 0.000042
+"1-STM-threads-strided-K=10" 0.000047
+"1-STM-threads-strided-K=20" 0.000072
+"1-STM-threads-strided-K=40" 0.000084
+"1-STM-threads-strided-K=50" 0.000087
+"1-STM-threads-strided-K=100" 0.000098
+"TINYSTM-BASELINE-CPU-ONLY" 0.000003000
+"CO-OP-CPU+GPU" 0.000007

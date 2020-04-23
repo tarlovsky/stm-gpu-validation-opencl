@@ -125,32 +125,32 @@ stm_wbetl_validate(stm_tx_t *tx)
 #ifdef DEBUG_VALIDATION
         #if (DEBUG_VALIDATION)
 
-                    /* CHECKED LOCKS GET INTO THE FREAKING KERNEL AND ARE DEREFERENCED OK!*/
-                    for(int i = 0; i < global_dim[0]; i++){
-                        //r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
-                        //stm_word_t l = *((volatile stm_word_t*)(r.lock));
-                        //if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
-                        printf("wi:%4d %6d %6d %6d\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], debug_buffer_arg2[i]);
-                        //printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
-                        //printf("work item i %4d: LOCK GPU:%016" PRIXPTR " LOCK CPU:%016" PRIXPTR ",  MY WSET [%016" PRIXPTR " %016" PRIXPTR "] \n", i, debug_buffer_arg[i], l, threadComm[idx].w_set_base, threadComm[idx].w_set_end);
-                        //}
-                    }
+            /* CHECKED LOCKS GET INTO THE FREAKING KERNEL AND ARE DEREFERENCED OK!*/
+            for(int i = 0; i < global_dim[0]; i++){
+                //r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
+                //stm_word_t l = *((volatile stm_word_t*)(r.lock));
+                //if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
+                printf("block %d wi:%4d %6d %6d %6d\n", b, i, debug_buffer_arg[i], debug_buffer_arg1[i], debug_buffer_arg2[i]);
+                //printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
+                //printf("work item i %4d: LOCK GPU:%016" PRIXPTR " LOCK CPU:%016" PRIXPTR ",  MY WSET [%016" PRIXPTR " %016" PRIXPTR "] \n", i, debug_buffer_arg[i], l, threadComm[idx].w_set_base, threadComm[idx].w_set_end);
+                //}
+            }
 
-                    //printf("VALIDATION RESULT: %d\n", threadComm[idx].valid);
+            //printf("VALIDATION RESULT: %d\n", threadComm[idx].valid);
 
-                    /*for(int j = 0; j < global_dim[0]; j++){
-                        //verified work inside
-                        printf("work item i %4d writes: %llu, %016" PRIXPTR "] [%016" PRIXPTR ",  %016" PRIXPTR "] \n", j, debug_buffer_arg[j], debug_buffer_arg1[j], threadComm[idx].w_set_base, threadComm[idx].w_set_end);
-                    }*/
+            /*for(int j = 0; j < global_dim[0]; j++){
+                //verified work inside
+                printf("work item i %4d writes: %llu, %016" PRIXPTR "] [%016" PRIXPTR ",  %016" PRIXPTR "] \n", j, debug_buffer_arg[j], debug_buffer_arg1[j], threadComm[idx].w_set_base, threadComm[idx].w_set_end);
+            }*/
 
-                    /* TDD */
-                    /* PASS - LOCKS APPEAR AS OUTSIDE. */
-                    /* PASS - LOCKS ARE PASSING OUT OF KERNEL AS LONG AS DEBUG_BUFFER IS STM_WORD_T */
+            /* TDD */
+            /* PASS - LOCKS APPEAR AS OUTSIDE. */
+            /* PASS - LOCKS ARE PASSING OUT OF KERNEL AS LONG AS DEBUG_BUFFER IS STM_WORD_T */
 
-                    /* reset kernel debug array on every iteration */
-                    memset(debug_buffer_arg, 0, sizeof(stm_word_t*) * RW_SET_SIZE);
-                    memset(debug_buffer_arg1, 0, sizeof(stm_word_t) * RW_SET_SIZE);
-                    memset(debug_buffer_arg2, 0, sizeof(stm_word_t) * RW_SET_SIZE);
+            /* reset kernel debug array on every iteration */
+            memset(debug_buffer_arg, 0, sizeof(int*) * N);
+            memset(debug_buffer_arg1, 0, sizeof(int) * N);
+            memset(debug_buffer_arg2, 0, sizeof(int) * N);
 
 #endif /*DEBUG_VALIDATION == 1*/
 #endif /*DEBUG_VALIDATION*/

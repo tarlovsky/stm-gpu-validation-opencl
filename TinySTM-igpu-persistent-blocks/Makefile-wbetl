@@ -247,7 +247,7 @@ DEFINES += -UUNIT_TX
 # DEFINES += -DVR_THRESHOLD_DEFAULT=3
   DEFINES += -DINITIAL_RS_SVM_BUFFERS_OCL=1
   DEFINES += -DCPU_VALIDATION_PROPORTION=1
-  DEFINES += -DCONSTANTK=2
+  DEFINES += -DCONSTANTK=200
 
 ########################################################################
 # Do not modify anything below this point!
