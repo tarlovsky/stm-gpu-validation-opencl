@@ -126,15 +126,16 @@ stm_wbetl_validate(stm_tx_t *tx)
         #if (DEBUG_VALIDATION)
 
             /* CHECKED LOCKS GET INTO THE FREAKING KERNEL AND ARE DEREFERENCED OK!*/
-            for(int i = 0; i < global_dim[0]; i++){
+            //for(int i = 0; i < N; i++){
                 //r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
                 //stm_word_t l = *((volatile stm_word_t*)(r.lock));
                 //if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
-                printf("block %d wi:%4d %6d %6d %6d\n", b, i, debug_buffer_arg[i], debug_buffer_arg1[i], debug_buffer_arg2[i]);
+                //printf("block %d wi:%4d %6d %6d %6d\n", b, i, debug_buffer_arg[i], debug_buffer_arg1[i], debug_buffer_arg2[i]);
+                //printf("wi:%5d %5d\n", i, debug_buffer_arg[i]);
                 //printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
                 //printf("work item i %4d: LOCK GPU:%016" PRIXPTR " LOCK CPU:%016" PRIXPTR ",  MY WSET [%016" PRIXPTR " %016" PRIXPTR "] \n", i, debug_buffer_arg[i], l, threadComm[idx].w_set_base, threadComm[idx].w_set_end);
                 //}
-            }
+            //}
 
             //printf("VALIDATION RESULT: %d\n", threadComm[idx].valid);
 
@@ -148,9 +149,9 @@ stm_wbetl_validate(stm_tx_t *tx)
             /* PASS - LOCKS ARE PASSING OUT OF KERNEL AS LONG AS DEBUG_BUFFER IS STM_WORD_T */
 
             /* reset kernel debug array on every iteration */
-            memset(debug_buffer_arg, 0, sizeof(int*) * N);
-            memset(debug_buffer_arg1, 0, sizeof(int) * N);
-            memset(debug_buffer_arg2, 0, sizeof(int) * N);
+            //memset(debug_buffer_arg, 0, sizeof(int*) * N);
+            //memset(debug_buffer_arg1, 0, sizeof(int) * N);
+            //memset(debug_buffer_arg2, 0, sizeof(int) * N);
 
 #endif /*DEBUG_VALIDATION == 1*/
 #endif /*DEBUG_VALIDATION*/
@@ -169,6 +170,14 @@ stm_wbetl_validate(stm_tx_t *tx)
         if(!threadComm[idx].valid){break;}else{b++;}
     }
     TIMER_READ(stop);
+
+#ifdef DEBUG_VALIDATION
+    #if (DEBUG_VALIDATION)
+    for(int i = 0; i < N; i++){
+        printf("i:%8d %10d\n", i, debug_buffer_arg[i]);
+    }
+    #endif /*DEBUG_VALIDATION == 1*/
+#endif /*DEBUG_VALIDATION*/
 
     //printf("GPU VALIDATED %d\n", threadComm[tx->rset_slot].reads_count);
 

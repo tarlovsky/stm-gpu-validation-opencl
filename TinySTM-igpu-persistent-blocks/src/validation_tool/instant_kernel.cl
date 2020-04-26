@@ -74,13 +74,13 @@ typedef struct thread_control{
     uintptr_t w_set_base;
     uintptr_t w_set_end;
     atomic_int r_pool_idx;  /* index within the r_entry_pool */
-    atomic_int reads_count; /* stats */
+    atomic_uint reads_count; /* stats */
     atomic_int valid;
-    atomic_int Phase;
+    atomic_uint Phase;
     unsigned long submersions;
-    unsigned int block_offset;
-    unsigned int nb_entries;
-    unsigned int n_per_wi; /*K*/
+    atomic_uint block_offset;
+    atomic_uint nb_entries;
+    atomic_uint n_per_wi; /*K*/
 } thread_control_t;
 
 /* clSetKernelExecInfo(..., CL_KERNEL_EXEC_INFO_SVM_PTRS,...) for each p in clsvmvalidation.c::r_entry_wrapper_t array
@@ -93,6 +93,9 @@ typedef struct r_entry_wrapper{
 
 //single define inside
 #include "debug_validation.h"
+
+#define COALESCED 1
+#define STRIDED !COALESCED
 
 __kernel void InstantKernel(
 		__global unsigned int* pCommBuffer,
@@ -116,8 +119,10 @@ __kernel void InstantKernel(
     __global volatile atomic_int* SVMComm =
     (__global volatile atomic_int*) pCommBuffer;
 
+    __private uint sub_local_id = get_sub_group_local_id();
+
     //each hw thread notifies that its is ready
-    if( get_sub_group_local_id() == 0 ){
+    if( sub_local_id == 0 ){
         /* release fence is inserted right after atomic operation, so write results of the current work-item
          * immediately become visible to others once atomic operation finishes*/
         atomic_fetch_add_explicit(
@@ -164,23 +169,23 @@ __kernel void InstantKernel(
 	__private uint Phase = 0;
     __private uint i = get_global_id(0);
     __private uint j;
-//    __private uint start;
-    __private uint sub_local_id = get_sub_group_local_id();
+
+#if (COALESCED == 1)
+    __private uint start;
+#elif(STRIDED == 1)
     __private uint hw_thread_id = (get_group_id(0)*7+get_sub_group_id());
+#endif
 
 	while(1){
 
 		if ( get_local_id(0) == 0 ) {
-            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_release, memory_scope_all_svm_devices);
-		    block_offset = threadComm->block_offset;
-            rset_size = threadComm->nb_entries;
-            n_per_wi = threadComm->n_per_wi;
-
-		    //atomic_store_explicit(&reads_validated, 0, memory_order_release, memory_scope_work_group);
             /* acquire memory fence is inserted right before atomic operation, so all write results of other work-items
              * within operation scope become visible to current work-item before atomic operation starts.*/
-
-			ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_release, memory_scope_all_svm_devices);
+		    ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_acquire, memory_scope_all_svm_devices);
+            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_acquire, memory_scope_all_svm_devices);
+		    block_offset = atomic_load_explicit(&threadComm->block_offset, memory_order_acquire, memory_scope_all_svm_devices);
+            rset_size = atomic_load_explicit(&threadComm->nb_entries, memory_order_acquire, memory_scope_all_svm_devices);
+            n_per_wi = atomic_load_explicit(&threadComm->n_per_wi, memory_order_acquire, memory_scope_all_svm_devices);
 		}
 
 		barrier( CLK_LOCAL_MEM_FENCE );
@@ -188,29 +193,29 @@ __kernel void InstantKernel(
 		if(Finish != 0) return;
 
         if( Phase < ReqPhase ){ //some thread subscribed to this work-group
+/*#############################################################################################################*/
+            /*coalesced with no for loops, where:*/
+            /*n_per_wi == always 1 */
             //j = i + block_offset;
-            //start = i * n_per_wi; /*actually speeds up performance having calculated it once, stupid intel compiler*/
-
+/*#############################################################################################################*/
+#if (COALESCED == 1)
             /*coalesced memory access*/
-            //for(j = start + block_offset; j < start + n_per_wi + block_offset; j++){
-
-            /*strided mem access in stride of 32. BEST PERFORMANCE EVER*/
+            start = i * n_per_wi; /*actually speeds up performance having calculated it once, stupid intel compiler*/
+            for(j = block_offset + start; j < block_offset + start + n_per_wi; j++){
+/*#############################################################################################################*/
+#elif(STRIDED == 1)
+            /*strided mem access in stride of 32. performs better at large n_per_wi*/
             for(int k = 0; k < n_per_wi;k++){
+/*#############################################################################################################*/
                 /*godly cheat memory access*/
                 /* first term is "global hw thread id" */
-                /* this only works if IDs are invariant for kernel execution*/
-                j=hw_thread_id+(168*(k+sub_local_id)) + block_offset;
-                /* if not ordered to break. Comment during early benchmarking */
-                //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
-
-                #ifdef DEBUG_VALIDATION
-                #if (DEBUG_VALIDATION == 1)
-                debug_buffer[i] = j; /*global_id i->element to acccess*/
-                debug_buffer1[i] = get_sub_group_local_id();//simd element index
-                debug_buffer2[i] = hw_thread_id; /*globalhw thread id */
-                #endif
-                #endif
-
+                /* second term maps which elements with a space of 168 is current work-item going to validate*/
+                /* third term offsets because we are parsing in blocks*/
+                /* fourth term is magic */
+                /* this only works if IDs are invariant for kernel execution: which they are*/
+                j=hw_thread_id+(168*(k+sub_local_id)) + (5376*k) + block_offset;
+#endif
+/*#############################################################################################################*/
                 /*optimization difference:
                  *
                  * at 16384 read sets the time varies between 0.0000010
@@ -220,15 +225,22 @@ __kernel void InstantKernel(
                  * this implies: can only tell if invalid at block (5376) level granularity
                  * */
                 //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
+/*#############################################################################################################*/
                 if(j < rset_size){
+
+                    #ifdef DEBUG_VALIDATION
+                    #if (DEBUG_VALIDATION == 1)
+                    debug_buffer[j] = get_global_id(0); /*global_id i->element to acccess*/
+                    //debug_buffer1[i] = get_sub_group_local_id();//simd element index
+                    //debug_buffer2[i] = (get_group_id(0)*7+get_sub_group_id()); /*globalhw thread id */
+                    #endif
+                    #endif
 
                     r_entry_t r = r_entry_wrapper_pool[0].entries[j];
 
                     //increment in Shared Local Memory, work leader notifies world later
 
                     stm_word_t l = (*((volatile size_t *)(r.lock)));
-
-
 
                     if( LOCK_GET_OWNED(l) ) {
                         /* Do we own the lock? */

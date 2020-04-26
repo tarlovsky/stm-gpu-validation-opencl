@@ -75,8 +75,8 @@ STM_CPPFLAGS_TinySTM = -I$(TINY_STM_INC_DIR) -DSTM_TINY_STM
 STM_LDFLAGS_TinySTM = -L$(TINY_STM_BIN_DIR) -lstm
 
 ###################### IGPU ########################
-STM_CPPFLAGS_TinySTM-igpu-persistent = -I$(TINYIGPU_STM_INC_DIR) -DSTM_TINY_STM
-STM_LDFLAGS_TinySTM-igpu-persistent = -L$(TINYIGPU_STM_BIN_DIR) -lstm -lOpenCL
+STM_CPPFLAGS_TinySTM-igpu-persistent-coalesced = -I$(TINYIGPU_STM_INC_DIR) -DSTM_TINY_STM
+STM_LDFLAGS_TinySTM-igpu-persistent-coalesced = -L$(TINYIGPU_STM_BIN_DIR) -lstm -lOpenCL
 
 STM_CPPFLAGS_swissTM = -I$(WLPDSTM_INC_DIR) -DSTM_WLPDSTM
 STM_LDFLAGS_swissTM = -L$(WLPDSTM_BIN_DIR) -lwlpdstm

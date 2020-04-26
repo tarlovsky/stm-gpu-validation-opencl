@@ -132,13 +132,13 @@ typedef struct thread_control{
     uintptr_t w_set_base;
     uintptr_t w_set_end;
     atomic_int r_pool_idx;  /* index within the r_entry_pool */
-    atomic_int reads_count; /* stats */
+    atomic_uint reads_count; /* stats */
     atomic_int valid;
-    atomic_int Phase;
+    atomic_uint Phase;
     unsigned long submersions;
-    unsigned int block_offset;
-    unsigned int nb_entries;
-    unsigned int n_per_wi; /*K*/
+    atomic_uint block_offset;
+    atomic_uint nb_entries;
+    atomic_uint n_per_wi; /*K*/
 } thread_control_t;
 
 typedef struct r_entry_wrapper{

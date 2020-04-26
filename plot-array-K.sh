@@ -30,7 +30,6 @@ echo "set datafile separator \" \"" >> $FILE1
 
 echo "set palette model RGB defined ( 0.00001 \"#63d5ff\", 0.000025 \"#d663ff\", 0.000075 \"#9b7df0\", 0.000125 \"#b5d2ff\", 0.000795 \"#ff9900\", 0.00835 \"#d6cd1f\", 0.0145 \"#fa7a5a\",0.085 \"#fb8e72\",0.1055 \"#ffb545\")" >> $FILE1
 
-
 #echo "set cbtics (4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728)" >> $FILE1
 echo "set key autotitle columnhead" >> $FILE1
 echo "set ytics nomirror font \"Computer Modern, 11\" " >> $FILE1
@@ -43,7 +42,8 @@ echo "set xtics rotate by 45 right scale 0 font \"Computer Modern,12\" offset 0,
 
 #echo "set cbrange [0.00000001:2]" >> $FILE1
 #echo "set palette rgb -21,-22,-23" >> $FILE1
-declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100) #ignoring 200. coalesced 200 did not finish and coalesced random was too slow
+#declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100) #ignoring 200. coalesced 200 did not finish and coalesced random was too slow
+declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100 200 500 1000 10000 24966)
 declare -a RSET=(4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728)
 
 #read-set-sizes
@@ -74,7 +74,6 @@ for i in 1 2 4 8; do
 # EXTRACT ONLY DATAPOINTS FROM CPU AND BEST-CO-OP EXISTANT IN VARYING-K STATISTIC #
 
 ########################### CPU ###########################
-
     #extract only those datapoints/readsets we have with "varying K" files/stats
     for r in ${RSET[@]};
     do
@@ -87,7 +86,7 @@ for i in 1 2 4 8; do
     do
       echo $(awk -v r=$r 'NR>1{if($1==r){print $0}}' "$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation") >> $TMP1
     done
-########################### CO-OP ###########################
+
     cpu_val_time=$(awk '{print $2}' $TMP)
     #get PREVIOUS BEST VAL_TIME. CO-OP- DYNAMIC SPLIT K=1, (THE ONE WITH A LOT OF SUBMERSIONS)
     co_op_val_time=$(awk '{print $2}' $TMP1)
@@ -128,8 +127,8 @@ for i in 1 2 4 8; do
     echo  "set arrow 2 from -0.5, 0.5 to 10.5, 0.5 front nohead lc rgb \"#ffffff\" lw 1" >> $FILE1
     echo  "set arrow 3 from -0.5, 1.5 to 10.5, 1.5 front nohead lc rgb \"#ffffff\" lw 1" >> $FILE1
 
-    echo "\"TINYSTM-BASELINE-CPU-ONLY\"" $cpu_val_time | tee -a $RESULS_FILE_COALESCED $RESULS_FILE_STRIDED
     echo "\"CO-OP-CPU+GPU\"" $co_op_val_time | tee -a $RESULS_FILE_COALESCED $RESULS_FILE_STRIDED
+    echo "\"TINYSTM-BASELINE-CPU-ONLY\"" $cpu_val_time | tee -a $RESULS_FILE_COALESCED $RESULS_FILE_STRIDED
 
     echo "set title \"COALESCED access varying K (\'N-PER-WORK-ITEM\') ($mode array access)\" font \"Computer Modern,14\"" >> $FILE1
     echo "plot '$RESULS_FILE_COALESCED' matrix rowheaders columnheaders w image,\\" >> $FILE1

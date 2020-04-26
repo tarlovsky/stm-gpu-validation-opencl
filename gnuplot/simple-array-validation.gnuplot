@@ -38,16 +38,16 @@ set label "$L3: 8MB" at 11.9,0.00000014*2.5
 set title "Only CPU, threaded validation, sequential walk" font ",12"
 set title "CPU worker threads; GPU Persistent Kernel threads;CPU+GPU co-operation" font ",12"
 plot \
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-random-GPU-NAIVE-CALL-KERNEL-EVERYTIME'    u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal" lw 2 lc rgb "#3cde33" pt 16,\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-48wkgps-128wi-each-acq-rel'    u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "Persistent Kernel 48WKGPS-128WKGPSIZE-ACQ-REL , random array traversal" lw 2 lc rgb col_48,\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-24wkgps-224wi-each-acq-rel'    u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal" lw 2 lc rgb col_24,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-random-GPU-NAIVE-CALL-KERNEL-EVERYTIME'    u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal" lw 2 lc rgb "#3cde33" pt 16,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-48wkgps-128wi-each-acq-rel'    u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "Persistent Kernel 48WKGPS-128WKGPSIZE-ACQ-REL , random array traversal" lw 2 lc rgb col_48,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-24wkgps-224wi-each-acq-rel'    u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "Persistent Kernel 24WKGPS-224WKGPSIZE-ACQ-REL , random array traversal" lw 2 lc rgb col_24,\
  'results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) with yerrorlines t "CPU 02 1 THREADS VALIDATING random array traversal" lc rgb col_gold,\
  'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u ($0):2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 2 THREADS VALIDATING random array traversal" dt new lc rgb "black",\
  'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u ($0):2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 4 THREADS VALIDATING random array traversal" dt new1 lc rgb "black",\
  'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u ($0):2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 8 THREADS VALIDATING random array traversal" lc rgb "black",\
  'results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 1 THREADS VALIDATING sequential array traversal" dt new lc rgb col_gold pt 17,\
  'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-67-gpu-33' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "" dt new lc rgb "#b01313",\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS 224WI/WKGP NO VALIDATION LOGIC, PERSISTENT KERNEL POLLING OVERHEAD" dt new lc rgb col_24 pt 8,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS 224WI/WKGP NO VALIDATION LOGIC, PERSISTENT KERNEL POLLING OVERHEAD" dt new lc rgb col_24 pt 8,\
 
 set title "CPU with threaded validation " font ",12"
 plot \
@@ -64,12 +64,12 @@ set style data linespoints
 set yrange [0.0000001:0.0001]
 set title "GPU C11 ATOMICS MEMORY ORDER COMPARISON + DIFFERENT GPU OCCUPANCY " font ",12"
 plot \
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP SEQ-CST Persistent Kernel polling" lw 2 lc rgb col_48 pt 1,\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP REL-ACQ Persistent Kernel polling" dt new lc rgb col_48 pt 1,\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP RELAXED Persistent Kernel polling" dt new1 lc rgb col_48 pt 1,\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS-224WI/WKGP SEQ-CST Persistent Kernel polling" lw 2 lc rgb col_24 pt 1,\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS-224WI/WKGP REL-ACQ Persistent Kernel polling" dt new lc rgb col_24 pt 1,\
- 'results-validation-array/TinySTM-igpu-persistent-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS-224WI/WKGP RELAXED Persistent Kernel polling" dt new1 lc rgb col_24 pt 1
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP SEQ-CST Persistent Kernel polling" lw 2 lc rgb col_48 pt 1,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP REL-ACQ Persistent Kernel polling" dt new lc rgb col_48 pt 1,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 4:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP RELAXED Persistent Kernel polling" dt new1 lc rgb col_48 pt 1,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS-224WI/WKGP SEQ-CST Persistent Kernel polling" lw 2 lc rgb col_24 pt 1,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS-224WI/WKGP REL-ACQ Persistent Kernel polling" dt new lc rgb col_24 pt 1,\
+ 'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS-224WI/WKGP RELAXED Persistent Kernel polling" dt new1 lc rgb col_24 pt 1
 set style data lines
 set yrange [0.0000001:10]
 set title "CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance" font ",12"

@@ -150,33 +150,41 @@ TEMP_FILE="$RESULTS_DIR/temp"
 # 200 is where things get really slow. around 70 seconds validating at N=16777216
 # 2 seems to be the best performance
 # TODO investigate why
-declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100 200)
-declare -a KARRAY=(20 40 50 100 200) #re-do
+declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100) # 200 500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
+declare -a KARRAY=(500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
 declare -a RSET=(4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728)
+
 N_SAMPLES=10
-SEQ_ENABLED=0 #do both seq and rand
+SEQ_ONLY=0
+SEQ_ENABLED=1 #do both seq and rand: 0..1
+
+mem_access="coalesced"
+#mem_access="strided"
 
 #debug
 DEBUG=0
+
 #debug params
 if [[ DEBUG -eq 1 ]]; then
-  declare -a KARRAY=(1 2 3 4 5 10 20 50 100)
-  declare -a RSET=(5376)
-  SEQ_ENABLED=0
-  N_SAMPLES=1
+  declare -a KARRAY=(24966)
+  declare -a RSET=(134217728)
+  SEQ_ONLY=0
+  SEQ_ENABLED=1
+  # for i=SEQ_ONLY; i<=SEQ_ENABLED
+  N_SAMPLES=5
 fi
 
 
 for K in ${KARRAY[@]}; do #co-op blind search
   echo "===================== $K ====================="
 
-  for((sequential=0; sequential<=$SEQ_ENABLED;sequential++)); do
+  for((sequential=$SEQ_ONLY; sequential<=$SEQ_ENABLED;sequential++)); do
       #vary cpu validation percentage
 
       if [[ $sequential -eq 1 ]]; then
-        FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-strided-mem-K-$K"
+        FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-$mem_access-mem-K-$K"
       else
-        FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-strided-mem-K-$K"
+        FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-$mem_access-mem-K-$K"
       fi
 
       # this is the number of elements every work-item will do
@@ -190,29 +198,29 @@ for K in ${KARRAY[@]}; do #co-op blind search
       fi
 
       # VARY READ SET
-      for i in ${RSET[@]};do
+      for i in ${RSET[@]}; do
 
-          #if [[ $((K + i)) > 5376 ]]
-          #   continue;
-          #
-
-          if [[ DEBUG -eq 0 ]]; then
+          #if [[ DEBUG -eq 0 ]]; then
             echo "\"Validation time(S)\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
-          fi
+          #fi
           sum=0
           avg=0
 
-          # do a nice average
-          for ((k=0;k < N_SAMPLES;k++)) do
-
+                    # do a nice average
+          for ((k=1;k <= N_SAMPLES;k++)) do
+              if [[ $((K * 5376)) -gt $i ]]; then
+                echo "0 0 0 0 0 0 0 0" >> $TEMP_FILE
+                #echo "continuing on $((K * 5376)) > $i"
+                continue;
+              fi
               #echo out what wer are doing
               if [[ $sequential -eq 1 ]]; then
-                  echo "SAMPLE:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i N_PER_WI/K=$K"
+                  echo "SAMPLE:$((k)), $threads threads, sequential array walk, $global_stm rset:$i N_PER_WI/K=$K"
               else
-                  echo "SAMPLE:$((k+1)), $threads threads, random array walk, $global_stm rset:$i N_PER_WI/K=$K"
+                  echo "SAMPLE:$((k)), $threads threads, random array walk, $global_stm rset:$i N_PER_WI/K=$K"
               fi
 
-              if [[ DEBUG -eq 0 ]]; then
+              #if [[ DEBUG -eq 0 ]]; then
                   progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
                   echo "$progout"
                   threads_out=$(head -n "$threads" <<< "$progout")
@@ -232,55 +240,56 @@ for K in ${KARRAY[@]}; do #co-op blind search
                   else
                     echo "${val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
                   fi
-              else
+              #else
                   #in debug just print values
-                  ./array/array -n$threads -r$i -s$sequential
-              fi
+                  #./array/array -n$threads -r$i -s$sequential
+              #fi
 
           done
 
-          if [[ DEBUG -eq 0 ]]; then
-              #throw mean and stdev into file
-              mean_stddev_col=$(awk '
-                  NR > 1 {
-                      n=NR-1
+          #throw mean and stdev into file
+          mean_stddev_col=$(awk '
+              NR > 1 {
+                  n=NR-1
+                  for(i=1;i<=NF;i++){
+                      sum[i]+=$i;
+                      array[n,i]=$i
+                  }
+              }
+              END {
+                  if(NR>1){
+                      NR=NR-1
                       for(i=1;i<=NF;i++){
-                          sum[i]+=$i;
-                          array[n,i]=$i
+                          avg[i]=sum[i]/NR;
+                      }
+
+                      for(i=1;i<=NR;i++){
+                          for(j=1;j<=NF;j++){
+                              sumsq[j]+=((array[i,j]-(sum[j]/NR))**2);
+                          }
+                      }
+
+                      for(i=1;i<=NF;i++){
+                          p_avg=avg[i]
+                          p_sqrt=sqrt(sumsq[i]/NR)
+
+                          f_avg="%f "
+                          f_sqrt="%f "
+
+                          if(p_avg==0){
+                              f_avg="%d "
+                          }
+                          if(p_sqrt==0){
+                              f_sqrt="%d "
+                          }
+                          #printf "%f %f ", p_avg, p_sqrt;
+                          printf f_avg f_sqrt, p_avg, p_sqrt;
                       }
                   }
-                  END {
-                      if(NR>1){
-                          NR=NR-1
-                          for(i=1;i<=NF;i++){
-                              avg[i]=sum[i]/NR;
-                          }
-
-                          for(i=1;i<=NR;i++){
-                              for(j=1;j<=NF;j++){
-                                  sumsq[j]+=((array[i,j]-(sum[j]/NR))**2);
-                              }
-                          }
-
-                          for(i=1;i<=NF;i++){
-                              p_avg=avg[i]
-                              p_sqrt=sqrt(sumsq[i]/NR)
-
-                              f_avg="%f "
-                              f_sqrt="%f "
-
-                              if(p_avg==0){
-                                  f_avg="%d "
-                              }
-                              if(p_sqrt==0){
-                                  f_sqrt="%d "
-                              }
-                              #printf "%f %f ", p_avg, p_sqrt;
-                              printf f_avg f_sqrt, p_avg, p_sqrt;
-                          }
-                      }
-                }
-              ' <<< cat "$TEMP_FILE")
+            }
+          ' <<< cat "$TEMP_FILE")
+          #echo $mean_stddev_col
+          if [[ DEBUG -eq 0 ]]; then
               echo "$i $mean_stddev_col" >> $FILE
           fi
       done

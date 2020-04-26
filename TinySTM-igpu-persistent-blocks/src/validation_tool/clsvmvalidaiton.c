@@ -503,7 +503,7 @@ int initializeDeviceData(){
 
 #ifdef DEBUG_VALIDATION
 #if (DEBUG_VALIDATION == 1)
-    debug_buffer_arg = (uintptr_t*) clSVMAlloc(
+    debug_buffer_arg = (int*) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
             RW_SET_SIZE * sizeof(int),

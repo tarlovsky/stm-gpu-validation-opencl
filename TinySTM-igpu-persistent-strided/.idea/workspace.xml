@@ -1,0 +1,1080 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/test/custom-bank/custom-bank.c" line="116" />
+  </component>
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a14b4c6b-aee5-4f0f-8897-fe17a2a02a6b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile.common" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile.common" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plot-stats.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot-stats.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run-custom-bank.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run-custom-bank.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/atomic_ops/atomic_ops.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/atomic_ops/atomic_ops.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/stm.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/stm.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/stm_internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/stm_internal.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/stm_wbetl.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/stm_wbetl.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/validation_tool/clsvmvalidaiton.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/validation_tool/clsvmvalidaiton.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/validation_tool/clsvmvalidation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/validation_tool/clsvmvalidation.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/validation_tool/instant_kernel.cl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/custom-bank/custom-bank.c" beforeDir="false" afterPath="$PROJECT_DIR$/test/custom-bank/custom-bank.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/.idea/tinystm-master.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/ChangeLog" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/Doxyfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/GNU-LICENSE.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/MIT-LICENSE.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/Makefile.clang" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/Makefile.common" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/Makefile.gcc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/Makefile.icc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/Makefile.suncc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/Makefile.common" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/abi.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/arch_x86.S" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/arch.S" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/libitm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/libtanger-stm.public-symbols" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/libtanger-stm.support" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/tanger-stm-internal.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/tanger.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/tanger.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/dtmc/tm_macros.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/gcc/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/gcc/alloc_cpp.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/gcc/arch.S" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/gcc/clone.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/gcc/eh.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/gcc/libitm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/gcc/tm_macros.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/intel/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/intel/alloc.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/intel/arch.S" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/intel/libitm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/intel/tm_macros.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/lib.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/libitm.h.tpl.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/libitm.h.tpl.footer" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/libitm.h.tpl.header" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/libitm.h.tpl.unifdef" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/oracle/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/oracle/arch.S" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/oracle/otm.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/pthread_wrapper.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/test/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/abi/tm_macros.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/mod_ab.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/mod_cb.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/mod_log.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/mod_mem.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/mod_order.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/mod_print.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/mod_stats.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/stm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/include/wrappers.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/lib/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/run-custom-bank.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/AUTHORS" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/COPYING" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/README" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/aligned_atomic_load_store.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/all_acquire_release_volatile.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/ao_t_is_int.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/atomic_ops.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/generalize-small.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/generalize.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/ia64.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/ordered_except_wr.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/powerpc.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/read_ordered.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/sparc.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/standard_ao_double_t.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/test_and_set_t_is_ao_t.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/test_and_set_t_is_char.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/x86.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/atomic_ops/x86_64.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/gc.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/gc.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/mod_ab.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/mod_cb_mem.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/mod_log.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/mod_order.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/mod_print.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/mod_stats.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/stm.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/stm_internal.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/stm_wbctl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/stm_wbetl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/stm_wt.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/tls.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/utils.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/src/wrappers.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/bank/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/bank/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/bank/bank.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/custom-bank/custom-bank" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/custom-bank/custom-bank.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/README.rbtree" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/intset.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/rbtree.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/rbtree.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/tm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/intset/types.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/regression/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/regression/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/regression/irrevocability.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/regression/perf.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tinystm-untouched/test/regression/types.c" beforeDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/plot-stats.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2160">
+              <caret line="150" column="14" selection-start-line="150" selection-start-column="14" selection-end-line="150" selection-end-column="14" />
+              <folding>
+                <element signature="e#1#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/stm_internal.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="118">
+              <caret line="75" column="62" selection-start-line="75" selection-start-column="62" selection-end-line="75" selection-end-column="62" />
+              <folding>
+                <element signature="e#41904#41921#0" expanded="true" />
+                <element signature="e#51005#52510#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/stm_wbetl.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="15105">
+              <caret line="1007" column="47" selection-start-line="1007" selection-start-column="47" selection-end-line="1007" selection-end-column="47" />
+              <folding>
+                <element signature="e#843#868#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/stm.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5595">
+              <caret line="373" column="28" selection-start-line="373" selection-start-column="9" selection-end-line="373" selection-end-column="28" />
+              <folding>
+                <element signature="e#1584#1602#0" expanded="true" />
+                <element signature="e#18820#19446#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/run-custom-bank.sh">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/validation_tool/clsvmvalidaiton.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2565">
+              <caret line="171" column="23" selection-start-line="171" selection-start-column="4" selection-end-line="171" selection-end-column="23" />
+              <folding>
+                <element signature="e#17761#18911#0" />
+                <element signature="e#18913#28854#0" />
+                <element signature="e#28998#30926#0" />
+                <element signature="e#30928#31113#0" />
+                <element signature="e#31115#32255#0" />
+                <element signature="e#32257#32572#0" />
+                <element signature="e#32574#33464#0" />
+                <element signature="e#33466#34554#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>struct stm_tx</find>
+      <find>int_stm_start</find>
+      <find>stm_store_ptr</find>
+      <find>stm_tx</find>
+      <find>local</find>
+      <find>thread</find>
+      <find>&quot;initial_rw_set_size</find>
+      <find>initial_rw_set_size</find>
+      <find>initial_bu</find>
+      <find>RW_SET_SIZE</find>
+      <find>INITIAL_RS_BUFFER_SIZE</find>
+      <find>initial_RS_buffer_size</find>
+      <find>clSetKernelExecInfo</find>
+      <find>g_numWorkgroups</find>
+      <find>r_entry_wrapper_pool</find>
+      <find>valid(</find>
+      <find>tarlovsky</find>
+      <find>stm_init</find>
+      <find>launchInstantKernel</find>
+      <find>tar</find>
+      <find>defines</find>
+      <find>validate</find>
+      <find>reg</find>
+      <find>sed</find>
+      <find>awkk</find>
+      <find>tls_init</find>
+      <find>tx-&gt;w_set.entries</find>
+      <find>stm_init_thread</find>
+      <find>int_stm_init_thread</find>
+      <find>SEG_READ</find>
+    </findStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$/test</dir>
+      <dir>$PROJECT_DIR$/test/intset</dir>
+      <dir>$PROJECT_DIR$/src/atomic_ops</dir>
+      <dir>$PROJECT_DIR$/tinystm-untouched</dir>
+      <dir>$PROJECT_DIR$/test/bank</dir>
+      <dir>$PROJECT_DIR$/src/validation_tool</dir>
+      <dir>$PROJECT_DIR$/include</dir>
+      <dir>$PROJECT_DIR$</dir>
+      <dir>$PROJECT_DIR$/src</dir>
+    </dirStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/validation_tool/svm_host_fg.c" />
+        <option value="$PROJECT_DIR$/src/validation_tool/svm_host_common.h" />
+        <option value="$PROJECT_DIR$/src/validation_tool/host.c" />
+        <option value="$PROJECT_DIR$/src/utils.h" />
+        <option value="$PROJECT_DIR$/test/bank/Makefile" />
+        <option value="$PROJECT_DIR$/test/single-thread/run.sh" />
+        <option value="$PROJECT_DIR$/test/test.sh" />
+        <option value="$PROJECT_DIR$/test/bank/run.sh" />
+        <option value="$PROJECT_DIR$/test.sh" />
+        <option value="$PROJECT_DIR$/test/single-thread/build.sh" />
+        <option value="$PROJECT_DIR$/include/stm.h" />
+        <option value="$PROJECT_DIR$/test/intset/rbtree.c" />
+        <option value="$PROJECT_DIR$/src/atomic_ops/atomic_ops.h" />
+        <option value="$PROJECT_DIR$/test/bank/bank.c" />
+        <option value="$PROJECT_DIR$/run-bank.sh" />
+        <option value="$PROJECT_DIR$/test/single-thread/single_thread.c" />
+        <option value="$PROJECT_DIR$/run-single-thread-bank.sh" />
+        <option value="$PROJECT_DIR$/run-rb.sh" />
+        <option value="$PROJECT_DIR$/tinystm-untouched/src/stm_internal.h" />
+        <option value="$PROJECT_DIR$/tinystm-untouched/src/stm_wbetl.h" />
+        <option value="$PROJECT_DIR$/test/custom-bank/custom-bank.c" />
+        <option value="$PROJECT_DIR$/tinystm-untouched/test/custom-bank/custom-bank.c" />
+        <option value="$PROJECT_DIR$/plot-stats.py" />
+        <option value="$PROJECT_DIR$/tinystm-untouched/Makefile.gcc" />
+        <option value="$PROJECT_DIR$/tinystm-untouched/run-custom-bank.sh" />
+        <option value="$PROJECT_DIR$/src/validation_tool/debug_validation.h" />
+        <option value="$PROJECT_DIR$/run-custom-bank.sh" />
+        <option value="$PROJECT_DIR$/test/intset/intset.c" />
+        <option value="$PROJECT_DIR$/src/stm_internal.h" />
+        <option value="$PROJECT_DIR$/src/validation_tool/instant_kernel.cl" />
+        <option value="$PROJECT_DIR$/src/validation_tool/clsvmvalidation.h" />
+        <option value="$PROJECT_DIR$/src/stm.c" />
+        <option value="$PROJECT_DIR$/src/stm_wbetl.h" />
+        <option value="$PROJECT_DIR$/src/validation_tool/clsvmvalidaiton.c" />
+        <option value="$PROJECT_DIR$/Makefile" />
+        <option value="$PROJECT_DIR$/Makefile.common" />
+        <option value="$PROJECT_DIR$/src/tls.h" />
+      </list>
+    </option>
+  </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="1309" />
+    <option name="y" value="103" />
+    <option name="width" value="1403" />
+    <option name="height" value="1226" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="TinySTM-igpu" type="b2602c69:ProjectViewProjectNode" />
+              <item name="TinySTM-igpu" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="TinySTM-igpu" type="b2602c69:ProjectViewProjectNode" />
+              <item name="TinySTM-igpu" type="462c0819:PsiDirectoryNode" />
+              <item name="include" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="TinySTM-igpu" type="b2602c69:ProjectViewProjectNode" />
+              <item name="TinySTM-igpu" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../stamp-master" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/validation_tool" />
+      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/test" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a14b4c6b-aee5-4f0f-8897-fe17a2a02a6b" name="Default Changelist" comment="" />
+      <created>1550000031354</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1550000031354</updated>
+      <workItem from="1550000033485" duration="2983000" />
+      <workItem from="1550009170292" duration="599000" />
+      <workItem from="1550013608778" duration="599000" />
+      <workItem from="1550019751123" duration="73351000" />
+      <workItem from="1550487559418" duration="12430000" />
+      <workItem from="1550514286435" duration="205000" />
+      <workItem from="1550514579461" duration="2023000" />
+      <workItem from="1550516652499" duration="1677000" />
+      <workItem from="1550536805324" duration="2788000" />
+      <workItem from="1550580988832" duration="4705000" />
+      <workItem from="1550585756005" duration="192000" />
+      <workItem from="1550586008212" duration="277000" />
+      <workItem from="1550586335551" duration="2674000" />
+      <workItem from="1550597042519" duration="740000" />
+      <workItem from="1550599417927" duration="16847000" />
+      <workItem from="1550775841013" duration="14542000" />
+      <workItem from="1550945157056" duration="725000" />
+      <workItem from="1550945992011" duration="782000" />
+      <workItem from="1550946903741" duration="24037000" />
+      <workItem from="1551025599361" duration="425000" />
+      <workItem from="1551026033476" duration="3541000" />
+      <workItem from="1551030544605" duration="3473000" />
+      <workItem from="1551034126295" duration="10749000" />
+      <workItem from="1551106442962" duration="33000" />
+      <workItem from="1551106629005" duration="6348000" />
+      <workItem from="1551113640120" duration="1154000" />
+      <workItem from="1551114973367" duration="744000" />
+      <workItem from="1551117031167" duration="183000" />
+      <workItem from="1551117569013" duration="11462000" />
+      <workItem from="1551179867599" duration="7006000" />
+      <workItem from="1551213729123" duration="11997000" />
+      <workItem from="1551353310601" duration="6417000" />
+      <workItem from="1551375600807" duration="52650000" />
+      <workItem from="1551725740821" duration="6825000" />
+      <workItem from="1551792802942" duration="29683000" />
+      <workItem from="1551911627489" duration="58000" />
+      <workItem from="1552218779133" duration="297000" />
+      <workItem from="1552300307209" duration="276000" />
+      <workItem from="1552389780566" duration="4343000" />
+      <workItem from="1552752870272" duration="5321000" />
+      <workItem from="1552817925440" duration="12804000" />
+      <workItem from="1552910080693" duration="50459000" />
+      <workItem from="1553194058650" duration="3453000" />
+      <workItem from="1553242686056" duration="2812000" />
+      <workItem from="1553258648596" duration="599000" />
+      <workItem from="1553260193188" duration="881000" />
+      <workItem from="1554225785363" duration="228000" />
+      <workItem from="1556190882738" duration="1942000" />
+      <workItem from="1579188616065" duration="16000" />
+      <workItem from="1579188656823" duration="1574000" />
+      <workItem from="1579612225719" duration="2909000" />
+      <workItem from="1579721914908" duration="674000" />
+      <workItem from="1579731975840" duration="5094000" />
+      <workItem from="1579809656605" duration="16928000" />
+      <workItem from="1580305359541" duration="599000" />
+    </task>
+    <task id="LOCAL-00001" summary="Tested with 2 threads. &#10;Each maps to its own workgroup.">
+      <created>1550630076577</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1550630076577</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Created a wrapper for pointer to pointer kernel argument limitation. Currently testing.">
+      <created>1550969550691</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1550969550691</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Such a fucking hack. It worked. Surrounded each r_set_entry* with a struct and passed the struct array as clSVMArgument. Iterated through each and added it as SMV_EXTRA. &#10;Tested that all addresses are accessible within the kernel and get out through the debug_buffer.">
+      <created>1550972386224</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1550972386224</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Atomic load seems to work in kernel.">
+      <created>1551034574176</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1551034574176</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Can follow pointer to lock and read its version.&#10;Coincides with tests done on the host.&#10;Kernel follows pointer and reads write_entry_t when there is a write,&#10;and the read time stamp when there is no write.">
+      <created>1551106906795</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1551106906795</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Can follow pointer to lock and read its version.&#10;Coincides with tests done on the host.&#10;Kernel follows pointer and reads write_entry_t when there is a write,&#10;and the read time stamp when there is no write.">
+      <created>1551140625792</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1551140625792</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Backing up code to git">
+      <created>1551183355033</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1551183355033</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Identified that&#10;&#10;host-validation 1&#10;/*other transaction increments orec*/&#10;kernel-validation 0&#10;&#10;is correct and not a bug">
+      <created>1551460482439</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1551460482439</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Identified that&#10;&#10;host-validation 1&#10;/*other transaction increments orec*/&#10;kernel-validation 0&#10;&#10;is correct and not a bug">
+      <created>1551467715540</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1551467715540</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Creating a script to plot mod_stats data in python">
+      <created>1551548612536</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1551548612536</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Creating a script to plot mod_stats data in python">
+      <created>1551575352055</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1551575352055</updated>
+    </task>
+    <task id="LOCAL-00012" summary="tweaked wait_for validation workgroups">
+      <created>1551666883860</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1551666883860</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Working on plot. Committing to work on macbook">
+      <created>1551796299862</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1551796299862</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Working on plot. Committing to work on macbook">
+      <created>1551814055362</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1551814055362</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Working on plot. Committing to work on macbook">
+      <created>1551911660494</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1551911660494</updated>
+    </task>
+    <task id="LOCAL-00016" summary="commit before large change to handling subgroups">
+      <created>1552822361527</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1552822361527</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Simd size magically changed to 8 from 32. Maybe because of how many variables there are in a kernel.">
+      <created>1552915189526</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1552915189526</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Split gpu into workgroups for different validatio requests using metadata slots.">
+      <created>1552928075397</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1552928075397</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Split gpu into workgroup metadata slots. 2x slower than untouched. Created new branch that will have hardcoded thread mapping to workgroups.">
+      <created>1552997337286</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1552997337286</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Backing up current round robin meta slot queue into master.">
+      <created>1553006460066</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1553006460066</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Direct mapping of CPU threads to gpu chunks">
+      <created>1553026248409</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1553026248409</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Direct mapping of CPU threads to gpu chunks">
+      <created>1553030520111</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1553030520111</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="426133000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="1309" y="103" width="1403" height="1226" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.70800626" visible="true" weight="0.17933579" />
+      <window_info id="Structure" order="1" sideWeight="0.2919937" side_tool="true" weight="0.08361002" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.19274612" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Database Changes" order="7" />
+      <window_info anchor="bottom" id="Version Control" order="8" weight="0.3071192" />
+      <window_info anchor="bottom" id="Terminal" order="9" weight="0.104304634" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" weight="0.32991612" />
+      <window_info anchor="bottom" id="Messages" order="11" weight="0.17388003" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Database" order="3" weight="0.32980654" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.sh" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Checked that locks get properly passed into kernel.&#10;Printed through debug.&#10;&#10;Thought of a way not to pass write set into kernel for validation.&#10;&#10;Pass w_set.entries and w_set.entries + w_set.nb_entries and do &#10;pointer arithmetic within kernel." />
+    <MESSAGE value="Tested with 2 threads. &#10;Each maps to its own workgroup." />
+    <MESSAGE value="Created a wrapper for pointer to pointer kernel argument limitation. Currently testing." />
+    <MESSAGE value="Such a fucking hack. It worked. Surrounded each r_set_entry* with a struct and passed the struct array as clSVMArgument. Iterated through each and added it as SMV_EXTRA. &#10;Tested that all addresses are accessible within the kernel and get out through the debug_buffer." />
+    <MESSAGE value="Atomic load seems to work in kernel." />
+    <MESSAGE value="Can follow pointer to lock and read its version.&#10;Coincides with tests done on the host.&#10;Kernel follows pointer and reads write_entry_t when there is a write,&#10;and the read time stamp when there is no write." />
+    <MESSAGE value="Backing up code to git" />
+    <MESSAGE value="Identified that&#10;&#10;host-validation 1&#10;/*other transaction increments orec*/&#10;kernel-validation 0&#10;&#10;is correct and not a bug" />
+    <MESSAGE value="Creating a script to plot mod_stats data in python" />
+    <MESSAGE value="tweaked wait_for validation workgroups" />
+    <MESSAGE value="Working on plot. Committing to work on macbook" />
+    <MESSAGE value="commit before large change to handling subgroups" />
+    <MESSAGE value="Simd size magically changed to 8 from 32. Maybe because of how many variables there are in a kernel." />
+    <MESSAGE value="Split gpu into workgroups for different validatio requests using metadata slots." />
+    <MESSAGE value="Split gpu into workgroup metadata slots. 2x slower than untouched. Created new branch that will have hardcoded thread mapping to workgroups." />
+    <MESSAGE value="Backing up current round robin meta slot queue into master." />
+    <MESSAGE value="Direct mapping of CPU threads to gpu chunks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Direct mapping of CPU threads to gpu chunks" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/atomic_ops/x86.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="368">
+          <caret line="23" column="37" selection-start-line="23" selection-start-column="12" selection-end-line="23" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/atomic_ops/aligned_atomic_load_store.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="726">
+          <caret line="33" column="23" lean-forward="true" selection-start-line="33" selection-start-column="9" selection-end-line="33" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Doxyfile">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="6" column="15" selection-start-line="6" selection-start-column="10" selection-end-line="6" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run-bank.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="62" selection-start-line="3" selection-start-column="62" selection-end-line="3" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/regression/Makefile">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/regression/types.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="745">
+          <caret line="325" column="10" selection-start-line="325" selection-start-column="6" selection-end-line="325" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/intset/rbtree.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="492">
+          <caret line="1573" column="35" selection-start-line="1573" selection-start-column="35" selection-end-line="1573" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/intset/rbtree.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="23" column="16" lean-forward="true" selection-start-line="23" selection-start-column="16" selection-end-line="23" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/intset/tm.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="528">
+          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/intset/types.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="481">
+          <caret line="24" column="3" lean-forward="true" selection-start-line="24" selection-start-column="3" selection-end-line="24" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stm_wbctl.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="624">
+          <caret line="441" column="23" lean-forward="true" selection-start-line="441" selection-start-column="23" selection-end-line="441" selection-end-column="23" />
+          <folding>
+            <element signature="e#11447#12157#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Makefile.clang">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="7" selection-start-column="2" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stm.o.c" />
+    <entry file="file://$PROJECT_DIR$/src/atomic_ops/atomic_ops.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="116" column="36" lean-forward="true" selection-start-line="116" selection-start-column="36" selection-end-line="116" selection-end-column="36" />
+          <folding>
+            <element signature="e#10905#12705#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run-rb.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="39" selection-start-line="3" selection-start-column="39" selection-end-line="3" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mod_log.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="440">
+          <caret line="20" column="2" lean-forward="true" selection-start-line="20" selection-start-column="2" selection-end-line="20" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mod_order.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="437">
+          <caret line="22" column="38" lean-forward="true" selection-start-line="22" selection-start-column="38" selection-end-line="22" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mod_ab.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="418">
+          <caret line="19" column="47" lean-forward="true" selection-start-line="19" selection-start-column="47" selection-end-line="19" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/abi/intel/libitm.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-7304" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/intset/intset.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-228">
+          <caret line="156" column="18" selection-start-line="156" selection-start-column="18" selection-end-line="156" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mod_stats.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="393">
+          <caret line="42" column="16" selection-start-line="42" selection-start-column="16" selection-end-line="42" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Makefile.gcc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88">
+          <caret line="4" column="15" selection-start-line="4" selection-start-column="13" selection-end-line="4" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MIT-LICENSE.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mod_cb_mem.o" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/src/stm.c" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/src/stm_internal.h" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/Makefile.clang" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/Makefile.gcc" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/Makefile.common" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/test/custom-bank/custom-bank.c" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/src/stm_wbetl.h" />
+    <entry file="file://$PROJECT_DIR$/tinystm-untouched/run-custom-bank.sh" />
+    <entry file="file://$PROJECT_DIR$/src/atomic.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="466">
+          <caret line="67" column="54" selection-start-line="67" selection-start-column="54" selection-end-line="67" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/custom-bank/custom-bank.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="890">
+          <caret line="273" column="16" selection-start-line="273" selection-start-column="16" selection-end-line="273" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utils.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="651">
+          <caret line="135" column="49" lean-forward="true" selection-start-line="135" selection-start-column="49" selection-end-line="135" selection-end-column="49" />
+          <folding>
+            <element signature="e#940#992#0" expanded="true" />
+            <element signature="e#1027#1186#0" expanded="true" />
+            <element signature="e#3618#3640#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/validation_tool/debug_validation.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="12" selection-start-line="1" selection-start-column="12" selection-end-line="1" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/validation_tool/instant_kernel.cl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="842">
+          <caret line="255" column="24" lean-forward="true" selection-start-line="255" selection-start-column="24" selection-end-line="255" selection-end-column="24" />
+          <folding>
+            <element signature="e#9977#10076#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/bank/bank.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="206">
+          <caret line="111" column="21" selection-start-line="111" selection-start-column="21" selection-end-line="111" selection-end-column="21" />
+          <folding>
+            <element signature="e#962#1047#0" expanded="true" />
+            <element signature="e#1162#1199#0" expanded="true" />
+            <element signature="e#1224#1262#0" expanded="true" />
+            <element signature="e#1287#1326#0" expanded="true" />
+            <element signature="e#1349#1382#0" expanded="true" />
+            <element signature="e#1493#1628#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tls.h">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/abi/oracle/otm.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="31" column="25" selection-start-line="31" selection-start-column="4" selection-end-line="31" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/validation_tool/clsvmvalidation.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-18">
+          <caret line="101" column="34" selection-start-line="101" selection-start-column="34" selection-end-line="101" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/stm.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-28">
+          <caret line="295" column="30" selection-start-line="295" selection-start-column="30" selection-end-line="295" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Makefile.common">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="27" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="20">
+          <caret line="239" column="72" selection-start-line="239" selection-end-line="239" selection-end-column="72" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plot-stats.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2160">
+          <caret line="150" column="14" selection-start-line="150" selection-start-column="14" selection-end-line="150" selection-end-column="14" />
+          <folding>
+            <element signature="e#1#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stm_wbetl.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15105">
+          <caret line="1007" column="47" selection-start-line="1007" selection-start-column="47" selection-end-line="1007" selection-end-column="47" />
+          <folding>
+            <element signature="e#843#868#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stm.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5595">
+          <caret line="373" column="28" selection-start-line="373" selection-start-column="9" selection-end-line="373" selection-end-column="28" />
+          <folding>
+            <element signature="e#1584#1602#0" expanded="true" />
+            <element signature="e#18820#19446#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run-custom-bank.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/validation_tool/clsvmvalidaiton.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2565">
+          <caret line="171" column="23" selection-start-line="171" selection-start-column="4" selection-end-line="171" selection-end-column="23" />
+          <folding>
+            <element signature="e#17761#18911#0" />
+            <element signature="e#18913#28854#0" />
+            <element signature="e#28998#30926#0" />
+            <element signature="e#30928#31113#0" />
+            <element signature="e#31115#32255#0" />
+            <element signature="e#32257#32572#0" />
+            <element signature="e#32574#33464#0" />
+            <element signature="e#33466#34554#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stm_internal.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="118">
+          <caret line="75" column="62" selection-start-line="75" selection-start-column="62" selection-end-line="75" selection-end-column="62" />
+          <folding>
+            <element signature="e#41904#41921#0" expanded="true" />
+            <element signature="e#51005#52510#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

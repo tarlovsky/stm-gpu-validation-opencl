@@ -704,6 +704,7 @@ void* signal_gpu(void *slot){
             TIMER_READ(T1G);
                 while (pCommBuffer[COMPLETE] < g_numWorkgroups);
             TIMER_READ(T2G);
+            /*when gpu encounters conflict it exits and then notifies CPU*/
             gpu_exit_validity = threadComm[idx].valid; //atomic_store_explicit(&gpu_exit_validity, threadComm[idx].valid, memory_order_release);
 
             //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));
