@@ -102,7 +102,7 @@ __kernel void InstantKernel(
 #ifdef DEBUG_VALIDATION
 #if (DEBUG_VALIDATION == 1)
         ,
-        __global long* debug_buffer,
+        __global int* debug_buffer,
         __global stm_word_t* debug_buffer1,
         __global stm_word_t* debug_buffer2
 #endif
@@ -116,8 +116,10 @@ __kernel void InstantKernel(
     __global volatile atomic_int* SVMComm =
     (__global volatile atomic_int*) pCommBuffer;
 
+    __private uint sub_local_id = get_sub_group_local_id();
+
     //each hw thread notifies that its is ready
-    if( get_sub_group_local_id() == 0 ){
+    if( sub_local_id == 0 ){
         /* release fence is inserted right after atomic operation, so write results of the current work-item
          * immediately become visible to others once atomic operation finishes*/
         atomic_fetch_add_explicit(
@@ -154,6 +156,7 @@ __kernel void InstantKernel(
     __local uint block_offset;
     __local uint rset_size;
     __local atomic_int reads_validated;
+    __local int n_per_wi;
 
 	Finish = 0;
 	ReqPhase = 0;
@@ -163,6 +166,8 @@ __kernel void InstantKernel(
 	__private uint Phase = 0;
     __private uint i = get_global_id(0);
     __private uint j;
+
+    __private uint hw_thread_id = (get_group_id(0)*7+get_sub_group_id());
 
 	while(1){
 
@@ -181,18 +186,29 @@ __kernel void InstantKernel(
 
 		if(Finish != 0) return;
 
-        if( Phase < ReqPhase ){//some thread subscribed to this work-group
-                j = (i + block_offset);
+        /*some thread subscribed to this work-group and incremented phase*/
+        if( Phase < ReqPhase ){
 
-            //how many read entries will each WI do: n
-            //n = ( meta_p->nb_entries + gpu_chunk_capacity - 1 ) / gpu_chunk_capacity;//ceil, example (673+672-1)/672=2, which means every wi will look twice
-            //for( int j = i * n_per_wi; j < (i * n_per_wi) + n_per_wi; j++ ){
-                /* absolutely required */
 
-                /* if not ordered to break. Comment during early benchmarking */
-                //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
+            for(int k = 0; k < n_per_wi;k++){
+                /*#############################################################################################################*/
+                /*godly cheat memory access*/
+                /* first term is "global hw thread id" */
+                /* second term maps which elements with a space of 168 is current work-item going to validate*/
+                /* third term offsets because we are parsing in blocks*/
+                /* fourth term is magic */
+                /* this only works if IDs are invariant for kernel execution: which they are*/
+                j=hw_thread_id+(168*(k+sub_local_id)) + (5376*k) + block_offset;
+
+                #ifdef DEBUG_VALIDATION
+                #if (DEBUG_VALIDATION == 1)
+                    debug_buffer[j] = i;
+                    //debug_buffer1[i] = l;
+                #endif
+                #endif
 
                 /*optimization difference:
+                 *
                  *
                  * at 16384 read sets the time varies between 0.0000010
                  *                                            0.0000016 with threadComm->valid check
@@ -200,21 +216,17 @@ __kernel void InstantKernel(
                  * but at large read-set sizes we will experience a performance gain.
                  * this implies: can only tell if invalid at block (5376) level granularity
                  * */
-                if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
-                //if(j < rset_size){
+                //if( j < rset_size ){ // block level sync
+                /*global mem sync all Work-items*/
+                if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){ /*work-item level sync*/
 
                     r_entry_t r = r_entry_wrapper_pool[0].entries[j];
 
-                    //increment in Shared Local Memory, work leader notifies world later
+                    //increment reads_validated in Shared Local Memory, work leader notifies world later
+                    //removed read_validated++ from here into block on GPU proxy thread
 
                     stm_word_t l = (*((volatile size_t *)(r.lock)));
 
-                    #ifdef DEBUG_VALIDATION
-                    #if (DEBUG_VALIDATION == 1)
-                        debug_buffer[i] = j;
-                        debug_buffer1[i] = l;
-                    #endif
-                    #endif
 
                     #ifdef DEBUG_VALIDATION
                     #if (DEBUG_VALIDATION)
@@ -258,7 +270,7 @@ __kernel void InstantKernel(
 
                 } /*i < threadComm->nb_entries*/
 
-            //}//end for
+            }//end for n_per_wi / K
 
             Phase++;//private to every WI//prevent each WI from doing more work. This validation is done.
 

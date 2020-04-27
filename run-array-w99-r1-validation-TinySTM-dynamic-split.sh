@@ -27,7 +27,9 @@ else
 fi
 #######################################################################################
 
-global_stm="TinySTM-igpu-cpu-persistent-dynamic-split"
+#global_stm="TinySTM-igpu-cpu-persistent-dynamic-split"
+global_stm="TinySTM-igpu-cpu-persistent-dynamic-split-strided"
+
 threads=1
 mode=wbetl
 # THREADS
@@ -157,9 +159,24 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 #sed -i "s/CPU_VALIDATION_PROPORTION=.*/CPU_VALIDATION_PROPORTION=$j/g" "./$global_stm/$MAKEFILE"
 
+N_SAMPLES=20
+SEQ_ONLY=0
+SEQ_ENABLED=1 #do both seq and rand: 0..1
+RSET_START=512
+
+DEBUG=1
+#debug params
+if [[ DEBUG -eq 1 ]]; then
+  SEQ_ONLY=0
+  SEQ_ENABLED=0
+  # for i=SEQ_ONLY; i<=SEQ_ENABLED
+  N_SAMPLES=1
+  RSET_START=$((5376*100))
+fi
+
 build_stm_and_benchmark
 
-for((sequential=0; sequential<=1;sequential++)); do
+for((sequential=$SEQ_ONLY; sequential<=$SEQ_ENABLED;sequential++)); do
     #vary cpu validation percentage
 
     if [[ $sequential -eq 1 ]];then
@@ -168,21 +185,23 @@ for((sequential=0; sequential<=1;sequential++)); do
         FILE="$RESULTS_DIR/array-r99-w1-random-walk/$threads-random-cpu-validation"
     fi
 
-    echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"CPU Val Reads\" \"stddev\" \"GPU Val Reads\" \"stddev\" \"Wasted Val Reads\" \"stddev\" \"GPU employment times\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
+    if [[ DEBUG -eq 0 ]]; then
+        echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"CPU Val Reads\" \"stddev\" \"GPU Val Reads\" \"stddev\" \"Wasted Val Reads\" \"stddev\" \"GPU employment times\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
+    fi
 
-    for((i=512;i<=134217728;i*=2));do
+    for((i=$RSET_START;i<=134217728;i*=2));do
 
         echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"CPU Val Reads\" \"GPU Val Reads\" \"Wasted Val Reads\" \"GPU employment times\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 
         sum=0
         avg=0
 
-        for k in {0..30}; do
+        for ((k=1;k <= N_SAMPLES;k++)) do
 
             if [[ $sequential -eq 1 ]];then
-                echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
+                echo "RUN:$k, $threads threads, sequential array walk, $global_stm rset:$i "
             else
-                echo "RUN:$((k+1)), $threads threads, random array walk, $global_stm rset:$i VALTHREADS|CPU_PROPORTION:$j"
+                echo "RUN:$k, $threads threads, random array walk, $global_stm rset:$i "
             fi
 
             #./array/array -n$threads -r$i -s$sequential
@@ -256,6 +275,8 @@ for((sequential=0; sequential<=1;sequential++)); do
           }
         ' <<< cat "$TEMP_FILE")
 
-        echo "$i $mean_stddev_col" >> $FILE
+        if [[ DEBUG -eq 0 ]]; then
+            echo "$i $mean_stddev_col" >> $FILE
+        fi
     done
 done

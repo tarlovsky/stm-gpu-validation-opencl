@@ -69,6 +69,9 @@ stm_wbetl_validate(stm_tx_t *tx)
     stm_word_t l;
     r = ((r_entry_t*) (r_entry_pool[tx->rset_slot])) + N - 1;
 
+    /*new-stridded mem access with k=4*/
+    int n_per_wi = 4;
+
     /* don't even bother bothering GPU if read set < 512 */
     if(N >= RSET_MIN_GPU_VAL){
 
@@ -91,12 +94,14 @@ stm_wbetl_validate(stm_tx_t *tx)
             threadComm[idx].nb_entries = N;
 
             /* in how many parts can we break r_set.entries?:*/
+            elements_in_block = n_per_wi * global_dim[0];
 
             /*this overshoots rset size but gets everything*/
             //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
 
-            /*this does not overshoot. cpu will be fast enough to take care of gap.*/
-            threadComm[idx].submersions = N / global_dim[0];
+            /*this overshoots a bit. cpu will be fast enough to take care of gap.*/
+            threadComm[idx].submersions = (N + elements_in_block - 1) / (elements_in_block);
+            threadComm[idx].n_per_wi = n_per_wi;
 
             threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
             threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
@@ -110,7 +115,6 @@ stm_wbetl_validate(stm_tx_t *tx)
         }else{
             //printf("THREAD %d LOST GPU !\n", idx);
         }
-
     }
 
     int CPU_POS;
@@ -118,6 +122,7 @@ stm_wbetl_validate(stm_tx_t *tx)
     TIMER_READ(T1C);
     /* validate a chunk then increment global counter of how many chunks you have validated */
     //printf("CPU [%d;%d]\n", N, i);
+
     for (CPU_POS = N - 1; CPU_POS >= 0; CPU_POS--, r--) {
 
         /* optimization: start checking two interthreaded variables only past half
@@ -128,7 +133,7 @@ stm_wbetl_validate(stm_tx_t *tx)
         /* if(gpu_mine && CPU_POS < THRESHOLD){ */
 
         if(gpu_mine){
-            //printf("GPU_POS%d\n", GPU_POS);
+
             /* CPU_POS starts from 0      |    <- N-1
              * GPU_POS starts from 0 ->      |    N-1
              *

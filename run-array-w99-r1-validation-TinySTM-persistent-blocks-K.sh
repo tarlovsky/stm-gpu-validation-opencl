@@ -162,7 +162,7 @@ mem_access="coalesced"
 #mem_access="strided"
 
 #debug
-DEBUG=0
+DEBUG=1
 
 #debug params
 if [[ DEBUG -eq 1 ]]; then

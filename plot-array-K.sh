@@ -121,7 +121,7 @@ for i in 1 2 4 8; do
     #echo "set logscale cb" >> $FILE1
 
     #line splitting cpu/gpu
-    echo  "set arrow 1 from -0.5, 13.5 to 10.5, 13.5 front nohead lc rgb \"black\" lw 2" >> $FILE1
+    echo  "set arrow 1 from -0.5, 18.5 to 10.5, 18.5 front nohead lc rgb \"black\" lw 2" >> $FILE1
 
     #lines surrounding k=2
     echo  "set arrow 2 from -0.5, 0.5 to 10.5, 0.5 front nohead lc rgb \"#ffffff\" lw 1" >> $FILE1
@@ -138,6 +138,11 @@ for i in 1 2 4 8; do
 
     echo "unset arrow 2" >> $FILE1
     echo "unset arrow 3" >> $FILE1
+
+    #lines surrounding k=2
+    echo  "set arrow 2 from -0.5, 0.5 to 10.5, 0.5 front nohead lc rgb \"#ffffff\" lw 1" >> $FILE1
+    echo  "set arrow 3 from -0.5, 9.5 to 10.5, 9.5 front nohead lc rgb \"#ffffff\" lw 1" >> $FILE1
+
     #lines surrounding k=4
     #echo  "set arrow 2 from -0.5, 3.5 to 10.5, 3.5 front nohead lc rgb \"#ffffff\" lw 1" >> $FILE1
     #echo  "set arrow 3 from -0.5, 4.5 to 10.5, 4.5 front nohead lc rgb \"#ffffff\" lw 1" >> $FILE1
