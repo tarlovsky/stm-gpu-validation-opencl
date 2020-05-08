@@ -350,9 +350,9 @@ static void mod_cb_on_thread_exit(void *arg)
   icb = (mod_cb_info_t *)stm_get_specific(mod_cb.key);
   assert(icb != NULL);
 
-  xfree(icb->abort);
-  xfree(icb->commit);
-  xfree(icb);
+  //xfree(icb->abort);
+  //xfree(icb->commit);
+  //xfree(icb);
 }
 
 static INLINE void

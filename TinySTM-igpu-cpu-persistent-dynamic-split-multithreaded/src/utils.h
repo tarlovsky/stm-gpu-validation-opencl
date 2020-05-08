@@ -140,7 +140,7 @@ xmalloc_aligned(size_t size)
     memptr = NULL;
 #endif
   if (unlikely(memptr == NULL)) {
-    fprintf(stderr, "Error allocating aligned memory\n");
+    fprintf(stderr, "Error allocating aligned memory of size %llu\n", size);
     exit(1);
   }
   return memptr;

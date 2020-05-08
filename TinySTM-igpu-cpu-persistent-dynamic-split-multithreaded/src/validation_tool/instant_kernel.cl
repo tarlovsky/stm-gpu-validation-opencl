@@ -5,15 +5,12 @@
 #define SUCCESS 0
 #define FAIL -1
 
-#define STATES 8
+#define STATES 5
 #define PHASE 0
 #define SPIN 1
 #define COMPLETE 2
 #define FINISH 3
-#define VALID 4
-#define RCHUNKCOUNTER 5
-#define LASTCHUNKELEMENTS 6
-#define SHAREDI 7
+#define STM_SUBSCRIBER_THREAD 4
 
 
 //from atomic_ops
@@ -73,13 +70,13 @@ typedef struct w_entry {                /* Write set entry */
 typedef struct thread_control{
     uintptr_t w_set_base;
     uintptr_t w_set_end;
-    atomic_int r_pool_idx;  /* index within the r_entry_pool */
+    atomic_int r_pool_idx;  /* index within the rset_pool */
     atomic_int reads_count; /* stats */
     atomic_int valid;
     atomic_int Phase;
     unsigned long submersions;
-    unsigned int block_offset;
-    unsigned int nb_entries;
+    atomic_int block_offset;
+    atomic_int nb_entries;
     char padding[CACHELINE_SIZE]; /*avoid false sharing*/
 } thread_control_t;
 
@@ -153,7 +150,8 @@ __kernel void InstantKernel(
 	__local long ReqPhase;
     __local uint block_offset;
     __local uint rset_size;
-    __local atomic_int reads_validated;
+    //__local atomic_int reads_validated;
+    __local unsigned int stm_subscriber_thread;
 
 	Finish = 0;
 	ReqPhase = 0;
@@ -164,17 +162,20 @@ __kernel void InstantKernel(
     __private uint i = get_global_id(0);
     __private uint j;
 
+
 	while(1){
 
 		if ( get_local_id(0) == 0 ) {
-		    atomic_store_explicit(&reads_validated, 0, memory_order_release, memory_scope_work_group);
             /* acquire memory fence is inserted right before atomic operation, so all write results of other work-items
              * within operation scope become visible to current work-item before atomic operation starts.*/
-            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_release, memory_scope_all_svm_devices);
-			ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_release, memory_scope_all_svm_devices);
-            block_offset = threadComm->block_offset;
-            rset_size = threadComm->nb_entries;
-            //n_per_wi = threadComm->n_per_wi;
+
+            /*all these variables are on the same cache line*/
+            ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_acquire, memory_scope_all_svm_devices);
+            stm_subscriber_thread = atomic_load_explicit(&SVMComm[STM_SUBSCRIBER_THREAD], memory_order_acquire, memory_scope_all_svm_devices);
+            Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_acquire, memory_scope_all_svm_devices);
+
+            block_offset = atomic_load_explicit(&threadComm->block_offset, memory_order_acquire, memory_scope_all_svm_devices);
+            rset_size = atomic_load_explicit(&threadComm->nb_entries, memory_order_acquire, memory_scope_all_svm_devices);
 		}
 
 		barrier( CLK_LOCAL_MEM_FENCE );
@@ -182,15 +183,8 @@ __kernel void InstantKernel(
 		if(Finish != 0) return;
 
         if( Phase < ReqPhase ){//some thread subscribed to this work-group
-                j = (i + block_offset);
 
-            //how many read entries will each WI do: n
-            //n = ( meta_p->nb_entries + gpu_chunk_capacity - 1 ) / gpu_chunk_capacity;//ceil, example (673+672-1)/672=2, which means every wi will look twice
-            //for( int j = i * n_per_wi; j < (i * n_per_wi) + n_per_wi; j++ ){
-                /* absolutely required */
-
-                /* if not ordered to break. Comment during early benchmarking */
-                //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
+                j = (i + block_offset); /*we are working in blocks so offset each global_id by block offset. block offset is always (iteration*5376)*/
 
                 /*optimization difference:
                  *
@@ -203,7 +197,7 @@ __kernel void InstantKernel(
                 //if(j < rset_size && atomic_load_explicit(&threadComm->valid, memory_order_acq_rel, memory_scope_all_svm_devices) == 1){
                 if(j < rset_size){
 
-                    r_entry_t r = r_entry_wrapper_pool[0].entries[j];
+                    r_entry_t r = r_entry_wrapper_pool[stm_subscriber_thread].entries[j];
 
                     //increment in Shared Local Memory, work leader notifies world later
 

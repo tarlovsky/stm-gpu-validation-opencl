@@ -151,7 +151,7 @@ for i in 1 2 4 8;do
     #  20 GPU employment times
     #  22 Val success
     #  24 Val fail
-    echo  " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' \\" >> $FILE
+    echo  " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/$i/array-r99-w1-sequential-walk/$i-sequential-cpu-validation' \\" >> $FILE
     echo  "u (\$0):(((\$22+\$24)>0)?(((\$12/(ceil(\$22+\$24)))/\$2)/$i):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"$i STM CPU+GPU DYNAMIC CO-OP - BLOCKS\" lw 2 lc rgb \"#${blue_palette[$i]}\" ,\\"  >> $FILE
     echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-blocks-wbetl/$i/array-r99-w1-sequential-walk/$i-sequential-igpu' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"Intel iGPU HD530 PERSISTENT KERNEL - BLOCKS\" dt new lw 2 lc rgb \"#${blue_palette[$i]}\" ,\\"  >> $FILE
   fi

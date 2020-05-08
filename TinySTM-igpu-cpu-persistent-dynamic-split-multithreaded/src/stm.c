@@ -341,7 +341,7 @@ stm_exit(void)
 
   /* tarlovskyy
   *  clSVMFree is ran in cleanupHost also, better have it there
-  *  free up memory lock and r_entry_pool inside cleanupHost
+  *  free up memory lock and rset_pool inside cleanupHost
   */
   //pthread_mutex_destroy(&_tinystm.rset_pool_mutex);
   //pthread_mutex_destroy(&_tinystm.validation_mutex);

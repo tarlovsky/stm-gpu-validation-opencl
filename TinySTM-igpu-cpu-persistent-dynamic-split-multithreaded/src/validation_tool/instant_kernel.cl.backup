@@ -68,7 +68,7 @@ typedef struct w_entry {                /* Write set entry */
 typedef struct thread_control{
     uintptr_t w_set_base;
     uintptr_t w_set_end;
-    atomic_int r_pool_idx;  /* index within the r_entry_pool */
+    atomic_int r_pool_idx;  /* index within the rset_pool */
     atomic_int reads_count; /* stats */
     atomic_int valid;
     atomic_int Phase;

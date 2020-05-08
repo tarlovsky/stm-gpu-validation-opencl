@@ -95,6 +95,7 @@ __thread long threadID;
 
         /* Set up pool */
         THREAD_ATTR_INIT(global_threadAttr);
+
         for (i = 1; i < numThread; i++) {
             THREAD_CREATE(global_threads[i],
                           global_threadAttr,

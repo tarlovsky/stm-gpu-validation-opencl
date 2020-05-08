@@ -50,7 +50,6 @@ stm_wbetl_validate(stm_tx_t *tx)
 #endif
 
   PRINT_DEBUG("==> stm_wbetl_validate(%p[%lu-%lu])\n", tx, (unsigned long)tx->start, (unsigned long)tx->end);
-
   /* Validate reads */
   r = tx->r_set.entries;
   for (i = tx->r_set.nb_entries; i > 0; i--, r++) {

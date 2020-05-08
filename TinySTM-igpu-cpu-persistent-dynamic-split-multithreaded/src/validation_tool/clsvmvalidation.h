@@ -15,15 +15,12 @@
 #define SUCCESS 0
 #define FAIL -1
 
-#define STATES 8
+#define STATES 5
 #define PHASE 0
 #define SPIN 1
 #define COMPLETE 2
 #define FINISH 3
-#define VALID 4
-#define RCHUNKCOUNTER 5
-#define LASTCHUNKELEMENTS 6
-#define SHAREDI 7
+#define STM_SUBSCRIBER_THREAD 4
 
 //#define SVMN 4
 //#define SVMNPERWI 5
@@ -34,7 +31,12 @@
 //#define ATOMIC_LOAD(a)               (*((volatile size_t *)(a)))
 
 /* TinySTM vars */
-#define RW_SET_SIZE             134217728  /* Initial size of read/write sets */
+#ifndef RW_SET_SIZE
+/* CL_DEVICE_MAX_MEM_ALLOC_SIZE is 128*1024*1024 = 134217728 */
+/* opt: sed it with read-set being used, only in synthetic will it work */
+# define RW_SET_SIZE            134217728 /* IniRSET_MIN_GPU_VALtial size of read/write sets */
+#endif /* ! RW_SET_SIZE */
+
 #define LOCK_ARRAY_LOG_SIZE     26    /* Size of lock array: 2^20 = 1M (million)*/
 #define LOCK_ARRAY_SIZE         (1 << LOCK_ARRAY_LOG_SIZE) /* Size in bits. ex.: 2^20=1048576*/
 
@@ -116,7 +118,7 @@ extern TIMER_T T2G;
 extern unsigned int found_cl_hardware;//0 no 1 yes (HD530 or other)
 
 /*typedef struct thread_control{
-    atomic_int r_entry_idx; /* index within the r_entry_pool
+    atomic_int r_entry_idx; /* index within the rset_pool
     unsigned int n_per_wi;
     unsigned int nb_entries;
     uintptr_t w_set_base;
@@ -131,13 +133,13 @@ extern unsigned int found_cl_hardware;//0 no 1 yes (HD530 or other)
 typedef struct thread_control{
     uintptr_t w_set_base;
     uintptr_t w_set_end;
-    atomic_int r_pool_idx;  /* index within the r_entry_pool */
+    atomic_int r_pool_idx;  /* index within the rset_pool */
     atomic_int reads_count; /* stats */
     atomic_int valid;
     atomic_int Phase;
     unsigned long submersions;
-    unsigned int block_offset;
-    unsigned int nb_entries;
+    atomic_int block_offset;
+    atomic_int nb_entries;
     char padding[CACHELINE_SIZE]; /*avoid false sharing*/
 } thread_control_t;
 
@@ -177,8 +179,8 @@ extern _Atomic unsigned int *pCommBuffer;
 //extern _Atomic unsigned int *shared_i; /*replaced by non atomic GPU_POS*/
 extern unsigned int cl_global_phase; /* global phase used to control igpu persistentkernel */
 extern unsigned int initial_rs_svm_buffers_ocl_global;
-extern r_entry_t **r_entry_pool;
-extern r_entry_wrapper_t* r_entry_pool_cl_wrapper;
+extern r_entry_t **rset_pool;
+extern r_entry_wrapper_t* rset_pool_cl_wrapper;
 extern volatile stm_word_t **locks;
 
 /* thread that waits on a condition to signal gpu validation */

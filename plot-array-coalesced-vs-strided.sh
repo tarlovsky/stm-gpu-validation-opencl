@@ -86,13 +86,15 @@ do
     echo "set title \"array-r99-w1 ($mode ARRAY WALK)\" font \",12\"" >> $FILE
     echo "plot \\"  >> $FILE
     #memory access modes
-    echo " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1/array-r99-w1-$mode-walk/1-coalesced-mem' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Full iGPU Coalesced mem. Persistent Threads\" lc rgb col_48,\\" >> $FILE
-    echo " '$RESULTS_DIR/TinySTM-igpu-persistent-strided-wbetl/1/array-r99-w1-$mode-walk/1-strided-mem' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Full iGPU Strided mem. Persistent Threads\" lc rgb \"#3cde33\",\\" >> $FILE
+    echo " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1/array-r99-w1-$mode-walk/1-coalesced-mem' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Full iGPU Coalesced mem (K=RSET/5376)\" lc rgb col_48,\\" >> $FILE
+    echo " '$RESULTS_DIR/TinySTM-igpu-persistent-strided-wbetl/1/array-r99-w1-$mode-walk/1-strided-mem' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Full iGPU Strided mem. (K=RSET/5376)\" lc rgb \"#3cde33\",\\" >> $FILE
     #untouched TINYSTM
     echo " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-$mode-walk/1-$mode-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"TiynSTM untouched\" lc rgb col_gold,\\"  >> $FILE
+    #full gpu validation but in blocks of 5376
+    echo " '$RESULTS_DIR/TinySTM-igpu-persistent-blocks-wbetl/1/array-r99-w1-$mode-walk/1-$mode-igpu' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Full iGPU, blocks of 5736 (=NO FOR LOOP to get idx), sync on block\" dt new lc rgb \"black\",\\" >> $FILE
     #co-op
-    echo " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/1/array-r99-w1-$mode-walk/1-$mode-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Dynamic split K=1 - gpu validates in blocks of 5736, sync on block (previous-best)\" lc rgb \"#b01313\",\\" >> $FILE
-    echo " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-strided-k-4/1/array-r99-w1-$mode-walk/1-$mode-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Dynamic split K=4; gpu validates in blocks of 5736*4 w/ strided mem., sync on block (new-best)\" dt new lc rgb \"#b01313\",\\" >> $FILE
+    echo " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/1/array-r99-w1-$mode-walk/1-$mode-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Dynamic split K=1; blocks of 5736 on iGPU, sync on block (previous-best)\" lc rgb \"#b01313\",\\" >> $FILE
+    echo " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-strided-k-4/1/array-r99-w1-$mode-walk/1-$mode-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Dynamic split K=4; blocks of 5736*4 on iGPU w/ strided mem., sync on block (new-best)\" dt new lc rgb \"#b01313\",\\" >> $FILE
     #work-item check for !valid
     echo " '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-work-item-level-sync-strided-k-4/1/array-r99-w1-$mode-walk/1-$mode-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*16))/1000000))) with yerrorlines t \"Dynamic split K=4; gpu validates in blocks of 5736*4 w/ strided mem., sync on work-item\" dt new lc rgb \"#ea99ff\",\\" >> $FILE
     echo >> $FILE
@@ -158,4 +160,3 @@ done
 echo  "unset multiplot" >> $FILE
 
 gnuplot -p $FILE
-

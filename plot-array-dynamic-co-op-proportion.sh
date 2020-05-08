@@ -22,7 +22,7 @@ echo > $FILE
 #echo "set terminal png size 1920,1080" >> $FILE
 echo "set terminal wxt size 2100,700" >> $FILE
 #echo "set output '$BENCHMARK-detailed.png'" >> $FILE
-echo "set multiplot layout $R,$C rowsfirst title \"TinySTM array-r99-w1 dynamic co-op workload distribution. CPU, GPU, intersected validation by both.\" font \",16\"" >> $FILE
+echo "set multiplot layout $R,$C rowsfirst title \"TinySTM array-r99-w1 dynamic co-op workload distribution. CPU, GPU, intersected validation by both. BLOCK=5376*K K=1\" font \",16\"" >> $FILE
 echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE
 #========================== VARS ==========================
 echo "col_gold=\"#e8e7ac\"" >> $FILE
@@ -64,13 +64,13 @@ echo "plot\\"  >> $FILE
 # $14 CPU Val Reads
 # $16 GPU Val Reads
 # $18 Wasted Val Reads
-echo  "      '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/1/array-r99-w1-random-walk/1-random-cpu-validation'\\" >> $FILE
+echo  "      '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/1/array-r99-w1-random-walk/1-random-cpu-validation'\\" >> $FILE
 #draw columns
 echo  "   u 14               t col lc rgbcolor col_gold lt 1 fs pattern 3, \\"  >> $FILE
 echo  "'' u 16               t col lc rgbcolor \"#${blue_pallet[((5))]}\" fs pattern 3, \\"  >> $FILE
 echo  "'' u 18:xticlabels(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t col lc rgbcolor \"#d1d1cd\" fs pattern 10, \\"  >> $FILE
 #draw labels
-echo  "      '<tail -n+2 $RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/1/array-r99-w1-random-walk/1-random-cpu-validation' u (\$0-0.124):((\$14!=0)?(\$14+\$14*0.20):NaN):(sprintf(\"%'d\", \$14)) notitle w labels rotate by 90 left textcolor rgb \"black\" font \",10\", \\"  >> $FILE
+echo  "      '<tail -n+2 $RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/1/array-r99-w1-random-walk/1-random-cpu-validation' u (\$0-0.124):((\$14!=0)?(\$14+\$14*0.20):NaN):(sprintf(\"%'d\", \$14)) notitle w labels rotate by 90 left textcolor rgb \"black\" font \",10\", \\"  >> $FILE
 echo  "      ''               u (\$0+0.09):((\$16!=0)?(\$16+\$16*0.20):NaN):(sprintf(\"%'d\", \$16)) notitle w labels rotate by 90 left font \",10\", \\"  >> $FILE
 echo  "      ''               u (\$0+0.30):((\$18!=0)?(\$18+\$18*0.20):NaN):(sprintf(\"%'d\", \$18)) notitle w labels rotate by 90 left font \",10\", \\"  >> $FILE
 #plot errors bars
@@ -86,17 +86,18 @@ echo "plot\\"  >> $FILE
 # $14 CPU Val Reads
 # $16 GPU Val Reads
 # $18 Wasted Val Reads
-echo  "      '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation'\\" >> $FILE
+echo  "      '$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation'\\" >> $FILE
 #draw columns
 echo  "   u 14               t col lc rgbcolor col_gold lt 1 fs pattern 3, \\"  >> $FILE
 echo  "'' u 16               t col lc rgbcolor \"#${blue_pallet[((5))]}\" fs pattern 3, \\"  >> $FILE
 echo  "'' u 18:xticlabels(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t col lc rgbcolor \"#d1d1cd\" fs pattern 10, \\"  >> $FILE #sets xtic label to READSET/MB format
 #draw labels
-echo  "      '<tail -n+2 $RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u (\$0-0.124):((\$14!=0)?(\$14+\$14*0.20):NaN):(sprintf(\"%'d\", \$14)) notitle w labels rotate by 90 left textcolor rgb \"black\" font \",10\", \\"  >> $FILE
+echo  "      '<tail -n+2 $RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u (\$0-0.124):((\$14!=0)?(\$14+\$14*0.20):NaN):(sprintf(\"%'d\", \$14)) notitle w labels rotate by 90 left textcolor rgb \"black\" font \",10\", \\"  >> $FILE
 echo  "      ''               u (\$0+0.09):((\$16!=0)?(\$16+\$16*0.20):NaN):(sprintf(\"%'d\", \$16)) notitle w labels rotate by 90 left font \",10\", \\"  >> $FILE
 echo  "      ''               u (\$0+0.30):((\$18!=0)?(\$18+\$18*0.20):NaN):(sprintf(\"%'d\", \$18)) notitle w labels rotate by 90 left font \",10\", \\"  >> $FILE
-#plot errors bars
+
 echo  "      '' u (\$0+0.0055):(1):(sprintf('%.2fx', (\$16>\$14)?((\$16/\$14)):0 )) t \"\" w labels offset char 0,char -0.66 font \",9\", \\"  >> $FILE
+#plot errors bars
 echo  "      ''               u (\$0-0.10):(\$14):15 w yerr notitle ls 1 lc rgb '#8f8800' , \\"  >> $FILE
 echo  "      ''               u (\$0+0.10):(\$16):17 w yerr notitle ls 1 lc rgb '#cacaca' , \\"  >> $FILE
 echo  "      ''               u (\$0+0.31):(\$18):19 w yerr notitle ls 1 lc rgb '#919191' , \\"  >> $FILE

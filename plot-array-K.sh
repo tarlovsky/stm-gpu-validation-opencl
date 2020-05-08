@@ -84,7 +84,7 @@ for i in 1 2 4 8; do
     #extract only those datapoints/readsets we have with "varying K" files/stats
     for r in ${RSET[@]};
     do
-      echo $(awk -v r=$r 'NR>1{if($1==r){print $0}}' "$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation") >> $TMP1
+      echo $(awk -v r=$r 'NR>1{if($1==r){print $0}}' "$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation") >> $TMP1
     done
 
     cpu_val_time=$(awk '{print $2}' $TMP)

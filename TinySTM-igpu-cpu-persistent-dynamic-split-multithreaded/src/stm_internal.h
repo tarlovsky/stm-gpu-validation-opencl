@@ -32,7 +32,7 @@
 #include "tls.h"
 
 //Tarlovsky
-#include "clsvmvalidation.h" //has pre-allocated svm r_entry_pool
+#include "clsvmvalidation.h" //has pre-allocated svm rset_pool
 
 #include "utils.h"
 #include "atomic.h" /* these are HP atomics: atomic_ops.h */
@@ -90,12 +90,13 @@
 #define TX_GET                          stm_tx_t *tx = tls_get_tx()
 
 #ifndef RW_SET_SIZE
-//CL_DEVICE_MAX_MEM_ALLOC_SIZE is 128*1024*1024 = 134217728
-# define RW_SET_SIZE                    134217728 /* IniRSET_MIN_GPU_VALtial size of read/write sets */
+/* CL_DEVICE_MAX_MEM_ALLOC_SIZE is 128*1024*1024 = 134217728 */
+/* opt: sed it with read-set being used, only in synthetic will it work */
+# define RW_SET_SIZE                    134217728 /* Initial size of read/write sets */
 #endif /* ! RW_SET_SIZE */
 
 /*tarlovskyy*/
-#define RSET_MIN_GPU_VAL                64
+#define RSET_MIN_GPU_VAL                8192
 
 #ifndef LOCK_ARRAY_LOG_SIZE
 # define LOCK_ARRAY_LOG_SIZE            26                  /* Size of lock array: 2^20 = 1M */
@@ -427,10 +428,10 @@ typedef struct {
 
   /* tarlovskyy
    * How to pre-share the dynamically allocated read-sets in transactions?
-   * Allocate a huge chunk of memory and call it clsvmvalidation::r_entry_pool
-   * calls to stm_internal::stm_allocate_rs_entries(stm_tx_t *tx) return next atomically avail. r_entry_pool[current_rset_slot]
+   * Allocate a huge chunk of memory and call it clsvmvalidation::rset_pool
+   * calls to stm_internal::stm_allocate_rs_entries(stm_tx_t *tx) return next atomically avail. rset_pool[current_rset_slot]
    * */
-  //volatile unsigned int current_rset_slot; /* Know which slot inside r_entry_pool to access */
+  //volatile unsigned int current_rset_slot; /* Know which slot inside rset_pool to access */
   atomic_int global_tid;
   #if CM == CM_MODULAR
   int vr_threshold;                     /* Number of retries before to switch to visible reads. */
@@ -817,7 +818,7 @@ stm_allocate_rs_entries(stm_tx_t *tx, int extend)
     /* Return pointer from existing preallocated svm-fg buffer */
     //printf("tx->rset_slot %d\n",tx->rset_slot);
 
-    tx->r_set.entries = (r_entry_t*) r_entry_pool[tx->rset_slot];
+    tx->r_set.entries = (r_entry_t*) rset_pool[tx->rset_slot];
     /*======== end changes =========*/
   }
 }
@@ -1294,6 +1295,7 @@ int_stm_init_thread(void)
   /* Allocate descriptor */
   tx = (stm_tx_t *)xmalloc_aligned(sizeof(stm_tx_t));
   tx->rset_slot = atomic_fetch_add(&_tinystm.global_tid, 1);
+
   /* Set attribute */
   tx->attr = (stm_tx_attr_t)0;
   /* Set status (no need for CAS or atomic op) */
@@ -1435,7 +1437,9 @@ int_stm_exit_thread(stm_tx_t *tx)
   gc_free(tx, t);
   gc_exit_thread();
 #else /* ! EPOCH_GC */
-  xfree_svmalloc(tx->r_set.entries);
+  /*cleanup happens in cleanupCL clsvmvalidation.c::885*/
+  //xfree_svmalloc(tx->r_set.entries);
+
   xfree(tx->w_set.entries);
   xfree(tx);
 #endif /* ! EPOCH_GC */
@@ -1506,12 +1510,13 @@ int_stm_commit(stm_tx_t *tx)
     return 0;
   }
 #endif /* CM == CM_MODULAR */
-
+  /*tarlovsky TODO don't forget:*/
   /* A read-only transaction can commit immediately */
   if (unlikely(tx->w_set.nb_entries == 0))
     goto end;
 
   /* Update transaction */
+
 #if DESIGN == WRITE_BACK_ETL
   stm_wbetl_commit(tx);
 #elif DESIGN == WRITE_BACK_CTL

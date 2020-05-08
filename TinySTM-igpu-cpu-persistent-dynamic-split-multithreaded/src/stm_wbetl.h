@@ -32,6 +32,7 @@
 
 //need to print uintptr
 #include "inttypes.h"
+/*to time validation*/
 #include "timer.h"
 
 #if CM == CM_MODULAR
@@ -40,52 +41,51 @@ static NOINLINE void stm_drop(stm_tx_t *tx);
 static NOINLINE int stm_kill(stm_tx_t *tx, stm_tx_t *other, stm_word_t status);
 #endif /* CM == CM_MODULAR */
 
-
-#define STATES 8
+#define STATES 5
 #define PHASE 0
 #define SPIN 1
 #define COMPLETE 2
 #define FINISH 3
-#define VALID 4
-#define RCHUNKCOUNTER 5
-#define LASTCHUNKELEMENTS 6
-#define SHAREDI 7
+#define STM_SUBSCRIBER_THREAD 4
 
 static INLINE int
 stm_wbetl_validate(stm_tx_t *tx)
 {
     PRINT_DEBUG("==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d\n", tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries);
-    //printf("R_SET_SLOT/THREAD %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d\n",tx->rset_slot, tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries);
+    //printf("R_SET_SLOT/THREAD %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d tx->w_set.nb_entires: %d\n",tx->rset_slot, tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries, tx->w_set.nb_entries);
+
     TIMER_T start;
     TIMER_T stop;
     TIMER_READ(start);
-    double gt;
+    double gpu_time;
     int idx = tx->rset_slot;
-    long N = tx->r_set.nb_entries;
+    unsigned long long N = tx->r_set.nb_entries;
     threadComm[idx].valid = 1;
     /*some known chunk where it is known that the GPU is never fast enough to reech*/
     //long THRESHOLD = N - N / 3;
     int gpu_mine = 0;
     r_entry_t *r;
     stm_word_t l;
-    r = ((r_entry_t*) (r_entry_pool[tx->rset_slot])) + N - 1;
+    r = ((r_entry_t*) (rset_pool[tx->rset_slot])) + N - 1; // wind r to len-1 element
 
-    /* don't even bother bothering GPU if read set < 512 */
-    if(N >= RSET_MIN_GPU_VAL){
-
+    /* don't even bother bothering GPU if read set <= 8192 */
+    if(idx == 0 && N >= RSET_MIN_GPU_VAL){/*set index to 1 because thread 0 always has less aborts*/
+    //if(0){
+        /*DOUBLE CHECKED LOCKING*/
         /* compete for gpu employment */
         /* if it's not taken take it. Try once, move one */
-        if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == -1) {
-            atomic_store_explicit(&gpu_employed, idx, memory_order_acq_rel);
-            /*was someone was faster than us?*/
-            if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == idx) {
+        if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == -1) {  /*nobody owns gpu*/
+            atomic_store_explicit(&gpu_employed, idx, memory_order_acq_rel);      /*try to own gpu*/
+            if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == idx) {/*was someone was faster than us?*/
 
                 //printf("THREAD %d WON GPU !\n", idx);
                 //printf("winner employing gpu\n");
-                /*if off cpu does all the work and do not collect counters from gpu*/
-                gpu_mine = 1;
 
-                /* halted when invalidated */
+                gpu_mine = 1;/*turn on to collect counters after finish*/
+                /*register your index/rset_slot with the gpu*/
+                pCommBuffer[STM_SUBSCRIBER_THREAD] = idx;
+
+                /* halted when invalidation encountered on the CPU*/
                 halt_gpu = 0;
 
                 gpu_exit_validity = 1;
@@ -93,43 +93,37 @@ stm_wbetl_validate(stm_tx_t *tx)
                 //GPU_POS = 0;
 
                 threadComm[idx].nb_entries = N;
-
-                /* in how many parts can we break r_set.entries?:*/
-
                 /*this overshoots rset size but gets everything*/
                 //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
-
                 /*this does not overshoot. cpu will be fast enough to take care of gap.*/
                 threadComm[idx].submersions = N / global_dim[0];
-
                 threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
                 threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
-                halt_gpu = 0;
 
                 pthread_mutex_lock(&validate_mutex);
                 //printf("SIGNALING GPU SIGNALER THREAD..\n");
                     atomic_store_explicit(&delegate_validate, 1, memory_order_release);
                     pthread_cond_signal(&validate_cond);
                 pthread_mutex_unlock(&validate_mutex);
-            }
-        }else{
+            //}
+        //}//else{
             //printf("THREAD %d LOST GPU !\n", idx);
-        }
+        //}
 
     }
 
-    int CPU_POS;
+    unsigned long long CPU_POS;
 
     TIMER_READ(T1C);
     /* validate a chunk then increment global counter of how many chunks you have validated */
-    //printf("CPU [%d;%d]\n", N, i);
-    for (CPU_POS = N - 1; CPU_POS >= 0; CPU_POS--, r--) {
 
-        /* optimization: start checking two interthreaded variables only past half
-         * because we know cpu is at least twice as fast than gpu */
+    for (CPU_POS = N; CPU_POS > 0; r--) {
+        CPU_POS--;
+        //printf("INDEX ACCESSED %d\n", CPU_POS);
+        /* optimization: start checking two inter-threaded variables only past some percentage X
+         * because we know cpu is at least X faster than gpu */
 
-        /**/
-        /* this is useful because loads to GPU_POS are evaded by checking on a constant */
+        /* this is useful because loads to GPU_POS are evaded by checking on a constant THRESHOLD */
         /* if(gpu_mine && CPU_POS < THRESHOLD){ */
 
         if(gpu_mine){
@@ -156,15 +150,14 @@ stm_wbetl_validate(stm_tx_t *tx)
         l = ATOMIC_LOAD(r->lock);
         if (LOCK_GET_OWNED(l)) {
             w_entry_t *w = (w_entry_t *)LOCK_GET_ADDR(l);
-            if (!(tx->w_set.entries <= w && w < tx->w_set.entries + tx->w_set.nb_entries))
-            {
-                if(gpu_mine){halt_gpu = 1;}
+            if (!(tx->w_set.entries <= w && w < tx->w_set.entries + tx->w_set.nb_entries)){
+                if(gpu_mine){halt_gpu = 1;}/*if we employed gpu tell it to stop*/
                 threadComm[idx].valid = 0; /*tell gpu to stop in PRIVATE thread-validation-descriptor*/
                 goto ret;
             }
         } else {
             if (LOCK_GET_TIMESTAMP(l) != r->version) {
-                if(gpu_mine){halt_gpu = 1;}
+                if(gpu_mine){halt_gpu = 1;}/*if we employed gpu tell it to stop*/
                 threadComm[idx].valid = 0; /*tell gpu to stop in PRIVATE thread-validation-descriptor*/
                 goto ret;
             }
@@ -210,7 +203,7 @@ ret:
     tx->cpu_validated += N-CPU_POS;
 
     /*add cpu_pos always, gpu_pos later if gpu employed*/
-    printf("%d CPU_N %d\n", idx, N-CPU_POS);
+    //printf("%d CPU_N %d\n", idx, N-CPU_POS);
     tx->val_reads += N-CPU_POS;
 
     if(gpu_mine){
@@ -220,8 +213,8 @@ ret:
 
         /*might underflow if cpu is to fast
          * make it 0 if cpu completed faster than T2G was ever read*/
-        gt = TIMER_DIFF_SECONDS(T1G, T2G);
-        tx->gpu_val_time += (gt < 0 ? 0 : gt);
+        gpu_time = TIMER_DIFF_SECONDS(T1G, T2G);
+        tx->gpu_val_time += (gpu_time < 0 ? 0 : gpu_time);
 
         /*need to know N to print gpu average validation time per function call per function call*/
         tx->gpu_employed_times += 1;
@@ -230,8 +223,8 @@ ret:
 
         tx->gpu_validated += atomic_load_explicit(&GPU_POS, memory_order_relaxed);
 
-        if(GPU_POS > 0){
-            tx->waste_double_validated += ABS(GPU_POS-CPU_POS);
+        if(GPU_POS >= 0){
+            tx->waste_double_validated += ABS((long long) (GPU_POS-CPU_POS));
         }
 
         /*total val_reads like in any other benchmark*/
@@ -245,7 +238,6 @@ ret:
         //printf("CLEARING GPU_EMPLOYED %d\n", idx);
         atomic_store_explicit(&gpu_employed, -1, memory_order_release);
     }
-
 
     tx->stat_val_succ += threadComm[idx].valid;//faster than a branch i guess, v is either 1 or 0
     tx->stat_val_fail += !threadComm[idx].valid;//
@@ -1134,8 +1126,8 @@ stm_wbetl_commit(stm_tx_t *tx)
     /*if only one STM thread exists*/
     /*sequential always validates despite having one or N stm-threads*/
     /*sequential would not validate otherwise because no stm-thread touches anybodies rset*/
-    if(SEQUENTIAL || _tinystm.global_tid == 1){
-        //if(1){
+    //if(SEQUENTIAL || _tinystm.global_tid == 1){
+    if(_tinystm.global_tid == 1){
         /* always validate with 1 thread for thesis */
         if (!stm_wbetl_validate(tx)) {
             //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/
@@ -1148,6 +1140,9 @@ stm_wbetl_commit(stm_tx_t *tx)
             return 0;
         }
     }else{
+
+        /*UNTOUCHED CASE*/
+
         /* Try to validate (only if a concurrent transaction has committed since tx->start) */
         if (unlikely(tx->start != t - 1 && !stm_wbetl_validate(tx))) {
             //if (!stm_wbetl_validate(tx)) {
@@ -1160,6 +1155,7 @@ stm_wbetl_commit(stm_tx_t *tx)
             stm_rollback(tx, STM_ABORT_VALIDATE);
             return 0;
         }
+
     }
 
 #ifdef IRREVOCABLE_ENABLED

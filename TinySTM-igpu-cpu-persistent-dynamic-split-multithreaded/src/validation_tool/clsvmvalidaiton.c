@@ -43,7 +43,7 @@ size_t lws[1];
 _Atomic unsigned int *pCommBuffer;
 volatile stm_word_t** locks;
 thread_control_t* threadComm;
-r_entry_t **r_entry_pool;
+r_entry_t **rset_pool;
 
 //_Atomic unsigned int *shared_i; // was replaced by GPU_POS
 
@@ -55,7 +55,7 @@ unsigned int cl_global_phase;/* global phase used to control igpu persistentkern
 /* typedef struct r_entry_wrapper{
         r_entry_t* entries; <-- these is the actual pointer to read sets memory start
     }r_entry_wrapper_t;*/
-r_entry_wrapper_t* r_entry_pool_cl_wrapper;
+r_entry_wrapper_t* rset_pool_cl_wrapper;
 
 unsigned int initial_rs_svm_buffers_ocl_global;
 
@@ -504,7 +504,7 @@ int initializeDeviceData(){
     /* Rule of instant-kernel svm arguments is they have to be passed in at kernel launch. */
     /* Can pass new location as pointer but the area pointed to will not be SVM            */
     /* initial_rs_svm_buffers_ocl_global is set in stm.c::stm_init, now in the makefile    */
-    r_entry_pool = (r_entry_t**) clSVMAlloc(
+    rset_pool = (r_entry_t**) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER | CL_MEM_SVM_ATOMICS,
             initial_rs_svm_buffers_ocl_global * sizeof(r_entry_t*),
@@ -512,7 +512,9 @@ int initializeDeviceData(){
             );
 
     for(int i = 0; i < initial_rs_svm_buffers_ocl_global; i++) {
-        r_entry_pool[i] = (r_entry_t*) clSVMAlloc(
+        /* for each STM thread pre_allocate RW_SET_SIZE entries. this number is alsow known in out tests
+         * or just make it max alligned alloc 134217728=2^27 */
+        rset_pool[i] = (r_entry_t*) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER | CL_MEM_SVM_ATOMICS,
             RW_SET_SIZE * sizeof(r_entry_t), //4096 is the default size in tinystm
@@ -521,13 +523,16 @@ int initializeDeviceData(){
     }
 
     /* fix for error: "kernel parameter cannot be declared as a pointer to a pointer" */
-    r_entry_pool_cl_wrapper = (r_entry_wrapper_t*) clSVMAlloc(
+    /* probably a bug in r5.0 opencl implementation */
+    /* solution pass in a struct with a pointer field */
+    rset_pool_cl_wrapper = (r_entry_wrapper_t*) clSVMAlloc(
             g_clContext,
             CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER | CL_MEM_SVM_ATOMICS,
             initial_rs_svm_buffers_ocl_global * sizeof(r_entry_wrapper_t),
             CACHELINE_SIZE
     );
     /* pass in an array of structs pointing to svm memory chunks (read set allocations)*/
+
     //printf("initing device shared data done.\n");
     /*=======================================*/
     /*result = (unsigned int*) clSVMAlloc(
@@ -587,23 +592,22 @@ int launchInstantKernel(void){
     cl_event kernel_finish_event;
     cl_event readEvent;
     /*=================== Required ====================*/
-    /*  Pass in r_entry_pool as array of pointers to r_entry_t arrays          */
+    /*  Pass in rset_pool as array of pointers to r_entry_t arrays          */
     /*  Reference each transaction's read_entries through clSetKernelExecInfo  */
     int extra_svm_ptr_size = (initial_rs_svm_buffers_ocl_global + 1) * sizeof(void*); /* + 1 for locks */
     void **extra_svm_ptr_list = malloc(extra_svm_ptr_size);
     /* It works! if comment clSetKernelExecInfo stops working. */
     for(int i = 0; i < initial_rs_svm_buffers_ocl_global; i++){
-        /* make wrapper point to r_entry_t */
-        r_entry_pool_cl_wrapper[i].entries = (void*) r_entry_pool[i];
-        extra_svm_ptr_list[i] = r_entry_pool_cl_wrapper[i].entries;
+        /* make wrapper's only field point to all rset_pools */
+        rset_pool_cl_wrapper[i].entries = (void*) rset_pool[i];
+        extra_svm_ptr_list[i] = rset_pool_cl_wrapper[i].entries;/*mark rset_pools as svm pointer extra */
     }
-
 
     /*  set kernel svm arguments */
     int arg_set_status = 0;
     arg_set_status += clSetKernelArgSVMPointer(cl_kernel_worker, 0, pCommBuffer);
     //arg_set_status += clSetKernelArgSVMPointer(cl_kernel_worker, 1, *locks);/* no need to pass as arg, nodirect access to it, works, because its pre-shared */
-    arg_set_status += clSetKernelArgSVMPointer(cl_kernel_worker, 1, r_entry_pool_cl_wrapper);   /* Accessed in kernel. Needs to be arg. */
+    arg_set_status += clSetKernelArgSVMPointer(cl_kernel_worker, 1, rset_pool_cl_wrapper);   /* Accessed in kernel. Needs to be arg. */
     //arg_set_status += clSetKernelArg(cl_kernel_worker, 2, sizeof(unsigned int), &initial_rs_svm_buffers_ocl_global);/* visible in kernel - PASS */
     arg_set_status += clSetKernelArgSVMPointer(cl_kernel_worker, 2, threadComm);
     //arg_set_status += clSetKernelArgSVMPointer(cl_kernel_worker, 4, comp_wkgps);
@@ -660,14 +664,16 @@ int launchInstantKernel(void){
     //TIMER_READ(start1);
     pCommBuffer[FINISH] = 0;
     pCommBuffer[COMPLETE] = 0;
-
+    pCommBuffer[SPIN] = 0;
 
     status = clEnqueueNDRangeKernel(g_clCommandQueue, cl_kernel_worker, 1, NULL, global_dim, lws, 0, NULL, NULL);
     //testStatus(status, "clEnqueueNDRangeKernel error");
     clFlush(g_clCommandQueue);
 
     //wait before GPU is ready , each thread will signal
-    while (pCommBuffer[SPIN] < NumberOfHwThreads);
+    while (atomic_load_explicit(&pCommBuffer[SPIN], memory_order_acquire) < NumberOfHwThreads){
+        //printf("%d\n",atomic_load(&pCommBuffer[SPIN]));
+    };
 
     //TIMER_READ(stop1);
     //printf("kernel exec time %f\n", TIMER_DIFF_SECONDS(start1, stop1));
@@ -695,6 +701,8 @@ int launchInstantKernel(void){
     /*if we want gpu proxy thread to run in parallel we must alter it's shed policy otherwise it will be also pinned down to this core*/
 
     /*do not confuse scheduling policy with thread/core pinning/binding*/
+    /*I WANTED TO KEEP CORE PINNING ON STM THREADS AND LET THIS ONE RUNE ON OTHER CORE*/
+    /*COULD NOT BE DONE. SETTING SCHED ONTO OTHER CPU WILL INCURR A THREAD STACK COPY COST */
     //pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
     //pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     //pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -709,9 +717,9 @@ void* signal_gpu(void){
 
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
-    int submersions;
-    int i;
-    int idx;
+    int submersions;    /*number of blocks in which to call persistent kernel*/
+    int i;              /*block counter*/
+    int idx;            /*stm_thread_employer*/
 
     while (!atomic_load_explicit(&shutdown_gpu, memory_order_acquire)) {
         /*wait on condition to launch validation from co-op routine*/
@@ -722,7 +730,10 @@ void* signal_gpu(void){
             }
             /*who is the current employer*/
             idx = atomic_load_explicit(&gpu_employed, memory_order_acquire); /*threadComm will be same as grabbedSlot*/
-            printf("WORKING FOR %d\n", idx);
+            //if(idx == -1){
+                //printf("WORKING FOR %d\n", idx);
+            //}
+
         pthread_mutex_unlock(&validate_mutex);
 
         /*do work*/
@@ -734,6 +745,8 @@ void* signal_gpu(void){
             i = 0;
 
                 TIMER_READ(T1G);
+                /*halted gpu is set on the cpu when it invalidates the tx*/
+                /*submersions is derived from block size*/
                 while(!atomic_load(&halt_gpu) && i < submersions){
 
                     //printf("GPU RUN %d\n", i);
@@ -748,7 +761,7 @@ void* signal_gpu(void){
 #ifdef DEBUG_VALIDATION
 #if (DEBUG_VALIDATION)
                     /*for(int i = 0; i < global_dim[0]; i++){
-                        r_entry_t r = r_entry_pool_cl_wrapper[0].entries[i];
+                        r_entry_t r = rset_pool_cl_wrapper[0].entries[i];
                         stm_word_t l = *((volatile stm_word_t*)(r.lock));
                         //if(debug_buffer_arg1[i] != l || debug_buffer_arg2[i] != r.version){
                             printf("work item i %4d KERNEL LOCK: %d [is %016" PRIXPTR ",should %016" PRIXPTR "] [is %016" PRIXPTR ", should %016" PRIXPTR "]\n", i, debug_buffer_arg[i], debug_buffer_arg1[i], l, debug_buffer_arg2[i], r.version);
@@ -794,14 +807,15 @@ void* signal_gpu(void){
                      * if cpu invalidated while we were working
                      * or one of work-items just invalidated: exit
                      * removes expensive check in every work item */
-                    printf("FINISHED HELPING %d\n", idx);
+
                     if(!threadComm[idx].valid){break;}else{i++;}
                 }
-
+                //printf("FINISHED HELPING STM THREAD: %d\n", idx);
         /*gpu finished parsing read set in blocks*/
 
         //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));
 
+        //commented out blocking in cpu code -> commented out signaling here.
         //pthread_mutex_lock(&validate_mutex);
             //atomic_store_explicit(&validate_complete, 1, memory_order_release);
             //pthread_cond_signal(&validate_complete_cond);
@@ -825,7 +839,9 @@ int initializeHost(void){
 
 int xfree_svmalloc(void *mem){
     /* printf("xfree_svmalloc...FEEING MEMORY FOR PRIVATE READ SET\n"); */
-    clSVMFree(g_clContext, mem);
+    if(mem != NULL) {
+        clSVMFree(g_clContext, mem);
+    }
 }
 
 /* First cleanupCL then host. */
@@ -866,18 +882,20 @@ int cleanupCL(void){
     //gc_svm_pointers [2] = (void*) pCommBuffer;
 
     for(int i = 0; i < initial_rs_svm_buffers_ocl_global; i++){
-        //gc_svm_pointers[3+i] = (void*) r_entry_pool[i];
-        clSVMFree(g_clContext, r_entry_pool[i]);
+        //gc_svm_pointers[3+i] = (void*) rset_pool[i];
+        if(rset_pool[i]!=NULL){
+            clSVMFree(g_clContext, rset_pool[i]);
+        }
     }
 
-    //gc_svm_pointers [2] = (void*) r_entry_pool_cl_wrapper;
-    //gc_svm_pointers [3] = (void*) r_entry_pool;
+    //gc_svm_pointers [2] = (void*) rset_pool_cl_wrapper;
+    //gc_svm_pointers [3] = (void*) rset_pool;
 
     clSVMFree(g_clContext, *locks);
     clSVMFree(g_clContext, threadComm);
     //clSVMFree(g_clContext, pCommBuffer);
-    clSVMFree(g_clContext, r_entry_pool_cl_wrapper);
-    clSVMFree(g_clContext, r_entry_pool);
+    clSVMFree(g_clContext, rset_pool_cl_wrapper);
+    clSVMFree(g_clContext, rset_pool);
 
 #ifdef DEBUG_VALIDATION
 #if (DEBUG_VALIDATION)

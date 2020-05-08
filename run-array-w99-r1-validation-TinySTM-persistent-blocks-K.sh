@@ -151,7 +151,7 @@ TEMP_FILE="$RESULTS_DIR/temp"
 # 2 seems to be the best performance
 # TODO investigate why
 declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100) # 200 500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
-declare -a KARRAY=(500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
+declare -a KARRAY=(200 500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
 declare -a RSET=(4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728)
 
 N_SAMPLES=10
@@ -166,12 +166,12 @@ DEBUG=1
 
 #debug params
 if [[ DEBUG -eq 1 ]]; then
-  declare -a KARRAY=(24966)
+  declare -a KARRAY=(200)
   declare -a RSET=(134217728)
   SEQ_ONLY=0
-  SEQ_ENABLED=1
+  SEQ_ENABLED=0
   # for i=SEQ_ONLY; i<=SEQ_ENABLED
-  N_SAMPLES=5
+  N_SAMPLES=1
 fi
 
 

@@ -55,12 +55,12 @@ for i in 1 2 4 8; do
     do
     #folder of config we are comparing agains baseline tinystm
     #store all intermedeiate files here because they belong to them
-    TARGET_FOLDER="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/$i/array-r99-w1-$mode-walk"
+    TARGET_FOLDER="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/$i/array-r99-w1-$mode-walk"
 
     #get cpu-only val_time
     cpu_val_time=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation")
     #get current config valtime
-    co_op_val_time=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-BEST/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation")
+    co_op_val_time=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation")
     #parse speedup between them
     SPEEDUP=$(paste <(echo "$co_op_val_time") <(echo "$cpu_val_time") | awk '{if($1<$2){printf "%.2f ", $2/$1;}else{print "-"}}')
 
@@ -101,7 +101,7 @@ for i in 1 2 4 8; do
     #get current config valtime
     co_op_val_time=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-igpu-persistent-blocks-wbetl/$i/array-r99-w1-$mode-walk/1-$mode-igpu")
     #parse speedup between them
-    SPEEDUP=$(paste <(echo "$co_op_val_time") <(echo "$cpu_val_time") | awk '{if($1<$2){printf "%.2f ", $2/$1;}else{print "-"}}')
+    SPEEDUP=$(paste <(echo "$co_op_val_time") <(echo "$cpu_val_time") | awk '{if($1<$2){printf "(%.6f --> %.6f: %.2f)", $2, $1, $2/$1;}else{print "-"}}')
 
     RESUL_FILE="$TARGET_FOLDER/tabled-data"
     RESUL_FILE_SPEEDUP="$TARGET_FOLDER/tabled-data-speedup"
