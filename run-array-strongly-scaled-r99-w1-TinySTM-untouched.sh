@@ -64,19 +64,18 @@ for th in 1 2 4 8; do
 
     RESULTS_DIR="results"
     MAKEFILE="Makefile"
-    retries=0
-    MAX_RETRY=4
+
     global_stm="TinySTM"
     UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
     DISJOINT=1 # disjoint on shows good results
 
-    mode=wbetl
+    mode=wbetl-lsa
     i_start=8192 #gpu will work for sure
     N_SAMPLES=10
     SEQ_ONLY=0
     SEQ_ENABLED=0 #do both seq and rand: 0..1
 
-    DEBUG=0
+    DEBUG=1
     #debug params
     if [[ DEBUG -eq 1 ]]; then
       SEQ_ONLY=1

@@ -382,6 +382,8 @@ typedef struct stm_tx {                 /* Transaction descriptor */
   unsigned long long cpu_validated;     /* at least 64 bits */
   unsigned long long waste_double_validated;   /* how many entries did CPU_GPU_POS overshoot and validated twice*/
   unsigned long long gpu_employed_times;      /* how many times was the gpu employed by this STM transactions*/
+  /*only works with READ_LOCKED_DATA*/
+  unsigned long long snapshot_extension_calls;
 #endif /* TM_STATISTICS */
 #ifdef TM_STATISTICS2
   unsigned int stat_aborts_1;           /* Total number of transactions that abort once or more (cumulative) */
@@ -1369,6 +1371,7 @@ int_stm_init_thread(void)
   tx->stat_locked_reads_ok = 0;
   tx->stat_locked_reads_failed = 0;
 # endif /* READ_LOCKED_DATA */
+  tx->snapshot_extension_calls = 0;
 #endif /* TM_STATISTICS2 */
 #ifdef IRREVOCABLE_ENABLED
   tx->irrevocable = 0;
@@ -1432,6 +1435,7 @@ int_stm_exit_thread(stm_tx_t *tx)
 
 #ifdef EPOCH_GC
   t = GET_CLOCK;
+  //printf("calling gc_free for tx->%d\n", tx->rset_slot);
   gc_free(tx->r_set.entries, t);
   gc_free(tx->w_set.entries, t);
   gc_free(tx, t);
@@ -1774,6 +1778,10 @@ int_stm_get_stats(stm_tx_t *tx, const char *name, void *val)
   }
   if (strcmp("locked_reads_failed", name) == 0) {
     *(unsigned int *)val = tx->stat_locked_reads_failed;
+    return 1;
+  }
+  if (strcmp("snapshot_extension_calls", name) == 0) {
+    *(unsigned long long *)val = tx->snapshot_extension_calls;
     return 1;
   }
 # endif /* READ_LOCKED_DATA */

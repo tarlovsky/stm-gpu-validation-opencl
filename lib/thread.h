@@ -16,6 +16,7 @@ typedef struct padded_statistics {
     unsigned long long gpu_employed_times;
     unsigned long n_val_succ;
     unsigned long n_val_fail;
+    unsigned long long snapshot_extension_calls;
     char suffixPadding[CACHE_LINE_SIZE];
 } __attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t;
 

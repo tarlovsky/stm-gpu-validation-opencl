@@ -48,6 +48,8 @@ static NOINLINE int stm_kill(stm_tx_t *tx, stm_tx_t *other, stm_word_t status);
 #define FINISH 3
 #define STM_SUBSCRIBER_THREAD 4
 
+#define STICKY_THREAD 0
+
 static INLINE int
 stm_wbetl_validate(stm_tx_t *tx)
 {
@@ -69,19 +71,30 @@ stm_wbetl_validate(stm_tx_t *tx)
     r = ((r_entry_t*) (rset_pool[tx->rset_slot])) + N - 1; // wind r to len-1 element
 
     /* don't even bother bothering GPU if read set <= 8192 */
-    if(idx == 0 && N >= RSET_MIN_GPU_VAL){/*set index to 1 because thread 0 always has less aborts*/
-    //if(0){
-        /*DOUBLE CHECKED LOCKING*/
+    if(
+#if STICKY_THREAD /*only use gpu for STM THREAD 0. Sticky gpu thread*/
+        idx == 0 &&
+#endif
+        N >= RSET_MIN_GPU_VAL){/*set index to 1 because thread 0 always has less aborts*/
         /* compete for gpu employment */
-        /* if it's not taken take it. Try once, move one */
-        if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == -1) {  /*nobody owns gpu*/
-            atomic_store_explicit(&gpu_employed, idx, memory_order_acq_rel);      /*try to own gpu*/
-            if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == idx) {/*was someone was faster than us?*/
+        /* Try once if not taken - else move one */
 
-                //printf("THREAD %d WON GPU !\n", idx);
-                //printf("winner employing gpu\n");
+#if STICKY_THREAD
+        /*only use gpu for STM THREAD idx. Sticky gpu thread*/
+        atomic_store_explicit(&gpu_employed, idx, memory_order_release);
+#else
+        /*CAS compete for iGPU*/
+
+        /*If you would have to introduce a loop only because of spurious failure, don't do it; use strong.
+        * If you have a loop anyway, then use weak.*/
+        if(atomic_compare_exchange_strong(&gpu_employed, &minus_one, idx)) {
+#endif /*! sticky thread*/
+
+           //printf("%d WON GPU!\n", atomic_load_explicit(&gpu_employed, memory_order_seq_cst));
+           //if(atomic_load_explicit(&gpu_employed, memory_order_acquire) == idx) {/*was someone was faster than us?*/
 
                 gpu_mine = 1;/*turn on to collect counters after finish*/
+
                 /*register your index/rset_slot with the gpu*/
                 pCommBuffer[STM_SUBSCRIBER_THREAD] = idx;
 
@@ -93,10 +106,13 @@ stm_wbetl_validate(stm_tx_t *tx)
                 //GPU_POS = 0;
 
                 threadComm[idx].nb_entries = N;
+
                 /*this overshoots rset size but gets everything*/
                 //threadComm[idx].submersions = (N + global_dim[0] - 1) / global_dim[0];
+
                 /*this does not overshoot. cpu will be fast enough to take care of gap.*/
                 threadComm[idx].submersions = N / global_dim[0];
+
                 threadComm[idx].w_set_base = (uintptr_t) tx->w_set.entries;
                 threadComm[idx].w_set_end = (uintptr_t)(tx->w_set.entries + tx->w_set.nb_entries);
 
@@ -105,11 +121,10 @@ stm_wbetl_validate(stm_tx_t *tx)
                     atomic_store_explicit(&delegate_validate, 1, memory_order_release);
                     pthread_cond_signal(&validate_cond);
                 pthread_mutex_unlock(&validate_mutex);
-            //}
-        //}//else{
-            //printf("THREAD %d LOST GPU !\n", idx);
-        //}
-
+           //}
+#if !STICKY_THREAD
+        } /*atomic cas*/
+#endif
     }
 
     unsigned long long CPU_POS;
@@ -167,6 +182,8 @@ stm_wbetl_validate(stm_tx_t *tx)
 ret:
     TIMER_READ(T2C);
 
+    //sync & release gpu
+    //dont need this because cpu-gpu meet at middle and CPU stops it then
     //if(gpu_employed) {
         //pthread_mutex_lock(&validate_mutex);
             //while(!atomic_load_explicit(&validate_complete, memory_order_acquire)){
@@ -235,14 +252,17 @@ ret:
 
         /*submit counters before release fence*/
         /*relieve gpu of it's duty. Other transactions can now get the gpu*/
-        //printf("CLEARING GPU_EMPLOYED %d\n", idx);
+        //printf("%d CLEARING gpu_employed\n", idx);
+        /*prevent gpu proxy thread from waking up*/
+        atomic_store_explicit(&delegate_validate, 0, memory_order_release);
+        //atomic_compare_exchange_strong(&gpu_employed, &idx, -1);
         atomic_store_explicit(&gpu_employed, -1, memory_order_release);
     }
 
     tx->stat_val_succ += threadComm[idx].valid;//faster than a branch i guess, v is either 1 or 0
     tx->stat_val_fail += !threadComm[idx].valid;//
 
-    return threadComm[tx->rset_slot].valid;
+    return threadComm[idx].valid;
 }
 
 
@@ -305,7 +325,7 @@ static INLINE int
 stm_wbetl_extend(stm_tx_t *tx)
 {
   stm_word_t now;
-
+  tx->snapshot_extension_calls += 1;
   PRINT_DEBUG("==> stm_wbetl_extend(%p[%lu-%lu])\n", tx, (unsigned long)tx->start, (unsigned long)tx->end);
 
 #ifdef UNIT_TX
@@ -601,7 +621,6 @@ stm_wbetl_read_invisible(stm_tx_t *tx, volatile stm_word_t *addr)
 #endif /* NO_DUPLICATES_IN_RW_SETS */
     /* Add address and version to read set */
     if (tx->r_set.nb_entries == tx->r_set.size) {
-        //printf("tx->r_set.nb_entries %d tx->r_set.size %d\n", tx->r_set.nb_entries, tx->r_set.size);
         stm_allocate_rs_entries(tx, 1);
     }
     r = &tx->r_set.entries[tx->r_set.nb_entries++];
@@ -761,10 +780,11 @@ static INLINE stm_word_t
 stm_wbetl_read(stm_tx_t *tx, volatile stm_word_t *addr)
 {
 #if CM == CM_MODULAR
-  if (unlikely((tx->attr.visible_reads))) {
+  if (unlikely((tx->attr.visible_reads))) { /*VR_THESH DEFAULT IS 3, after 3 aborts with invisible reads switch to visible*/
     /* Use visible read */
     return stm_wbetl_read_visible(tx, addr);
   }
+
 #endif /* CM == CM_MODULAR */
   return stm_wbetl_read_invisible(tx, addr);
 }

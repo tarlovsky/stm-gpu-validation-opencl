@@ -4,7 +4,7 @@
 #                          bench              stm name | mode
 # bash run-stamp-choice.sh tpcc  thread_count TinySTM-igpu-persistent wbetl
 
-
+PROGRAM=
 
 #######################################################################################
 build_stm_and_benchmark(){
@@ -43,49 +43,54 @@ build_stm_and_benchmark(){
   rm lib/tm.h
   rm lib/thread.h
   rm lib/thread.c
-  cd array-strongly-scaled
+  cd $PROGRAM
     rm *.o || true
     rm array
   cd ..
-  echo "Making array-strongly-scaled: $global_stm"
+  echo "Making $PROGRAM: $global_stm"
   cp backends/$global_stm/Defines.common.mk common/Defines.common.mk
   cp backends/$global_stm/Makefile common/Makefile
   cp backends/$global_stm/tm.h lib/tm.h
   cp backends/$global_stm/thread.h lib/thread.h
   cp backends/$global_stm/thread.c lib/thread.c
 
-  cd array-strongly-scaled
+  cd $PROGRAM
   # remove redirect 2 to whatever 1 is point to for debug
     make -f Makefile
   cd ..
 }
-############################## build_stm_and_benchmark ##############################
 
-for th in 1; do
+PROGRAM='array-strongly-scaled'
+
+for th in 1 2 4 8; do
 
     RESULTS_DIR="results"
     MAKEFILE="Makefile"
-    retries=0
-    MAX_RETRY=4
+
     global_stm="TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded"
+    mode=wbetl
+
     UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
     DISJOINT=1 # disjoint on shows good results
 
-    mode=wbetl
-    i_start=4096 #gpu will work for sure
+    r_set_start=8192 #gpu will work for sure
+    r_set_end=16777216
     N_SAMPLES=20
-    SEQ_ONLY=1
-    SEQ_ENABLED=1 #do both seq and rand: 0..1
+    SEQ_ENABLED=0 #do both seq and rand: 0..1
+    SEQ_ONLY=0
+    #PROGRAM_NAME="$PROGRAM-sticky-thread-r$((100-$UPDATE_RATE))-w$UPDATE_RATE-d$DISJOINT"
+    #PROGRAM_NAME="$PROGRAM-sticky-thread-r99-w1-d$DISJOINT"
+    PROGRAM_NAME="$PROGRAM-shared-gpu-r99-w1-d$DISJOINT"
 
     DEBUG=1
     #debug params
     if [[ DEBUG -eq 1 ]]; then
-      SEQ_ONLY=1
-      SEQ_ENABLED=1
+      r_set_start=16777216 #gpu will work for sure
+      r_set_end=16777216
       N_SAMPLES=1
+      SEQ_ENABLED=0
+      SEQ_ONLY=0
     fi
-    #PROGRAM_NAME="array-strongly-scaled-sticky-thread-r$((100-$UPDATE_RATE))-w$UPDATE_RATE-d$DISJOINT"
-    PROGRAM_NAME="array-strongly-scaled-sticky-thread-r99-w1-d$DISJOINT"
 
     ################################### INIT RAPL ###################################
     #remake rapl
@@ -172,16 +177,21 @@ for th in 1; do
 
         #dont write to data-file if debug
         if [[ DEBUG -eq 0 ]]; then
-            echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"CPU Val Reads\" \"stddev\" \"GPU Val Reads\" \"stddev\" \"Wasted Val Reads\" \"stddev\" \"GPU employment times\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
+            echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Validation time (s) CPU\" \"stddev\" \"Validation time (s) GPU\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"CPU Val Reads\" \"stddev\" \"GPU Val Reads\" \"stddev\" \"Wasted Val Reads\" \"stddev\" \"GPU employment times\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Snapshot ext. calls\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
         fi
 
-        for((i=$i_start;i<=16777216;i*=2));do
+        for((i=$r_set_start;i<=$r_set_end;i*=2));do
             #adapt RW_SET_SIZE
             sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=${i}/g" "./$global_stm/$MAKEFILE"
+
+            #TODO i think LSA needs a larger chunk
+            #nope does not
+            #sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=134217728/g" "./$global_stm/$MAKEFILE"
+
             #rebuild stm and benchmark
             build_stm_and_benchmark
 
-            echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"CPU Val Reads\" \"GPU Val Reads\" \"Wasted Val Reads\" \"GPU employment times\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
+            echo "\"Validation time(S)\" \"Validation time(S) CPU\" \"Validation time(S) GPU\" \"Commits\" \"Aborts\" \"Val Reads\" \"CPU Val Reads\" \"GPU Val Reads\" \"Wasted Val Reads\" \"GPU employment times\" \"Val success\" \"Val fail\" \"Snapshot ext. calls\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 
             sum=0
             avg=0
@@ -202,7 +212,7 @@ for th in 1; do
                   progout=$(./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
                   echo "$progout"
                 fi
-                exit;
+
                 threads_out=$(head -n "$th" <<< "$progout")
                 exec_time_power=($(tail -n 2 <<< "$progout"))
 
@@ -219,12 +229,13 @@ for th in 1; do
                 gpu_employment_times=$(awk '{ total += $10 } END { print total }' <<< "$threads_out")
                 validation_succ=$(awk '{ total += $11 } END { print total }' <<< "$threads_out")
                 validation_fail=$(awk '{ total += $12 } END { print total }' <<< "$threads_out")
+                snapshot_extension_calls=$(awk '{ total += $13 } END { print total }' <<< "$threads_out")
 
                 if [[ "$commits" == "0" || -z "${exec_time_power[0]}" || -z "${exec_time_power[1]}" ]]; then
                 #restart
                   echo "PROGRAM DID NOT RETURN CORRECT VALUES"
                 else
-                  echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${cpu_val_reads} ${gpu_val_reads} ${waste_val_reads} ${gpu_employment_times} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
+                  echo "${val_time} ${cpu_val_time} ${gpu_val_time} ${commits} ${aborts} ${val_reads} ${cpu_val_reads} ${gpu_val_reads} ${waste_val_reads} ${gpu_employment_times} ${validation_succ} ${snapshot_extension_calls} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
                 fi
 
             done

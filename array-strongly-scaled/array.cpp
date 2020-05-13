@@ -97,7 +97,7 @@ void work(){
 
             /*do the read*/
             val = TM_SHARED_READ(array[i]);
-
+            //TM_SHARED_WRITE_P(array[i], 1337000);
             /*if still update_ops left and is a write after read*/
             if((update_ops > 0 && doWaR) || (update_ops_counter >= chunk_size - ops)) { /*unlucky case of WaR never being true, all last ops are updates*/
                 update_ops_counter--;/*optimized by compiler in if clause, moved here*/
@@ -107,7 +107,8 @@ void work(){
         /* do only one write to keep read-set large enough
          * for some readson doing x% writes reduces the read-set with a 1:4 ratio. */
         TM_SHARED_WRITE_P(array[my_start+4], 1337000); // some magic number written
-
+        //TM_SHARED_WRITE_P(array[my_start+5], 1337000); // some magic number written
+        //TM_SHARED_WRITE_P(array[my_start+8], 1337000); // some magic number written
         /*reset for next tx*/
         ops = 0;
         update_ops_counter = update_ops;
@@ -124,8 +125,10 @@ void work(){
 /* this is fucking stupid. you cannot have thread enter and tm begin close to eachother.
  * something gets optimized and the fot loops breaks the stm*/
 void test(void *data){
+    int n_transactions = 100;
+
     TM_THREAD_ENTER();/*initializes tx descriptors, allocates memory, and instant kernel once*/
-        for(int runs = 0 ; runs < 1 /*number of transactions*/; runs++){
+        for(int t = 0 ; t < n_transactions /*number of transactions*/; t++){
             //printf("RUN %d CHUNKSIZE %d\n", runs, chunk_size);
             work();
         }

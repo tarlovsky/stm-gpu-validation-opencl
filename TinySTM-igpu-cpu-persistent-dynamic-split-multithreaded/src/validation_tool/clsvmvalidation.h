@@ -34,7 +34,7 @@
 #ifndef RW_SET_SIZE
 /* CL_DEVICE_MAX_MEM_ALLOC_SIZE is 128*1024*1024 = 134217728 */
 /* opt: sed it with read-set being used, only in synthetic will it work */
-# define RW_SET_SIZE            134217728 /* IniRSET_MIN_GPU_VALtial size of read/write sets */
+# define RW_SET_SIZE            134217728 /* Initial size of read/write sets */
 #endif /* ! RW_SET_SIZE */
 
 #define LOCK_ARRAY_LOG_SIZE     26    /* Size of lock array: 2^20 = 1M (million)*/
@@ -194,7 +194,8 @@ extern pthread_cond_t validate_cond,/*gpu_delegate thread sleeps on this conditi
 
 extern atomic_int delegate_validate, /*transaction doing validation signals gpu_delegation_thread*/
                   validate_complete, /*unnecessary when gpu-cpu work dynamically in opposite directions of the readset TODO unused.*/
-                  shutdown_gpu; /* set in --> cleanupCL() */
+                  shutdown_gpu,
+                  minus_one; /* set in --> cleanupCL() */
 
 /* trick that helps cpu-gpu co-op. reduces sharing threadComm[idx].valid. if gpu invalidates,
  * after gpu completes it sets gpu_exit_validity to 0|1.*/

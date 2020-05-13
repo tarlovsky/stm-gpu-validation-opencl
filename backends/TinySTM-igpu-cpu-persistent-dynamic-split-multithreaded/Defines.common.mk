@@ -6,8 +6,8 @@ CC       := g++
 CPP      := g++
 LD       := g++
 
-CFLAGS   += -std=c++11 -w -pthread -fpermissive
-CFLAGS   += -O2
+CFLAGS   += -std=c++11 -w -ggdb3 -pthread -fpermissive
+CFLAGS   += -O0
 CFLAGS   += -DSTM -I$(LIB) -I$(STM)/include -I../rapl-power/
 
 CPPFLAGS += $(CFLAGS)

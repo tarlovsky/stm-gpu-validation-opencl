@@ -82,7 +82,8 @@
                                         stm_get_stats("gpu_employed_times", &(statistics_array[SPECIAL_THREAD_ID()].gpu_employed_times));\
                                         stm_get_stats("nb_val_succ", &(statistics_array[SPECIAL_THREAD_ID()].n_val_succ));\
                                         stm_get_stats("nb_val_fail", &(statistics_array[SPECIAL_THREAD_ID()].n_val_fail));\
-                                        printf("%.9f %.9f %.9f %llu %llu %llu %llu %llu %llu %llu %d %d\n",\
+                                        stm_get_stats("snapshot_extension_calls", &(statistics_array[SPECIAL_THREAD_ID()].snapshot_extension_calls));\
+                                        printf("%.9f %.9f %.9f %llu %llu %llu %llu %llu %llu %llu %d %d %llu\n",\
                                                 statistics_array[SPECIAL_THREAD_ID()].val_time_local,\
                                                 statistics_array[SPECIAL_THREAD_ID()].cpu_val_time_local,\
                                                 statistics_array[SPECIAL_THREAD_ID()].gpu_val_time_local,\
@@ -94,7 +95,8 @@
                                                 statistics_array[SPECIAL_THREAD_ID()].waste_double_validated,\
                                                 statistics_array[SPECIAL_THREAD_ID()].gpu_employed_times,\
                                                 statistics_array[SPECIAL_THREAD_ID()].n_val_succ,\
-                                                statistics_array[SPECIAL_THREAD_ID()].n_val_fail);\
+                                                statistics_array[SPECIAL_THREAD_ID()].n_val_fail,\
+                                                statistics_array[SPECIAL_THREAD_ID()].snapshot_extension_calls);\
                                         stm_exit_thread()
 
 #      define P_MALLOC(size)            malloc(size)

@@ -350,7 +350,8 @@ stm_exit(void)
   //cleanupHost();
 
 #ifdef EPOCH_GC
-  gc_exit();
+  /*tarlovskyy commented because of a segfault here*/
+  //gc_exit();
 #endif /* EPOCH_GC */
   _tinystm.initialized = 0;
 }

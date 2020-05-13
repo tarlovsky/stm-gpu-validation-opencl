@@ -124,10 +124,10 @@ __kernel void InstantKernel(
                 memory_scope_all_svm_devices);
     }
 
-    /* type is pointer to global memory object thread_control_t. threadComm is a private pointer private to each WI. */
+    /* type is a work-item local pointer to global memory object thread_control_t. threadComm is a private pointer private to each WI. */
     /* __global thread_control_t* __local threadComm[0]; //this is how you store pointer in local memory */
     __global thread_control_t* threadComm =    /* *threadComm is private to each WI. a pointer to its work-group's assigned th_con slot*/
-    (__global thread_control_t*) &thread_comm[0]; /* each work item has got a pointer in private memory.*/
+    (__global thread_control_t*) thread_comm; /* each work item has got a pointer in private memory.*/
 
     //__global volatile atomic_int* tphase = (__global volatile atomic_int*) threadComm->Phase;
 
@@ -174,8 +174,8 @@ __kernel void InstantKernel(
             stm_subscriber_thread = atomic_load_explicit(&SVMComm[STM_SUBSCRIBER_THREAD], memory_order_acquire, memory_scope_all_svm_devices);
             Finish = atomic_load_explicit(&SVMComm[FINISH], memory_order_acquire, memory_scope_all_svm_devices);
 
-            block_offset = atomic_load_explicit(&threadComm->block_offset, memory_order_acquire, memory_scope_all_svm_devices);
-            rset_size = atomic_load_explicit(&threadComm->nb_entries, memory_order_acquire, memory_scope_all_svm_devices);
+            block_offset = atomic_load_explicit(&threadComm[stm_subscriber_thread].block_offset, memory_order_acquire, memory_scope_all_svm_devices);
+            rset_size = atomic_load_explicit(&threadComm[stm_subscriber_thread].nb_entries, memory_order_acquire, memory_scope_all_svm_devices);
 		}
 
 		barrier( CLK_LOCAL_MEM_FENCE );
@@ -205,8 +205,9 @@ __kernel void InstantKernel(
 
                     #ifdef DEBUG_VALIDATION
                     #if (DEBUG_VALIDATION == 1)
-                        debug_buffer[i] = j;
-                        debug_buffer1[i] = l;
+                        debug_buffer[i] = stm_subscriber_thread;
+                        debug_buffer1[i] = threadComm[stm_subscriber_thread].w_set_base;
+                        debug_buffer2[i] = threadComm[stm_subscriber_thread].w_set_end;
                     #endif
                     #endif
 
@@ -230,9 +231,9 @@ __kernel void InstantKernel(
                         #endif
 
                         /* Simply check if address falls inside our write set */
-                        if( !(threadComm->w_set_base <= w && w < threadComm->w_set_end) ){
+                        if( !(threadComm[stm_subscriber_thread].w_set_base <= w && w < threadComm[stm_subscriber_thread].w_set_end) ){
                             /*it does not: locked by another transactions: cannot validate*/
-                            atomic_store_explicit(&threadComm->valid, 0, memory_order_acq_rel, memory_scope_all_svm_devices);
+                            atomic_store_explicit(&threadComm[stm_subscriber_thread].valid, 0, memory_order_acq_rel, memory_scope_all_svm_devices);
                         }
                         /* We own the lock: OK */
                     } else {
@@ -245,7 +246,7 @@ __kernel void InstantKernel(
                         #endif
                         if (LOCK_GET_TIMESTAMP(l) != r.version) {
                             /* Other version: cannot validate */
-                            atomic_store_explicit(&threadComm->valid, 0, memory_order_acq_rel, memory_scope_all_svm_devices);
+                            atomic_store_explicit(&threadComm[stm_subscriber_thread].valid, 0, memory_order_acq_rel, memory_scope_all_svm_devices);
                         }
                         /* Same version: OK */
                     }
@@ -262,7 +263,7 @@ __kernel void InstantKernel(
             if( get_local_id(0) == 0 ){
                 //atomic_fetch_add_explicit(&comp_wkgps[get_group_id(0)],1,memory_order_seq_cst,memory_scope_all_svm_devices);
                 atomic_fetch_add_explicit(&SVMComm[COMPLETE], 1, memory_order_acq_rel, memory_scope_all_svm_devices);
-
+                //atomic_store_explicit(&threadComm[stm_subscriber_thread].valid, -200, memory_order_acq_rel, memory_scope_all_svm_devices);
                 //atomic_fetch_add_explicit(
                 //        &threadComm->reads_count,
                 //        get_local_size(0), /*i removed the individial work-item aromic counter and placed it here. overvalidate but better performance*/

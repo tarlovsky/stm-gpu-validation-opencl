@@ -247,7 +247,7 @@ DEFINES += -UUNIT_TX
 #   environment variable of the same name.
 ########################################################################
 
-# DEFINES += -DRW_SET_SIZE=4096
+# DEFINES += -DRW_SET_SIZE=134217728
 # DEFINES += -DLOCK_ARRAY_LOG_SIZE=20
 # DEFINES += -DLOCK_SHIFT_EXTRA=2
 # DEFINES += -DMIN_BACKOFF=0x04UL
