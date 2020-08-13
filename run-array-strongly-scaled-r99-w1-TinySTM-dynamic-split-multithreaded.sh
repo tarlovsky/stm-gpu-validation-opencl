@@ -80,7 +80,8 @@ for th in 2; do
     mode=wbetl
 
     #PROGRAM='array-strongly-scaled'
-    PROGRAM='array-strongly-scaled-one-large-tx'
+    #PROGRAM='array-strongly-scaled-one-large-tx'
+    PROGRAM='array-strongly-scaled-all-large-tx'
 
     #array walk vars
     #disjoint array segments for all threads: 1-disjoint 0-conjoint
