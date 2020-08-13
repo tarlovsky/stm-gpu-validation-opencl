@@ -4,7 +4,7 @@
 
 #include "thread.h"
 
-__attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t statistics_array[32];
+__attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t statistics_array[16];
 
 __thread unsigned short thread_id;
 
@@ -92,6 +92,7 @@ __thread long threadID;
 
         /* Set up pool */
         THREAD_ATTR_INIT(global_threadAttr);
+
         for (i = 1; i < numThread; i++) {
             THREAD_CREATE(global_threads[i],
                           global_threadAttr,

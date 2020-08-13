@@ -942,8 +942,8 @@ int cleanupCL(void){
     status = clReleaseProgram(g_clProgram);
     testStatus(status, "Error releasing program\n");
 
-    status = clReleaseCommandQueue(g_clCommandQueue);
-    testStatus(status, "Error releasing mem object g_clCommandQueue\n");
+    //status = clReleaseCommandQueue(g_clCommandQueue);
+    //testStatus(status, "Error releasing mem object g_clCommandQueue\n");
 
     status = clReleaseContext(g_clContext);
     testStatus(status, "Error releasing mem object\n");

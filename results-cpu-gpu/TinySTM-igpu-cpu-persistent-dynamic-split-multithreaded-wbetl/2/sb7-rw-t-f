@@ -1,0 +1,4 @@
+"Validation time(S)" "Validation time(S) CPU" "Validation time(S) GPU" "Commits" "Aborts" "Val Reads" "CPU Val Reads" "GPU Val Reads" "Wasted Val Reads" "GPU employment times" "Val success" "Val fail" "Snapshot ext. calls" "Energy (J)" "Time(S)"
+0.073484 0.073475 0.000000 53 42462370 14171712 14171712 0 324347 6 4 0 2 309.033386 6.045000000
+0.070061 0.070053 0.000000 52 70519537 11318531 11318531 0 0 5 5 0 0 335.870483 6.634000000
+0.025486 0.025479 0.000000 52 56844358 4877986 4877986 0 104060 4 3 0 1 303.202759 6.130000000

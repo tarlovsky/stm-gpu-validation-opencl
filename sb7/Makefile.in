@@ -51,10 +51,15 @@ TINY_STM_ROOT_DIR = ../TinySTM
 TINY_STM_BIN_DIR = ${TINY_STM_ROOT_DIR}/lib
 TINY_STM_INC_DIR = ${TINY_STM_ROOT_DIR}/include
 
-# TinySTM dirs
+# TinySTM igpu dirs
 TINYIGPU_STM_ROOT_DIR = ../TinySTM-igpu-persistent
 TINYIGPU_STM_BIN_DIR = ${TINYIGPU_STM_ROOT_DIR}/lib
 TINYIGPU_STM_INC_DIR = ${TINYIGPU_STM_ROOT_DIR}/include
+
+# TinySTM co-op dirs
+TINYCOOP_STM_ROOT_DIR = ../TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded
+TINYCOOP_STM_BIN_DIR = ${TINYCOOP_STM_ROOT_DIR}/lib
+TINYIGPU_STM_INC_DIR = ${TINYCOOP_STM_ROOT_DIR}/include
 
 # wlpdstm dirs
 WLPDSTM_ROOT_DIR = ../swissTM
@@ -77,6 +82,10 @@ STM_LDFLAGS_TinySTM = -L$(TINY_STM_BIN_DIR) -lstm
 ###################### IGPU ########################
 STM_CPPFLAGS_TinySTM-igpu-persistent-coalesced = -I$(TINYIGPU_STM_INC_DIR) -DSTM_TINY_STM
 STM_LDFLAGS_TinySTM-igpu-persistent-coalesced = -L$(TINYIGPU_STM_BIN_DIR) -lstm -lOpenCL
+
+###################### CPU+iGPU co-op ########################
+STM_CPPFLAGS_TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded = -I$(TINYCOOP_STM_INC_DIR) -DSTM_TINY_STM
+STM_LDFLAGS_TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded = -L$(TINYCOOP_STM_BIN_DIR) -lstm -lOpenCL
 
 STM_CPPFLAGS_swissTM = -I$(WLPDSTM_INC_DIR) -DSTM_WLPDSTM
 STM_LDFLAGS_swissTM = -L$(WLPDSTM_BIN_DIR) -lwlpdstm

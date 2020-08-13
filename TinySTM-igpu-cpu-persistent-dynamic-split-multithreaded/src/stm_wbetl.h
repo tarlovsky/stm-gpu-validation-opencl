@@ -327,7 +327,7 @@ stm_wbetl_extend(stm_tx_t *tx)
   stm_word_t now;
   tx->snapshot_extension_calls += 1;
   PRINT_DEBUG("==> stm_wbetl_extend(%p[%lu-%lu])\n", tx, (unsigned long)tx->start, (unsigned long)tx->end);
-
+  //printf("%d SNAPSHOT EXTEND ==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d tx->w_set.nb_entires: %d\n",tx->rset_slot, tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries, tx->w_set.nb_entries);
 #ifdef UNIT_TX
   /* Extension is disabled */
   if (tx->attr.no_extend)

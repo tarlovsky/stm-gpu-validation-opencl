@@ -1,124 +1,119 @@
 #!/bin/bash
 
-# usage example
-#                          bench              stm name | mode
-# bash run-stamp-choice.sh tpcc  thread_count TinySTM-igpu-persistent wbetl
+
+################################### INIT RAPL ###################################
+#remake rapl
+cd rapl-power && make clean 2>&1 > /dev/null;
+make 2>&1 > /dev/null;
+cd ..;
+
+#needed for rapl
+if lsmod | grep msr &> /dev/null ; then
+  echo "msr is loaded"
+else
+  echo "loading msr module"
+  modprobe msr
+fi
 
 PROGRAM=
 
 #######################################################################################
 build_stm_and_benchmark(){
-  # rebuild STM all the time because we change number of threads and I need that to SED the makefile with initial_rs_svm_buffer_size
-  # now build stm $global_stm TinySTM, tl2, etc
-  cd $global_stm;
-  echo "Scanning for $MAKEFILE makefile in $(pwd)"
-  echo "Making STM.."
-  if [[ -f $MAKEFILE ]]
-  then
-      if [[ $global_stm =~ "tl2" || $global_stm =~ "norec" || $global_stm =~ "swissTM"  ]]; then
-          make -f $MAKEFILE clean 2>&1 > /dev/null;
-          make -f $MAKEFILE       2>&1 > /dev/null;
-      elif [[ $global_stm =~ "TinySTM" ]]; then
-          make -f $MAKEFILE clean 2>&1 > /dev/null;
-          make -f $MAKEFILE all 2>&1 > /dev/null;
-      fi
+    # rebuild STM all the time because we change number of threads and I need that to SED the makefile with initial_rs_svm_buffer_size
+    # now build stm $global_stm TinySTM, tl2, etc
+    cd $global_stm;
+    echo "Scanning for $MAKEFILE makefile in $(pwd)"
+    echo "Making STM.."
+    if [[ -f $MAKEFILE ]]
+    then
+        if [[ $global_stm =~ "tl2" || $global_stm =~ "norec" || $global_stm =~ "swissTM"  ]]; then
+            make -f $MAKEFILE clean 2>&1 > /dev/null;
+            make -f $MAKEFILE       2>&1 > /dev/null;
+        elif [[ $global_stm =~ "TinySTM" ]]; then
+            make -f $MAKEFILE clean 2>&1 > /dev/null;
+            make -f $MAKEFILE all 2>&1 > /dev/null;
+        fi
 
-      rc=$?
-      if [[ $rc != 0 ]] ; then
-          echo ""
-          echo "BASH: =================================== ERROR making $global_stm using $MAKEFILE ==================================="
-          echo ""
-          exit 1
-      fi
-  else
-      echo "BASH: Makefile $MAKEFILE does not exist. Go look into STM folder and use that fname"
-      exit;
-  fi
-  echo "done."
-  cd ..
+        rc=$?
+        if [[ $rc != 0 ]] ; then
+            echo ""
+            echo "BASH: =================================== ERROR making $global_stm using $MAKEFILE ==================================="
+            echo ""
+            exit 1
+        fi
+    else
+        echo "BASH: Makefile $MAKEFILE does not exist. Go look into STM folder and use that fname"
+        exit;
+    fi
+    echo "done."
+    cd ..
 
-  rm lib/*.o || true
-  rm common/Defines.common.mk
-  rm common/Makefile
-  rm lib/tm.h
-  rm lib/thread.h
-  rm lib/thread.c
-  cd $PROGRAM
-    rm *.o || true
-    rm array
-  cd ..
-  echo "Making $PROGRAM: $global_stm"
-  cp backends/$global_stm/Defines.common.mk common/Defines.common.mk
-  cp backends/$global_stm/Makefile common/Makefile
-  cp backends/$global_stm/tm.h lib/tm.h
-  cp backends/$global_stm/thread.h lib/thread.h
-  cp backends/$global_stm/thread.c lib/thread.c
+    rm lib/*.o || true
+    rm common/Defines.common.mk
+    rm common/Makefile
+    rm lib/tm.h
+    rm lib/thread.h
+    rm lib/thread.c
+    cd $PROGRAM
+      rm *.o || true
+      rm array
+    cd ..
+    echo "Making $PROGRAM: $global_stm"
+    cp backends/$global_stm/Defines.common.mk common/Defines.common.mk
+    cp backends/$global_stm/Makefile common/Makefile
+    cp backends/$global_stm/tm.h lib/tm.h
+    cp backends/$global_stm/thread.h lib/thread.h
+    cp backends/$global_stm/thread.c lib/thread.c
 
-  cd $PROGRAM
-  # remove redirect 2 to whatever 1 is point to for debug
-    make -f Makefile
-  cd ..
+    cd $PROGRAM
+    # remove redirect 2 to whatever 1 is point to for debug
+      make -f Makefile
+    cd ..
 }
 
-PROGRAM='array-strongly-scaled'
+for th in 2; do
 
-for th in 1 2 4 8; do
-
+    #stm vars
     RESULTS_DIR="results"
     MAKEFILE="Makefile"
-
     global_stm="TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded"
     mode=wbetl
 
-    UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
-    DISJOINT=1 # disjoint on shows good results
+    #PROGRAM='array-strongly-scaled'
+    PROGRAM='array-strongly-scaled-one-large-tx'
 
+    #array walk vars
+    #disjoint array segments for all threads: 1-disjoint 0-conjoint
+    DISJOINT=0 # disjoint on shows good results
+    UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
+    PROGRAM_NAME="$PROGRAM-shared-gpu-r99-w1-d$DISJOINT"
+    #PROGRAM_NAME="$PROGRAM-sticky-thread-r$((100-$UPDATE_RATE))-w$UPDATE_RATE-d$DISJOINT"
+    #PROGRAM_NAME="$PROGRAM-sticky-thread-r99-w1-d$DISJOINT"
     r_set_start=8192 #gpu will work for sure
     r_set_end=16777216
     N_SAMPLES=20
     SEQ_ENABLED=0 #do both seq and rand: 0..1
     SEQ_ONLY=0
-    #PROGRAM_NAME="$PROGRAM-sticky-thread-r$((100-$UPDATE_RATE))-w$UPDATE_RATE-d$DISJOINT"
-    #PROGRAM_NAME="$PROGRAM-sticky-thread-r99-w1-d$DISJOINT"
-    PROGRAM_NAME="$PROGRAM-shared-gpu-r99-w1-d$DISJOINT"
 
     DEBUG=1
     #debug params
     if [[ DEBUG -eq 1 ]]; then
-      r_set_start=16777216 #gpu will work for sure
-      r_set_end=16777216
+      r_set_start=525056
+      r_set_end=525056
+      #r_set_start=16777216 #gpu will work for sure
+      #r_set_end=16777216
       N_SAMPLES=1
       SEQ_ENABLED=0
       SEQ_ONLY=0
     fi
 
-    ################################### INIT RAPL ###################################
-    #remake rapl
-    cd rapl-power && make clean 2>&1 > /dev/null;
-    make 2>&1 > /dev/null;
-    cd ..;
-
-    #needed for rapl
-    if lsmod | grep msr &> /dev/null ; then
-      echo "msr is loaded"
-    else
-      echo "loading msr module"
-      modprobe msr
-    fi
-
-    # STM
-    if [[ -z "$global_stm" ]]
-    then
-        echo "Third argument must be an STM (case sensitive): TinySTM, TinySTM-igpu"
-    fi
-
     #if STM-MODE set add it to results dir and Makefile to lookup when compiling with that specific makefile
-    if [[ ! -z "$mode" ]]
-    then
-        #add stm mode to end of it's specific makefile name
-        MAKEFILE+="-$mode"
-        echo "Stm makefile is $MAKEFILE."
-    fi
+
+    #add stm mode to end of it's specific makefile name
+    MAKEFILE+="-$mode"
+    echo
+    echo "Stm makefile is $MAKEFILE."
+    echo
 
     #######################################################################################
     #change makefile of the selected STM + mode only for OpenCL igpu validation
@@ -141,7 +136,6 @@ for th in 1 2 4 8; do
     #if STM-MODE set add it to results dir and Makefile to lookup when compiling with that specific makefile
     if [[ ! -z "$mode" ]]
     then
-        echo $mode
         #add stm mode to end of dirname
         RESULTS_DIR+="-$mode"
     fi
@@ -181,12 +175,9 @@ for th in 1 2 4 8; do
         fi
 
         for((i=$r_set_start;i<=$r_set_end;i*=2));do
+
             #adapt RW_SET_SIZE
             sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=${i}/g" "./$global_stm/$MAKEFILE"
-
-            #TODO i think LSA needs a larger chunk
-            #nope does not
-            #sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=134217728/g" "./$global_stm/$MAKEFILE"
 
             #rebuild stm and benchmark
             build_stm_and_benchmark
@@ -207,9 +198,11 @@ for th in 1 2 4 8; do
                 # sequential only makes sense with disjoint sets (, or singlethreaded)
                 #./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 if [[ $DEBUG -eq 1 ]];then
-                  gdb --args ./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
+                  echo "val_time    cpu_v_time  gpu_v_time  C A R C G W G S F E"
+                  #gdb --args ./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
+                  ./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 else
-                  progout=$(./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
+                  progout=$(./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
                   echo "$progout"
                 fi
 

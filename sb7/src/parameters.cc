@@ -36,13 +36,13 @@ namespace sb7 {
 	const int Parameters::DEFAULT_XY_RANGE = 100000;
 	const int Parameters::DEFAULT_TITLE_SIZE = 40;
 
-	const int Parameters::DEFAULT_TRAVERSAL_RATIO = 5;
-	const int Parameters::DEFAULT_SHORT_TRAVERSAL_RATIO = 40;
-	const int Parameters::DEFAULT_OPERATIONS_RATIO = 45;
-	const int Parameters::DEFAULT_STRUCTURAL_MODIFICATIONS_RATIO = 10;
+	const int Parameters::DEFAULT_TRAVERSAL_RATIO = 100;
+	const int Parameters::DEFAULT_SHORT_TRAVERSAL_RATIO = 0;
+	const int Parameters::DEFAULT_OPERATIONS_RATIO = 20;
+	const int Parameters::DEFAULT_STRUCTURAL_MODIFICATIONS_RATIO = 100;
 
 	// just for testing make it 70%
-	const int Parameters::DEFAULT_READ_ONLY_OPERATIONS_RATIO = 70;
+	const int Parameters::DEFAULT_READ_ONLY_OPERATIONS_RATIO = 90;
 
 	const int Parameters::DEFAULT_THREAD_NUM = 1;
 	const int Parameters::DEFAULT_EXPERIMENT_LENGTH_MS = 1000;

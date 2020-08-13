@@ -931,7 +931,7 @@ stm_wbetl_commit(stm_tx_t *tx)
     goto release_locks;
 #endif /* IRREVOCABLE_ENABLED */
 
-  /*if only one STM thread exists*/
+  /*if only one STM thread exists always validate full rset*/
   if(_tinystm.global_tid == 1){
   //if(1){
       /* always validate with 1 thread for thesis */

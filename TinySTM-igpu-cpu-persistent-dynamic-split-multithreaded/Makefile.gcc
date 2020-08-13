@@ -2,7 +2,7 @@
 ifeq ($(CFG),debug)
   CFLAGS += -O0 -ggdb3
 else
-  CFLAGS += -O0 -ggdb3 #-O2
+  CFLAGS += -O2
   CFLAGS += -march=native
 endif
 

@@ -107,6 +107,7 @@ void work(){
         /* do only one write to keep read-set large enough
          * for some readson doing x% writes reduces the read-set with a 1:4 ratio. */
         TM_SHARED_WRITE_P(array[my_start+4], 1337000); // some magic number written
+
         //TM_SHARED_WRITE_P(array[my_start+5], 1337000); // some magic number written
         //TM_SHARED_WRITE_P(array[my_start+8], 1337000); // some magic number written
         /*reset for next tx*/
@@ -200,14 +201,22 @@ MAIN(argc, argv) {
   if(rset_size == 0){
     rset_size = ARRAY_INITIAL_CAPACITY;}
 
+
   /*set to argument*/
   chunk_size = rset_size; /* this IS your ops size*/
 
-  /* strongly scaled array:
-   * user asked for read-set-size;
-   * with N threads the global array has to be rset_size*nb_threads*/
+  if(disjoint == 1){
+    /* strongly scaled array:
+     * user asked for read-set-size;
+     * with N threads the global array has to be rset_size*nb_threads*/
+    array_size = chunk_size * nb_threads;
+  } else {
+    /*reduce the space at which threads operato to increase validation/contention time*/
+    /*without this, conjoint*/
+    array_size = chunk_size;
+  }
 
-  array_size = chunk_size*nb_threads;
+
 
   array = malloc(sizeof(unsigned long) * (array_size));
 
