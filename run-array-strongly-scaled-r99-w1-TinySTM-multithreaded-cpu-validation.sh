@@ -81,8 +81,8 @@ for th in 2 4 8; do
 
     global_stm="TinySTM-threads"
 
-    mode=wbetl
-    #TODO mode=wbetl-lsa
+    #mode=wbetl
+    mode=wbetl-lsa
 
     UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
     DISJOINT=1 # disjoint on shows good results
