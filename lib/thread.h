@@ -5,18 +5,11 @@
 
 typedef struct padded_statistics {
     double val_time_local;
-    double cpu_val_time_local;
-    double gpu_val_time_local;
     unsigned long n_commits;
     unsigned long n_aborts;
     unsigned long long n_val_reads;
-    unsigned long long cpu_validated;
-    unsigned long long gpu_validated;
-    unsigned long long waste_double_validated;
-    unsigned long long gpu_employed_times;
     unsigned long n_val_succ;
     unsigned long n_val_fail;
-    unsigned long long snapshot_extension_calls;
     char suffixPadding[CACHE_LINE_SIZE];
 } __attribute__((aligned(CACHE_LINE_SIZE))) padded_statistics_t;
 

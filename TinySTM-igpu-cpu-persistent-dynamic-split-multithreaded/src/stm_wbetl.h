@@ -54,7 +54,7 @@ static INLINE int
 stm_wbetl_validate(stm_tx_t *tx)
 {
     PRINT_DEBUG("==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d\n", tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries);
-    //printf("R_SET_SLOT/THREAD %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d tx->w_set.nb_entires: %d\n",tx->rset_slot, tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries, tx->w_set.nb_entries);
+    //printf("EXT R_SET_SLOT/THREAD %d ==> stm_wbetl_validate(%p[%lu-%lu])...tx->r_set.nb_entires: %d tx->w_set.nb_entires: %d\n",tx->rset_slot, tx, (unsigned long)tx->start, (unsigned long)tx->end, tx->r_set.nb_entries, tx->w_set.nb_entries);
 
     TIMER_T start;
     TIMER_T stop;
@@ -1147,6 +1147,7 @@ stm_wbetl_commit(stm_tx_t *tx)
     /*sequential always validates despite having one or N stm-threads*/
     /*sequential would not validate otherwise because no stm-thread touches anybodies rset*/
     //if(SEQUENTIAL || _tinystm.global_tid == 1){
+    //if(_tinystm.global_tid == 1){
     if(_tinystm.global_tid == 1){
         /* always validate with 1 thread for thesis */
         if (!stm_wbetl_validate(tx)) {
@@ -1175,7 +1176,6 @@ stm_wbetl_commit(stm_tx_t *tx)
             stm_rollback(tx, STM_ABORT_VALIDATE);
             return 0;
         }
-
     }
 
 #ifdef IRREVOCABLE_ENABLED

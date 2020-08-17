@@ -11,21 +11,23 @@
 
 #include "rapl.h"
 
-#define DEFAULT_DURATION                10000
-#define DEFAULT_INITIAL                 256
+
+//#define DEFAULT_DURATION                10000
+//#define DEFAULT_INITIAL                 256
 #define DEFAULT_NB_THREADS              1
 #define DEFAULT_RANGE                   0xFFFF
 #define DEFAULT_SEED                    0
-#define DEFAULT_UPDATE                  20
 #define ARRAY_INITIAL_CAPACITY          1ULL << 32 // 4_294_967_296 / nb_threads = chunk
 #define XSTR(s)                         STR(s)
 #define STR(s)                          #s
+
+
 
 /* ################################################################### *
  * GLOBALS
  * ################################################################### */
 #define DEFAULT_UPDATE_RATE             20
-#define DEFAULT_OPS                     100
+//#define DEFAULT_OPS                     100
 #define BIG_NUMBER                      1ULL << 30
 #define SMALL_TX_UPDATES                4
 #define CACHELINE_SIZE                  64
@@ -33,6 +35,8 @@
 #define THREADS_MAX                     8
 #define LARGE_TX_N                      100
 #include "tm.h"
+
+static THREAD_BARRIER_T* gbarrier       = NULL;
 
 #define VAL_MIN                         INT_MIN
 #define VAL_MAX                         INT_MAX
@@ -48,8 +52,8 @@ unsigned int update_rate = DEFAULT_UPDATE_RATE;
 unsigned int disjoint = 0;
 unsigned int enable_sequential = 0;
 
-unsigned int kicks [CACHELINE_SIZE * sizeof(unsigned int)*THREADS_MAX];
-unsigned int round         [CACHELINE_SIZE * sizeof(unsigned int)*THREADS_MAX];
+unsigned int kicks [CACHELINE_SIZE * sizeof(unsigned int) * THREADS_MAX];
+unsigned int round [CACHELINE_SIZE * sizeof(unsigned int) * THREADS_MAX];
 unsigned int intervene_pos;
 
 void do_large(){
@@ -94,25 +98,37 @@ void do_large(){
     seed[1] = (unsigned short)rand_r(&seed0);
     seed[2] = (unsigned short)rand_r(&seed0);
 
+
+    //barrier_cross(gbarrier);
+
     TM_BEGIN();/*calls stm prepare and resets tx descriptors. does not realloc*/
 
+        if(disjoint == 1) {
+            /*always add MY first position to rset (because rw is random)...$1*/
+            TM_SHARED_READ(array[my_start + 4]);
+            /*$1...because we always write to neighbour's first position*/
+            TM_SHARED_WRITE_P(array[((id + 1) % nb_threads) * chunk_size + 4], (unsigned long) (my_start + (erand48(seed) * rand_max)));
 
-        // # kicks which i did to neighbor have to be at least his round.
-        int neighbor_round = round[(id+1)%nb_threads];
-        if( kicks[id*CACHELINE_SIZE] < LARGE_TX_N && kicks[id*CACHELINE_SIZE] < neighbor_round ){
-            // no point of kicking twice when other TX couple of rounds away from us.
-            //simply update our kick count.
-            kicks[id*CACHELINE_SIZE] = neighbor_round;
-            /* number of kicks which I did to neighbor.*/
+            // # kicks which i did to neighbor have to be at least his round.
+            int neighbor_round = round[(id + 1) % nb_threads];
 
-            //write to neighbour some magic number to kill prefetcher
-            TM_SHARED_WRITE_P(array[(id+1)%nb_threads], 1337000);
+            if (kicks[id * CACHELINE_SIZE] < LARGE_TX_N
+                && kicks[id * CACHELINE_SIZE] < neighbor_round) {
 
-            //printf("THREAD %d asks for kick at position %d\n", id, i);
+                // no point of kicking twice when other TX couple of rounds away from us.
+                //simply update our kick count.
+                kicks[id * CACHELINE_SIZE] = neighbor_round;
+                /* number of kicks which I did to neighbor.*/
+
+                //write to neighbour some magic number to kill prefetcher
+                TM_SHARED_WRITE_P(array[((id + 1) % nb_threads) * chunk_size + 4], (unsigned long) (my_start + (erand48(seed) * rand_max)));
+
+                //printf("THREAD %d-> rounds: %d %d\n", id, round[id*CACHELINE_SIZE], neighbor_round);
+            }
         }
 
         /*everyone has to do r_set_size==chunk_size operations*/
-        while (ops < chunk_size) {
+        while (ops < chunk_size - 1) { //minus one because we always first read ours
             ops++;
 
             /* read or Write after Rear */
@@ -254,7 +270,7 @@ MAIN(argc, argv) {
   thread_startup(nb_threads);
 
   for(int i = 0; i < THREADS_MAX;i++){
-      kicks[i * CACHELINE_SIZE] = LARGE_TX_N;
+      kicks[i * CACHELINE_SIZE] = 0;
       round[i * CACHELINE_SIZE] = 0;
       //printf("LARGE TX LEFT IN %d: %d\n", i, kicks[i * CACHELINE_SIZE]);
   }
@@ -291,7 +307,11 @@ MAIN(argc, argv) {
    * 4_294_967_296/8=536_870_912 */
 
   srand(time(NULL));
-  /* Populate set */
+
+
+  gbarrier = (barrier_t *) malloc(sizeof(barrier_t));
+
+  barrier_init(gbarrier, nb_threads);
 
   for (i = 0; i < array_size; i++) {
       array[i]=rand() % array_size;/*fill up with really pseduo random numbers*/
@@ -304,6 +324,8 @@ MAIN(argc, argv) {
   thread_start(work, NULL);
   GOTO_REAL();
   TIMER_READ(stop);
+
+
   TM_SHUTDOWN();
   printf("%.9f\n", TIMER_DIFF_SECONDS(start, stop));
   fflush(stdout);

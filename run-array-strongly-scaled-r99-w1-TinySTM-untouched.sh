@@ -4,6 +4,7 @@
 #                          bench              stm name | mode
 # bash run-stamp-choice.sh tpcc  thread_count TinySTM-igpu-persistent wbetl
 
+PROGRAM=
 
 #######################################################################################
 build_stm_and_benchmark(){
@@ -42,35 +43,42 @@ build_stm_and_benchmark(){
   rm lib/tm.h
   rm lib/thread.h
   rm lib/thread.c
-  cd array-strongly-scaled
+  cd $PROGRAM
     rm *.o || true
     rm array
   cd ..
-  echo "Making array-strongly-scaled: $global_stm"
+  echo "Making $PROGRAM: $global_stm"
   cp backends/$global_stm/Defines.common.mk common/Defines.common.mk
   cp backends/$global_stm/Makefile common/Makefile
   cp backends/$global_stm/tm.h lib/tm.h
   cp backends/$global_stm/thread.h lib/thread.h
   cp backends/$global_stm/thread.c lib/thread.c
 
-  cd array-strongly-scaled
+  cd $PROGRAM
   # remove redirect 2 to whatever 1 is point to for debug
     make -f Makefile
   cd ..
 }
 ############################## build_stm_and_benchmark ##############################
 
-for th in 1 2 4 8; do
+for th in 2 4 8; do
 
     RESULTS_DIR="results"
     MAKEFILE="Makefile"
 
     global_stm="TinySTM"
     UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
-    DISJOINT=0 # disjoint on shows good results
+    DISJOINT=1 # disjoint on shows good results
 
-    mode=wbetl
-    i_start=8192 #gpu will work for sure
+    mode=wbetl-lsa
+
+    #PROGRAM='array-strongly-scaled'
+    #PROGRAM='array-strongly-scaled-one-large-tx'
+    PROGRAM='array-strongly-scaled-all-large-tx'
+
+    r_set_start=8192 #gpu will work for sure
+    r_set_end=16777216
+
     N_SAMPLES=10
     SEQ_ONLY=0
     SEQ_ENABLED=0 #do both seq and rand: 0..1
@@ -84,8 +92,8 @@ for th in 1 2 4 8; do
     fi
 
     #PROGRAM_NAME="array-strongly-scaled-r$((100-$UPDATE_RATE))-w$UPDATE_RATE-d$DISJOINT"
-    PROGRAM_NAME="array-strongly-scaled-r99-w1-d$DISJOINT"
-
+    #PROGRAM_NAME="$PROGRAM-r99-w1-d$DISJOINT"
+    PROGRAM_NAME="$PROGRAM-r99-w1-d$DISJOINT-RR-kick"
     ################################### INIT RAPL ###################################
     #remake rapl
     cd rapl-power && make clean 2>&1 > /dev/null;
@@ -164,7 +172,7 @@ for th in 1 2 4 8; do
             echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
         fi
 
-        for((i=$i_start;i<=16777216;i*=2));do
+        for((i=$r_set_start;i<=$r_set_end;i*=2));do
 
             echo "\"Validation time(S)\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 
@@ -182,9 +190,9 @@ for th in 1 2 4 8; do
                 # sequential only makes sense with disjoint sets (, or singlethreaded)
                 #./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 if [[ $DEBUG -eq 1 ]];then
-                  gdb --args ./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
+                  gdb --args ./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 else
-                  progout=$(./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
+                  progout=$(./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
                   echo "$progout"
                 fi
 

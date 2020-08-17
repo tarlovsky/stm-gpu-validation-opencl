@@ -807,7 +807,7 @@ stm_allocate_rs_entries(stm_tx_t *tx, int extend)
     //asserts
 
     /* Extend read set */
-    printf("############## SOMEONE CALLED EXTEND RSET SIZE ##############\n");
+    printf("############## %d CALLED RSET EXTEND from %d entries ##############\n", tx->rset_slot, tx->r_set.nb_entries);
     //tx->r_set.size *= 2;
     //TODO:give larger chunk? heck i have 32gb ram just preload it with steroids
     //tx->r_set.entries = (r_entry_t *)xrealloc(tx->r_set.entries, tx->r_set.size * sizeof(r_entry_t));

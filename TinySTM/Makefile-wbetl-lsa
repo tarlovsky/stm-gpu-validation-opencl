@@ -94,10 +94,10 @@ DEFINES += -DDESIGN=WRITE_BACK_ETL
 # from disabling them.
 ########################################################################
 
-DEFINES += -DTM_STATISTICS
-#DEFINES += -UTM_STATISTICS
-DEFINES += -DTM_STATISTICS2
-#DEFINES += -UTM_STATISTICS2
+  DEFINES += -DTM_STATISTICS
+# DEFINES += -UTM_STATISTICS
+  DEFINES += -DTM_STATISTICS2
+# DEFINES += -UTM_STATISTICS2
 
 ########################################################################
 # Prevent duplicate entries in read/write sets when accessing the same
@@ -107,7 +107,7 @@ DEFINES += -DTM_STATISTICS2
 ########################################################################
 
 # DEFINES += -DNO_DUPLICATES_IN_RW_SETS
-DEFINES += -UNO_DUPLICATES_IN_RW_SETS
+  DEFINES += -UNO_DUPLICATES_IN_RW_SETS
 
 ########################################################################
 # Yield the processor when waiting for a contended lock to be released.

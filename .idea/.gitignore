@@ -1,2 +1,8 @@
 # Default ignored files
 /workspace.xml
+/.gitignore
+/misc.xml
+/modules.xml
+/tm-study-pact14-master.iml
+/vcs.xml
+/workspace.xml

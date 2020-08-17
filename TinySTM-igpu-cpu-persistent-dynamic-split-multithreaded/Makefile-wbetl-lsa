@@ -39,7 +39,7 @@ include Makefile.common
 # Refer to [PPoPP-08] for more details.
 ########################################################################
 
-DEFINES += -DDESIGN=WRITE_BACK_ETL
+  DEFINES += -DDESIGN=WRITE_BACK_ETL
 # DEFINES += -DDESIGN=WRITE_BACK_CTL
 # DEFINES += -DDESIGN=WRITE_THROUGH
 # DEFINES += -DDESIGN=MODULAR
@@ -85,7 +85,7 @@ DEFINES += -DDESIGN=WRITE_BACK_ETL
 # compiler).
 ########################################################################
 
-DEFINES += -DIRREVOCABLE_ENABLED
+  DEFINES += -DIRREVOCABLE_ENABLED
 # DEFINES += -UIRREVOCABLE_ENABLED
 
 ########################################################################
@@ -94,9 +94,9 @@ DEFINES += -DIRREVOCABLE_ENABLED
 # from disabling them.
 ########################################################################
 
-DEFINES += -DTM_STATISTICS
+  DEFINES += -DTM_STATISTICS
 # DEFINES += -UTM_STATISTICS
-DEFINES += -DTM_STATISTICS2
+  DEFINES += -DTM_STATISTICS2
 # DEFINES += -UTM_STATISTICS2
 
 ########################################################################
@@ -237,13 +237,13 @@ DEFINES += -UUNIT_TX
 #   environment variable of the same name.
 ########################################################################
 
-  DEFINES += -DRW_SET_SIZE=525056
+  DEFINES += -DRW_SET_SIZE=16777216
 # DEFINES += -DLOCK_ARRAY_LOG_SIZE=20
 # DEFINES += -DLOCK_SHIFT_EXTRA=2
 # DEFINES += -DMIN_BACKOFF=0x04UL
 # DEFINES += -DMAX_BACKOFF=0x80000000UL
 # DEFINES += -DVR_THRESHOLD_DEFAULT=3
-  DEFINES += -DINITIAL_RS_SVM_BUFFERS_OCL=4
+  DEFINES += -DINITIAL_RS_SVM_BUFFERS_OCL=8
   DEFINES += -DCPU_VALIDATION_PROPORTION=1
   DEFINES += -DSEQUENTIAL=0
 

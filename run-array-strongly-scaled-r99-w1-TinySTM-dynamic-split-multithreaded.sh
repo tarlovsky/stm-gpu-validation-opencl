@@ -71,13 +71,14 @@ build_stm_and_benchmark(){
     cd ..
 }
 
-for th in 2; do
+for th in 2 4 8; do
 
     #stm vars
     RESULTS_DIR="results"
     MAKEFILE="Makefile"
     global_stm="TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded"
     mode=wbetl
+    #mode=wbetl-lsa
 
     #PROGRAM='array-strongly-scaled'
     #PROGRAM='array-strongly-scaled-one-large-tx'
@@ -85,22 +86,25 @@ for th in 2; do
 
     #array walk vars
     #disjoint array segments for all threads: 1-disjoint 0-conjoint
-    DISJOINT=0 # disjoint on shows good results
+    DISJOINT=1 # disjoint on shows good results
     UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
-    PROGRAM_NAME="$PROGRAM-shared-gpu-r99-w1-d$DISJOINT"
+    #PROGRAM_NAME="$PROGRAM-shared-gpu-r99-w1-d$DISJOINT"
+    PROGRAM_NAME="$PROGRAM-shared-gpu-r99-w1-d$DISJOINT-RR-kick"
     #PROGRAM_NAME="$PROGRAM-sticky-thread-r$((100-$UPDATE_RATE))-w$UPDATE_RATE-d$DISJOINT"
     #PROGRAM_NAME="$PROGRAM-sticky-thread-r99-w1-d$DISJOINT"
     r_set_start=8192 #gpu will work for sure
     r_set_end=16777216
-    N_SAMPLES=20
+    N_SAMPLES=10
     SEQ_ENABLED=0 #do both seq and rand: 0..1
     SEQ_ONLY=0
 
-    DEBUG=1
+
+#debug prevents writing to results files
+    DEBUG=0
     #debug params
     if [[ DEBUG -eq 1 ]]; then
-      r_set_start=525056
-      r_set_end=525056
+      r_set_start=4194304
+      r_set_end=4194304
       #r_set_start=16777216 #gpu will work for sure
       #r_set_end=16777216
       N_SAMPLES=1
@@ -117,10 +121,9 @@ for th in 2; do
     echo
 
     #######################################################################################
-    #change makefile of the selected STM + mode only for OpenCL igpu validation
-    #check if results dir is cpu or gpu
-
-    if [[ "$global_stm" == *"TinySTM-igpu"* ]];
+    # ONLY for OpenCL iGPU validation
+    # change makefile of the selected STM + mode
+    if [[ "$global_stm" == *"TinySTM-igpu"* ]]; #check if results dir is cpu or gpu
     then
         # sets compiler define that is read within stm_init() in TinySTM.
         sed -i "s/INITIAL_RS_SVM_BUFFERS_OCL=.*/INITIAL_RS_SVM_BUFFERS_OCL=$th/g" "./$global_stm/$MAKEFILE"
@@ -200,8 +203,8 @@ for th in 2; do
                 #./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 if [[ $DEBUG -eq 1 ]];then
                   echo "val_time    cpu_v_time  gpu_v_time  C A R C G W G S F E"
-                  #gdb --args ./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
-                  ./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
+                  gdb --args ./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
+                  #./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 else
                   progout=$(./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
                   echo "$progout"

@@ -74,21 +74,27 @@ build_stm_and_benchmark(){
 }
 ############################## build_stm_and_benchmark ##############################
 
-for th in 1 2 4 8; do
+for th in 2 4 8; do
 
     RESULTS_DIR="results"
     MAKEFILE="Makefile"
 
     global_stm="TinySTM-threads"
-    mode=wbetl-lsa
+
+    mode=wbetl
+    #TODO mode=wbetl-lsa
 
     UPDATE_RATE=20 # lower update rate: more time in validation as you get aborted less often
     DISJOINT=1 # disjoint on shows good results
 
-    PROGRAM='array-strongly-scaled'
+    #PROGRAM='array-strongly-scaled'
+    #PROGRAM='array-strongly-scaled-one-large-tx'
+    PROGRAM='array-strongly-scaled-all-large-tx'
 
-    i_start=8192 #gpu will work for sure
-    N_SAMPLES=20
+    r_set_start=8192 #gpu will work for sure
+    r_set_end=16777216
+
+    N_SAMPLES=10
     SEQ_ONLY=0
     SEQ_ENABLED=0 #do both seq and rand: 0..1
 
@@ -101,7 +107,8 @@ for th in 1 2 4 8; do
     fi
 
     #PROGRAM_NAME="array-strongly-scaled-r$((100-$UPDATE_RATE))-w$UPDATE_RATE-d$DISJOINT"
-    PROGRAM_NAME="array-strongly-scaled-r99-w1-d$DISJOINT"
+    #PROGRAM_NAME="array-strongly-scaled-r99-w1-d$DISJOINT"
+    PROGRAM_NAME="$PROGRAM-r99-w1-d$DISJOINT-RR-kick"
 
     # STM
     if [[ -z "$global_stm" ]]
@@ -151,6 +158,8 @@ for th in 1 2 4 8; do
     # thread number is dir
     # example results/TinySTM-wbetl/2/intruder++
     TEMP_FILE="$RESULTS_DIR/temp"
+
+    ######################### PICK VALIDATOR THREADS #########################
     j=4
     # valthreads $j=4 is best as seen before in array random and seq
     sed -i "s/VALTHREADS=.*/VALTHREADS=$j/g" "./$global_stm/$MAKEFILE"
@@ -170,7 +179,7 @@ for th in 1 2 4 8; do
             echo "\"RSET\" \"Validation time (s)\" \"stddev\" \"Commits\" \"stddev\" \"Aborts\" \"stddev\" \"Val Reads\" \"stddev\" \"Val success\" \"stddev\" \"Val fail\" \"stddev\" \"Energy (J)\" \"stddev\" \"Total time (s)\" \"stddev\"" > $FILE
         fi
 
-        for((i=$i_start;i<=16777216;i*=2));do
+        for((i=$r_set_start;i<=$r_set_end;i*=2));do
 
             echo "\"Validation time(S)\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
 
@@ -188,9 +197,9 @@ for th in 1 2 4 8; do
                 # sequential only makes sense with disjoint sets (, or singlethreaded)
                 #./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 if [[ $DEBUG -eq 1 ]];then
-                  gdb --args ./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
+                  gdb --args ./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT
                 else
-                  progout=$(./array-strongly-scaled/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
+                  progout=$(./$PROGRAM/array -n$th -r$i -s$sequential -u$UPDATE_RATE -d$DISJOINT) #run the program $( parameters etc )
                   echo "$progout"
                 fi
 
