@@ -29,10 +29,11 @@ echo "unset tmargin" | tee -a $FILES
 echo "unset rmargin" | tee -a $FILES
 echo "unset lmargin" | tee -a $FILES
 
-echo "set multiplot layout 2,2 title \"CONJOINT array walk: READS VALIDATED / THREAD / SECOND (THROUGHPUT) NORMALIZED TO TINYSTM-UNTOUCHED\" font \",14\"" >> $FILE #d=0
-echo "set multiplot layout 2,2 title \"DISJOINT array walk: READS VALIDATED / THREAD / SECOND (THROUGHPUT) NORMALIZED TO TINYSTM-UNTOUCHED\" font \",14\"" >> $FILE1 #d=1
-echo "set multiplot layout 2,2 title \"CONJOINT array walk: TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS SHARED IGPU\" font \",13\"" >> $FILE2
-echo "set multiplot layout 2,2 title \"DISJOINT array walk: TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS SHARED IGPU\" font \",13\"" >> $FILE3
+#no sequential executions
+echo "set multiplot layout 2,2 title \"CONJOINT array walk STRONGLY scaled: ABORTS / THREAD / SECOND\" font \",14\"" >> $FILE #d=0
+echo "set multiplot layout 2,2 title \"DISJOINT array walk STRONGLY scaled: ABORTS / THREAD / SECOND\" font \",14\"" >> $FILE1 #d=1
+echo "set multiplot layout 2,2 title \"CONJOINT array walk STRONGLY scaled: TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS COMPETE FOR IGPU\" font \",13\"" >> $FILE2
+echo "set multiplot layout 2,2 title \"DISJOINT array walk STRONGLY scaled: TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS COMPETE FOR IGPU\" font \",13\"" >> $FILE3
 
 #vars
 echo "col_24=\"#c724d6\"" | tee -a $FILES
@@ -52,7 +53,12 @@ echo "set grid ytics lc rgb \"#606060\"" | tee -a $FILES
 #echo "set format y2 \"%0.4f\"" >> $FILE
 #echo "set logscale y" | tee -a $FILES
 
-echo "set yrange [0:2.5]" | tee -a $FILES
+#THESE FILES CONTAIN ABORTS/SECOND
+echo "set yrange [0:4000000]" | tee -a $FILE $FILE1
+
+#THESE FILES CONTAIN ONLY MULTIPLIERS NORMALIZED TO TINY-UNTOUCHED
+echo "set yrange [0:1.5]" | tee -a $FILE2 $FILE3
+
 
 echo "set format x \"%d\"" | tee -a $FILES
 echo "set xtics nomirror rotate by 45 right font \"Verdana,10\" " | tee -a $FILES
@@ -76,7 +82,7 @@ echo "set key font \",9\"" | tee -a $FILES
 #echo "set key left Left left Left inside top" | tee -a $FILES
 echo "set key inside top right" | tee -a $FILES
 
-echo "set ylabel \"READS VALIDATED / SECOND / THREAD\"" | tee -a $FILE $FILE1
+echo "set ylabel \"ABORTS / SECOND / THREAD\"" | tee -a $FILE $FILE1
 echo "set ylabel \"TRANSACTIONS / SECOND / THREAD\"" | tee -a $FILE2 $FILE3
 
 
@@ -117,65 +123,68 @@ for i in 1 2 4 8; do
   #  24 Val fail
   #  28 total time
 
-  #D=1 disjoint array r/w sets
-  #D=1 conjoint array r/w sets; all threads write into the same RSET size array with 100 tx in array-strongly-scaled
+  # ONLY WORK WITH RANDOM ACCESS, SEQUENTIAL CPU WINS ALL THE TIME
+  # D=1 disjoint array r/w sets
+  # D=1 conjoint array r/w sets; all threads write into the same RSET size array with 100 tx in array-strongly-scaled
   for D in 0 1; do
     # D=1
     # dynamic co-op cpu, igpu
-    #f sticky gpu thread
-    f="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-sticky-thread-r99-w1-d$D-random-walk/$i-random"
+    #f sticky gpu thread to stm thread 0
+    #f="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-sticky-thread-r99-w1-d$D-random-walk/$i-random"
 
     #f1 shared gpu
-    f1="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-shared-gpu-r99-w1-d$D-random-walk/$i-random"
-    f1lsa="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl-lsa/$i/array-strongly-scaled-shared-gpu-r99-w1-d$D-random-walk/$i-random"
+    coop="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-shared-gpu-r99-w1-d$D-random-walk/$i-random"
+    coop_lsa="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl-lsa/$i/array-strongly-scaled-shared-gpu-r99-w1-d$D-random-walk/$i-random"
 
     #untouched tiny
-    ftiny="$RESULTS_DIR/TinySTM-wbetl/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random"
-    ftinylsa="$RESULTS_DIR/TinySTM-wbetl-lsa/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random"
+    tiny="$RESULTS_DIR/TinySTM-wbetl/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random"
+    tiny_lsa="$RESULTS_DIR/TinySTM-wbetl-lsa/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random"
 
     #cpu worker threads validating
-    ftinythreads="$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random-4-workers"
-    ftinythreadslsa="$RESULTS_DIR/TinySTM-threads-wbetl-lsa/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random-4-workers"
+    tiny_threads="$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random-4-workers"
+    tiny_threads_lsa="$RESULTS_DIR/TinySTM-threads-wbetl-lsa/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random-4-workers"
 
 
     if [[ $D -eq 0 ]]; then
       #conjoint array walk
-      CHOICE_RVAL=$FILE
+      CHOICE_ABORTS=$FILE
       CHOICE_TXPS=$FILE2
     else
-      CHOICE_RVAL=$FILE1
+      CHOICE_ABORTS=$FILE1
       CHOICE_TXPS=$FILE3
     fi
 
 
-    #rval/valsec
-    echo  " '< join $ftiny $ftinylsa' u (\$0):((\$24/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$24/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints lc rgb col_gold dt new,\\"  >> $CHOICE_RVAL
+    # aborts/s
+    echo  " '$tiny' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx', (\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\", \$1, (\$1*8)/1000000)) t \"TinySTM-wbetl\" with linespoints lc rgb col_gold,\\"  >> $CHOICE_ABORTS
+    echo  " '$tiny_lsa' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx', (\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\", \$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints lc rgb col_gold dt new,\\"  >> $CHOICE_ABORTS
 
-    #echo  " '< join $ftiny $f' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU sticky thread (thread 0); Blocks of 5736 on iGPU; sync on block\" with linespoints,\\"  >> $CHOICE_RVAL
+    # "RSET" "Validation time (s)" "stddev" "Validation time (s) CPU" "stddev" "Validation time (s) GPU" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "CPU Val Reads" "stddev" "GPU Val Reads" "stddev" "Wasted Val Reads" "stddev" "GPU employment times" "stddev" "Val success" "stddev" "Val fail" "stddev" 26"Snapshot ext. calls" "stddev" "Energy (J)" "stddev" #30:"Total time (s)" "stddev"
+    echo  " '$coop' u (\$0):(\$10/(\$30*$i)):( sprintf( '%.2fx',(\$10/(\$30*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t     \"CPU-GPU co-op; iGPU shared (CAS compete); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red        with linespoints,\\"  >> $CHOICE_ABORTS
+    echo  " '$coop_lsa' u (\$0):(\$10/(\$30*$i)):( sprintf( '%.2fx',(\$10/(\$30*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"LSA CPU-GPU co-op; iGPU shared (CAS compete); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red dt new with linespoints,\\"  >> $CHOICE_ABORTS
 
-    echo  " '< join $ftiny $f1' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red with linespoints,\\"  >> $CHOICE_RVAL
-    echo  " '< join $ftiny $f1lsa' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block; LSA\" lc rgb col_red dt new with linespoints,\\"  >> $CHOICE_RVAL
+    # "RSET" "Validation time (s)" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "Val success" "stddev" "Val fail" "stddev" "Energy (J)" "stddev" "Total time (s)" "stddev"
+    echo  " '$tiny_threads' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx',(\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" with linespoints,\\"  >> $CHOICE_ABORTS
+    echo  " '$tiny_threads_lsa' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx',(\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"LSA; TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_ABORTS
+    ##########################
 
-    echo  " '< join $ftiny $ftinythreads' u (\$0):((\$24/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$24/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" with linespoints,\\"  >> $CHOICE_RVAL
-    echo  " '< join $ftiny $ftinythreadslsa' u (\$0):((\$24/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$24/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads LSA\" lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_RVAL
+    #tx/s: commits/totaltime relative to tinystm-untouched
+    echo  " '< join $tiny $tiny_lsa' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints lc rgb col_gold dt new,\\"  >> $CHOICE_TXPS
 
-    #tx/s: commits/totaltime
-    echo  " '< join $ftiny $ftinylsa' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints lc rgb col_gold dt new,\\"  >> $CHOICE_TXPS
+    #echo  " '< join $tiny $f' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU sticky thread (thread 0); Blocks of 5736 on iGPU; sync on block\" with linespoints,\\"  >> $CHOICE_TXPS
 
-    #echo  " '< join $ftiny $f' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU sticky thread (thread 0); Blocks of 5736 on iGPU; sync on block\" with linespoints,\\"  >> $CHOICE_TXPS
+    echo  " '< join $tiny $coop' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red with linespoints,\\"  >> $CHOICE_TXPS
+    echo  " '< join $tiny $tiny_lsa' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block; LSA\" lc rgb col_red dt new with linespoints,\\"  >> $CHOICE_TXPS
 
-    echo  " '< join $ftiny $f1' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red with linespoints,\\"  >> $CHOICE_TXPS
-    echo  " '< join $ftiny $f1lsa' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block; LSA\" lc rgb col_red dt new with linespoints,\\"  >> $CHOICE_TXPS
-
-    echo  " '< join $ftiny $ftinythreads' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" with linespoints,\\"  >> $CHOICE_TXPS
-    echo  " '< join $ftiny $ftinythreadslsa' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads LSA\" lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_TXPS
+    echo  " '< join $tiny $tiny_threads' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" with linespoints,\\"  >> $CHOICE_TXPS
+    echo  " '< join $tiny $tiny_threads_lsa' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads LSA\" lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_TXPS
 
 
     #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
   done
 
   #unmodified TINYSTM
-  #echo  " '$ftiny' u (\$0):(((\$2)>0)?( ((\$8/(\$2*$i)))):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-unaltered\" lw 2 lc rgb \"#${gold_palette[$i]}\",\\"  >> $FILE
+  #echo  " '$tiny' u (\$0):(((\$2)>0)?( ((\$8/(\$2*$i)))):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-unaltered\" lw 2 lc rgb \"#${gold_palette[$i]}\",\\"  >> $FILE
 
   ################################################################# FILE 1 #################################################################
   # TX / S
@@ -186,7 +195,7 @@ for i in 1 2 4 8; do
   #echo  "  u (\$0):(((\$28)>0)?(((\$8/((\$28*$i))))):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU sticky thread (thread 0); blocks of 5736 on iGPU; sync on block\" lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE2
 
   #shared - gpu
-  #echo  " '$f1' \\" >> $FILE2
+  #echo  " '$coop' \\" >> $FILE2
   #echo  "  u (\$0):(((\$28)>0)?(((\$8/((\$28*$i))))):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS pinballing); blocks of 5736 on iGPU; sync on block\" dt new lc rgb \"#${all_palette[$i]}\",\\"  >> $FILE2
 
   # NO GPU FILE LEGEND
@@ -198,7 +207,7 @@ for i in 1 2 4 8; do
   #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-2-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 2 validation worker / STM thread\" dt new lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE1
 
   #transactional throughput improvement of f1 over untouched
-  #echo  "  '< join $ftiny $f1' u (\$0+0.0055):(0.1):(sprintf('%.2fx', ( (\$24/(\$44*$i)) / (\$4/(\$16*$i)) ) )) t \"\" w labels offset char 0,char -0.66 font \",9\", \\"  >> $FILE2
+  #echo  "  '< join $tiny $coop' u (\$0+0.0055):(0.1):(sprintf('%.2fx', ( (\$24/(\$44*$i)) / (\$4/(\$16*$i)) ) )) t \"\" w labels offset char 0,char -0.66 font \",9\", \\"  >> $FILE2
 
   #unmodified TINYSTM
   # $16 - total time
