@@ -1269,11 +1269,12 @@ int_stm_init_thread(void)
 
     if( _tinystm.kernel_init==0
 #if SB7_BENCHMARK
-        /* i'm such a god damn hacker. dont let data holder thread in sb7 launch the instant kernel.
-        *  must be the wathcgod that kills off kernel if its not used fot too long (while data holder inits and other threads init).
+        /* i'm such a god damn hacker. dont let data holder thread (0) in sb7 launch the instant kernel.
+        *  must be the i915 intel driver watchdog that kills off spinning kernel if its not used for too long (while data holder inits and other threads init).
         */
-        && _tinystm.global_tid > 0){
+        && _tinystm.global_tid > 0
 #endif
+      ){
       //TIMER_T start;
       //TIMER_T stop;
       //TIMER_READ(start);

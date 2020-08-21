@@ -1153,7 +1153,12 @@ stm_wbetl_commit(stm_tx_t *tx)
     /*sequential would not validate otherwise because no stm-thread touches anybodies rset*/
     //if(SEQUENTIAL || _tinystm.global_tid == 1){
     //if(_tinystm.global_tid == 1){
-    if(_tinystm.global_tid == 1){
+    if( _tinystm.global_tid == 1
+#if SB7_BENCHMARK
+        ||
+        _tinystm.global_tid == 2 /*data holder takes up one thread*/
+#endif
+        ){
         /* always validate with 1 thread for thesis */
         if (!stm_wbetl_validate(tx)) {
             //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/

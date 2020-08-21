@@ -11,7 +11,7 @@ RESULTS_DIR="results-cpu"
 MAKEFILE="Makefile"
 retries=0
 MAX_RETRY=4
-DEBUG=1
+DEBUG=0
 
 containsElement () {
   local e match="$1"
@@ -360,31 +360,26 @@ declare -a array=( "./array/array -r$5 -n"$threads )
         #"./tpcc/tpcc -t 60 -s 20 -d 20 -o 20 -p 20 -r 20 -n $threads"\
         # payment and new order ops
         #"./tpcc/tpcc -t 60 -s 4 -d 4 -o 4 -p 43 -r 45 -n $threads")
-#declare -a sb7=(\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m false -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m false -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m false -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m false -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m false -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m false -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m true -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m true -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m true -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m true -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m true -n $threads"\
-        #"./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m true -n $threads")
 
-		# -p set percent of read-only operations
+    # -p set percent of read-only operations
 		# WORKLOAD_TYPE_KEY << " (-w) r|rw|w; set workload type
 		# TRAVERSALS_KEY << " (-t) true|false; enable/disable long traversals
 	  #	-m enable/disable structural modifications
 		# SIZE_KEY -s s|m|b set size of data structure
 		# INIT_SINGLE_TX_KEY -i true|false; set whether to initialize data in single or multiple transaction
-
 declare -a sb7=(\
-        "./sb7/sb7_tt -i false -r false -s b -d 5000 -w r  -t true -m true -n $threads"\
-        "./sb7/sb7_tt -i false -r false -s b -d 5000 -w rw -t true -m true -n $threads"\
-        "./sb7/sb7_tt -i false -r false -s b -d 5000 -w w  -t true -m true -n $threads")
+        "./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m true -n $threads")
 
 declare -a synth=(\
         "./synth/synth -s16384 -i 1000 -u10 -c10  -o10000   -t$threads"\
@@ -519,12 +514,11 @@ cd ../
 #RESET AND SET ONLY IF SB7
 #special case with DATA holder thread which we dont want to use GPU to init.
 #only worker_threads
-sed -i "s/SB7_BENCHMARK=.*/SB7_BENCHMARK=1/g" "./$global_stm/$MAKEFILE"
+sed -i "s/SB7_BENCHMARK=.*/SB7_BENCHMARK=0/g" "./$global_stm/$MAKEFILE"
 
 if [[ $bench_choice == "sb7" ]]; then
-
+    #enable hint at stm about sb7
     sed -i "s/SB7_BENCHMARK=.*/SB7_BENCHMARK=1/g" "./$global_stm/$MAKEFILE"
-
     #adapt RW_SET_SIZE
     sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=134217728/g" "./$global_stm/$MAKEFILE"
 
@@ -548,7 +542,6 @@ if containsElement $1 ${benchmarks[@]}; then
     for i in {0..10}; do #TODO do 20 at least.
 
         echo "Running benchmark $bench_choice with $2 threads, stm: $global_stm $4:"
-
 
         bench_params_ref="${bench_choice}[@]" #1 is full program with parameters, ex.: ./tpcc/tpcc -t 1 -s 4 -d 4 -o 4 -p 43 -r 45 -n 8
         bench_names_ref="${bench_choice}_names[@]" #ex tpcc-s96-d1-o1-p1-r1 ..
