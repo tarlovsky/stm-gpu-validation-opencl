@@ -111,7 +111,7 @@ void sb7::Benchmark::start() {
 
 	long start_time = get_time_ms();
 
-	global_thread_init(parameters.getThreadNum());
+	//global_thread_init(parameters.getThreadNum());
 	startEnergy();
 	// create and run threads
 	for(int i = 0;i < parameters.getThreadNum();i++) {

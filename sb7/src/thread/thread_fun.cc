@@ -32,9 +32,11 @@ static void *init_single_tx(void *data) {
 
 void *sb7::init_data_holder(void *data) {
 	// initialize thread local data
-	global_thread_init(-1);
-	thread_init(-1);
 
+
+	global_thread_init(parameters.getThreadNum()+1);//tm_startup grabs hold of gpu and doesnt release
+    //data holder has id -1
+	thread_init(-1);//TM_THREAD_ENTER called here last
 
 	TM_BEGIN();
 	if(parameters.shouldInitSingleTx()) {
@@ -43,10 +45,10 @@ void *sb7::init_data_holder(void *data) {
 		DataHolder *dataHolder = (DataHolder *)data;
 		dataHolder->initTx();
 	}
-	TM_END();
+    TM_END();
 
 	// finish up this thread
-	thread_clean();
+	thread_clean();//TM_THREAD_EXIT
 	reset_thread_tid();
     //exit(0);
 	// just return something

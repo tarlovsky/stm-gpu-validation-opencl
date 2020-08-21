@@ -18,9 +18,9 @@ void sb7::global_thread_init(int number_threads) {
 #include "rapl.h"
 
 void sb7::thread_init(int threadId) {
-    init_thread_tid();
+    init_thread_tid();//sync_fetch_adds new id
 	if (threadId != -1) {
-		bindThread(threadId);
+		bindThread(threadId);//data holder thread -1 stays where it wants
 	}
 	thread_init_random();
 	init_thread_mem();

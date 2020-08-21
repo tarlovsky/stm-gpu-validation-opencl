@@ -238,6 +238,7 @@ DEFINES += -UUNIT_TX
 ########################################################################
 
   DEFINES += -DRW_SET_SIZE=1048576
+  DEFINES += -DSB7_BENCHMARK=0
 # DEFINES += -DLOCK_ARRAY_LOG_SIZE=20
 # DEFINES += -DLOCK_SHIFT_EXTRA=2
 # DEFINES += -DMIN_BACKOFF=0x04UL

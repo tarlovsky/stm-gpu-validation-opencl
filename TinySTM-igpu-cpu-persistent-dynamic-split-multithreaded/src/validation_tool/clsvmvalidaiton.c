@@ -750,7 +750,6 @@ void* signal_gpu(void){
             //if(idx == -1){
                 //printf("WORKING FOR %d\n", idx);
             //}
-
         pthread_mutex_unlock(&validate_mutex);
 
         /*do work*/
@@ -760,14 +759,13 @@ void* signal_gpu(void){
 
         submersions = threadComm[idx].submersions;
         i = 0;
-
+        //printf("SUBMERSIONS: %d\n", submersions);
         TIMER_READ(T1G);
         /*halted gpu is set on the cpu when it invalidates the tx*/
         /*submersions is derived from block size*/
 
         while(!atomic_load(&halt_gpu) && i < submersions){
 
-            //printf("GPU RUN %d\n", i);
             /*TODO counters will overflow in long runnning tx.
              * Up to 3 million read set safe.
              * Up to 60 seconds tpcc tested*/
@@ -775,11 +773,10 @@ void* signal_gpu(void){
 
             threadComm[idx].block_offset = i * global_dim[0];
 
-            while (pCommBuffer[COMPLETE] < g_numWorkgroups);
+            while (pCommBuffer[COMPLETE] < g_numWorkgroups){/*wait for workgroups to finish*/};
 
             #ifdef DEBUG_VALIDATION
             #if (DEBUG_VALIDATION == 1)
-
                 /*for(int i = 0; i < global_dim[0]; i++){
                     r_entry_t r = rset_pool_cl_wrapper[0].entries[i];
                     stm_word_t l = *((volatile stm_word_t*)(r.lock));
@@ -803,7 +800,6 @@ void* signal_gpu(void){
                 memset(debug_buffer_arg, 0, sizeof(long) * RW_SET_SIZE);
                 memset(debug_buffer_arg1, 0, sizeof(stm_word_t) * RW_SET_SIZE);
                 memset(debug_buffer_arg2, 0, sizeof(stm_word_t) * RW_SET_SIZE);
-
             #endif /*DEBUG_VALIDATION == 1*/
             #endif /*DEBUG_VALIDATION*/
 
@@ -829,7 +825,7 @@ void* signal_gpu(void){
              * removes expensive check in every work item */
             if(!threadComm[idx].valid){break;}else{i++;}
         }
-        //printf("VALIDATED %d FOR STM THREAD %d\n", idx);
+
         /*gpu finished parsing read set in blocks*/
 
         //printf("GPU TIME: %f\n", TIMER_DIFF_SECONDS(T1G, T2G));

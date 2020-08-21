@@ -275,7 +275,7 @@ stm_init(void)
   /* will reserve an enormous pool of read sets to be used */
   /* initiallizeCL initializes this many read_set_slots and shares them with InstantKernel */
   /* each slot is pointed to by thread private memory and has RW_SET_SIZE entries, default 4096*/
-  /* some becnhmarks like sb7 launch more transactions for init (+1) */
+  /* some becnhmarks like sb7 launch more transactions for init data_holder (+1) */
   initial_rs_svm_buffers_ocl_global = INITIAL_RS_SVM_BUFFERS_OCL + 1;
 
   if (pthread_mutex_init(&_tinystm.kernel_init_mutex, NULL) != 0) {

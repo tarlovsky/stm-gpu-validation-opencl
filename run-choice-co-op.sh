@@ -11,6 +11,7 @@ RESULTS_DIR="results-cpu"
 MAKEFILE="Makefile"
 retries=0
 MAX_RETRY=4
+DEBUG=1
 
 containsElement () {
   local e match="$1"
@@ -166,7 +167,16 @@ run_sub(){
 
     echo "$global_stm $2" #echo program name/command
 
-    progout=$($2) #run the program $( parameters etc )
+    if [[ $DEBUG -eq 1 ]];then
+      echo "val_time    cpu_v_time  gpu_v_time  C A R C G W G S F E"
+      #gdb --args $2
+      $2
+    else
+      progout=$($2) #run the program $( parameters etc )
+      echo "$progout"
+    fi
+
+
     #DEBUG, see what programs are outputting, first come thread output, then comes total program exec time and power
 
     ######################### debu/print manual #########################
@@ -177,7 +187,6 @@ run_sub(){
 
     #get stm_init time (first line being printed)
     #echo $(head -n +1 <<< "$progout") >> ${RESULTS_DIR}/scratch
-    echo "$progout"
 
     #dont polute db while debugging
     #return
@@ -336,21 +345,21 @@ fi
 #######################################################################################
 declare -a array=( "./array/array -r$5 -n"$threads )
 
-declare -a tpcc=(\
+#declare -a tpcc=(\
         #s stock level operations
-        "./tpcc/tpcc -t 60 -s 96 -d 1 -o 1 -p 1 -r 1 -n $threads"\
+        #"./tpcc/tpcc -t 60 -s 96 -d 1 -o 1 -p 1 -r 1 -n $threads"\
         #d delivery operations
-        "./tpcc/tpcc -t 60 -s 1 -d 96 -o 1 -p 1 -r 1 -n $threads"\
+        #"./tpcc/tpcc -t 60 -s 1 -d 96 -o 1 -p 1 -r 1 -n $threads"\
         #o order status operations
-        "./tpcc/tpcc -t 60 -s 1 -d 1 -o 96 -p 1 -r 1 -n $threads"\
+        #"./tpcc/tpcc -t 60 -s 1 -d 1 -o 96 -p 1 -r 1 -n $threads"\
         # payment operations
-        "./tpcc/tpcc -t 60 -s 1 -d 1 -o 1 -p 96 -r 1 -n $threads"\
+        #"./tpcc/tpcc -t 60 -s 1 -d 1 -o 1 -p 96 -r 1 -n $threads"\
         # new order operations - 99% TIME SPEND IN VALIDATION
-        "./tpcc/tpcc -t 60 -s 1 -d 1 -o 1 -p 1 -r 96 -n $threads"\
+        #"./tpcc/tpcc -t 60 -s 1 -d 1 -o 1 -p 1 -r 96 -n $threads"\
         # everything equal
-        "./tpcc/tpcc -t 60 -s 20 -d 20 -o 20 -p 20 -r 20 -n $threads"\
+        #"./tpcc/tpcc -t 60 -s 20 -d 20 -o 20 -p 20 -r 20 -n $threads"\
         # payment and new order ops
-        "./tpcc/tpcc -t 60 -s 4 -d 4 -o 4 -p 43 -r 45 -n $threads")
+        #"./tpcc/tpcc -t 60 -s 4 -d 4 -o 4 -p 43 -r 45 -n $threads")
 #declare -a sb7=(\
         #"./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m false -n $threads"\
         #"./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m false -n $threads"\
@@ -373,9 +382,9 @@ declare -a tpcc=(\
 		# INIT_SINGLE_TX_KEY -i true|false; set whether to initialize data in single or multiple transaction
 
 declare -a sb7=(\
-        "./sb7/sb7_tt -i true -r false -s b -d 20000 -w r  -t true -m true -n $threads"\
-        "./sb7/sb7_tt -i false -r false -s b -d 20000 -w rw -t true -m true -n $threads"\
-        "./sb7/sb7_tt -i false -r false -s b -d 20000 -w w  -t true -m true -n $threads")
+        "./sb7/sb7_tt -i false -r false -s b -d 5000 -w r  -t true -m true -n $threads"\
+        "./sb7/sb7_tt -i false -r false -s b -d 5000 -w rw -t true -m true -n $threads"\
+        "./sb7/sb7_tt -i false -r false -s b -d 5000 -w w  -t true -m true -n $threads")
 
 declare -a synth=(\
         "./synth/synth -s16384 -i 1000 -u10 -c10  -o10000   -t$threads"\
@@ -507,8 +516,20 @@ echo "done."
 cd ../
 #######################################################################################
 
+#RESET AND SET ONLY IF SB7
+#special case with DATA holder thread which we dont want to use GPU to init.
+#only worker_threads
+sed -i "s/SB7_BENCHMARK=.*/SB7_BENCHMARK=1/g" "./$global_stm/$MAKEFILE"
+
 if [[ $bench_choice == "sb7" ]]; then
+
+    sed -i "s/SB7_BENCHMARK=.*/SB7_BENCHMARK=1/g" "./$global_stm/$MAKEFILE"
+
+    #adapt RW_SET_SIZE
+    sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=134217728/g" "./$global_stm/$MAKEFILE"
+
     make_sb7 $global_stm
+
 elif [[ $bench_choice == "tpcc" ]]; then
     #build, compile, and copy tm.h thread.h thread.c from backends to lib to use in Stamp
     #tpcc and stamp
@@ -527,6 +548,7 @@ if containsElement $1 ${benchmarks[@]}; then
     for i in {0..10}; do #TODO do 20 at least.
 
         echo "Running benchmark $bench_choice with $2 threads, stm: $global_stm $4:"
+
 
         bench_params_ref="${bench_choice}[@]" #1 is full program with parameters, ex.: ./tpcc/tpcc -t 1 -s 4 -d 4 -o 4 -p 43 -r 45 -n 8
         bench_names_ref="${bench_choice}_names[@]" #ex tpcc-s96-d1-o1-p1-r1 ..

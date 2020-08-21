@@ -72,8 +72,11 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     /* don't even bother bothering GPU if read set <= 8192 */
     if(
-#if STICKY_THREAD /*only use gpu for STM THREAD 0. Sticky gpu thread*/
-        idx == 0 &&
+#if STICKY_THREAD /*only use gpu for STM THREAD 1. Sticky gpu thread.*/
+        idx == 1 &&
+#endif
+#if SB7_BENCHMARK
+        idx > 0 && /*thread 0 is data holder, ignore gpu for it. only use gpu for worker threads with id _> 0*/
 #endif
         N >= RSET_MIN_GPU_VAL){/*set index to 1 because thread 0 always has less aborts*/
         /* compete for gpu employment */
@@ -99,9 +102,11 @@ stm_wbetl_validate(stm_tx_t *tx)
                 pCommBuffer[STM_SUBSCRIBER_THREAD] = idx;
 
                 /* halted when invalidation encountered on the CPU*/
-                halt_gpu = 0;
+                //halt_gpu = 0;
+                atomic_store(&halt_gpu, 0);
 
-                gpu_exit_validity = 1;
+                atomic_store(&gpu_exit_validity,1);
+
                 atomic_store_explicit(&GPU_POS, 0, memory_order_relaxed);
                 //GPU_POS = 0;
 

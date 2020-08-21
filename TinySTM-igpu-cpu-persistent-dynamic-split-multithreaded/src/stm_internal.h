@@ -1267,7 +1267,13 @@ int_stm_init_thread(void)
   /*tarlovsky*/
   /* to reduce lock grab attempts check flag */
 
-  if(_tinystm.kernel_init==0){
+    if( _tinystm.kernel_init==0
+#if SB7_BENCHMARK
+        /* i'm such a god damn hacker. dont let data holder thread in sb7 launch the instant kernel.
+        *  must be the wathcgod that kills off kernel if its not used fot too long (while data holder inits and other threads init).
+        */
+        && _tinystm.global_tid > 0){
+#endif
       //TIMER_T start;
       //TIMER_T stop;
       //TIMER_READ(start);
@@ -1280,7 +1286,7 @@ int_stm_init_thread(void)
       pthread_mutex_unlock(&_tinystm.kernel_init_mutex);
       //TIMER_READ(stop);
       //printf("launchInstantKernel() %fs\n", TIMER_DIFF_SECONDS(start,stop));// 0.087354s
-  }
+    }
 
   stm_tx_t *tx;
 
@@ -1305,7 +1311,7 @@ int_stm_init_thread(void)
   /* Read set */
   tx->r_set.nb_entries = 0;
   tx->r_set.size = RW_SET_SIZE;
-
+  //printf("STARTING TX WITH %d rset\n", RW_SET_SIZE);
   //AO_fetch_and_add_full (volatile AO_t *p, AO_t incr)
   /*tarlovsky*/
   tx->val_reads = 0;
