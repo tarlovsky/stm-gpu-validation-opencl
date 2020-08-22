@@ -8,63 +8,63 @@
 
 namespace sb7 {
 
-	//const int Parameters::DEFAULT_NUM_ATOMIC_PER_COMP = 200;
-	const int Parameters::DEFAULT_NUM_ATOMIC_PER_COMP = 20;
-	const int Parameters::DEFAULT_NUM_CONN_PER_ATOMIC = 6;
-	const int Parameters::DEFAULT_DOCUMENT_SIZE = 20000;
-	const int Parameters::DEFAULT_MANUAL_SIZE = 1000000;
-	//const int Parameters::DEFAULT_NUM_COMP_PER_MODULE = 500;
-	const int Parameters::DEFAULT_NUM_COMP_PER_MODULE = 50;
-	const int Parameters::DEFAULT_NUM_ASSM_PER_ASSM = 3;
-	const int Parameters::DEFAULT_NUM_ASSM_LEVELS = 7;
-	const int Parameters::DEFAULT_NUM_COMP_PER_ASSM = 3;
-	const int Parameters::DEFAULT_NUM_MODULES = 1;
+    //const int Parameters::DEFAULT_NUM_ATOMIC_PER_COMP = 200;
+    const int Parameters::DEFAULT_NUM_ATOMIC_PER_COMP = 20;
+    const int Parameters::DEFAULT_NUM_CONN_PER_ATOMIC = 6;
+    const int Parameters::DEFAULT_DOCUMENT_SIZE = 20000;
+    const int Parameters::DEFAULT_MANUAL_SIZE = 1000000;
+    //const int Parameters::DEFAULT_NUM_COMP_PER_MODULE = 500;
+    const int Parameters::DEFAULT_NUM_COMP_PER_MODULE = 50;
+    const int Parameters::DEFAULT_NUM_ASSM_PER_ASSM = 3;
+    const int Parameters::DEFAULT_NUM_ASSM_LEVELS = 7;
+    const int Parameters::DEFAULT_NUM_COMP_PER_ASSM = 3;
+    const int Parameters::DEFAULT_NUM_MODULES = 1;
 
-	const int Parameters::DEFAULT_MIN_MODULE_DATE = 1000;
-	const int Parameters::DEFAULT_MAX_MODULE_DATE = 1999;
-	const int Parameters::DEFAULT_MIN_ASSM_DATE = 1000;
-	const int Parameters::DEFAULT_MAX_ASSM_DATE = 1999;
-	const int Parameters::DEFAULT_MIN_ATOMIC_DATE = 1000;
-	const int Parameters::DEFAULT_MAX_ATOMIC_DATE = 1999;
-	const int Parameters::DEFAULT_MIN_OLD_COMP_DATE = 0;
-	const int Parameters::DEFAULT_MAX_OLD_COMP_DATE = 999;
-	const int Parameters::DEFAULT_MIN_YOUNG_COMP_DATE = 2000;
-	const int Parameters::DEFAULT_MAX_YOUNG_COMP_DATE = 2999;
-	const int Parameters::DEFAULT_YOUNG_COMP_FRAC = 10;
-	const int Parameters::DEFAULT_TYPE_SIZE = 10;
-	const int Parameters::DEFAULT_NUM_TYPES = 10;
-	const int Parameters::DEFAULT_XY_RANGE = 100000;
-	const int Parameters::DEFAULT_TITLE_SIZE = 40;
+    const int Parameters::DEFAULT_MIN_MODULE_DATE = 1000;
+    const int Parameters::DEFAULT_MAX_MODULE_DATE = 1999;
+    const int Parameters::DEFAULT_MIN_ASSM_DATE = 1000;
+    const int Parameters::DEFAULT_MAX_ASSM_DATE = 1999;
+    const int Parameters::DEFAULT_MIN_ATOMIC_DATE = 1000;
+    const int Parameters::DEFAULT_MAX_ATOMIC_DATE = 1999;
+    const int Parameters::DEFAULT_MIN_OLD_COMP_DATE = 0;
+    const int Parameters::DEFAULT_MAX_OLD_COMP_DATE = 999;
+    const int Parameters::DEFAULT_MIN_YOUNG_COMP_DATE = 2000;
+    const int Parameters::DEFAULT_MAX_YOUNG_COMP_DATE = 2999;
+    const int Parameters::DEFAULT_YOUNG_COMP_FRAC = 10;
+    const int Parameters::DEFAULT_TYPE_SIZE = 10;
+    const int Parameters::DEFAULT_NUM_TYPES = 10;
+    const int Parameters::DEFAULT_XY_RANGE = 100000;
+    const int Parameters::DEFAULT_TITLE_SIZE = 40;
 
-	const int Parameters::DEFAULT_TRAVERSAL_RATIO = 100;
-	const int Parameters::DEFAULT_SHORT_TRAVERSAL_RATIO = 0;
-	const int Parameters::DEFAULT_OPERATIONS_RATIO = 20;
-	const int Parameters::DEFAULT_STRUCTURAL_MODIFICATIONS_RATIO = 100;
+    const int Parameters::DEFAULT_TRAVERSAL_RATIO = 5;
+    const int Parameters::DEFAULT_SHORT_TRAVERSAL_RATIO = 40;
+    const int Parameters::DEFAULT_OPERATIONS_RATIO = 45;
+    const int Parameters::DEFAULT_STRUCTURAL_MODIFICATIONS_RATIO = 10;
 
-	// just for testing make it 70%
-	const int Parameters::DEFAULT_READ_ONLY_OPERATIONS_RATIO = 90;
+    // just for testing make it 70%
+    const int Parameters::DEFAULT_READ_ONLY_OPERATIONS_RATIO = 70;
 
-	const int Parameters::DEFAULT_THREAD_NUM = 1;
-	const int Parameters::DEFAULT_EXPERIMENT_LENGTH_MS = 1000;
+    const int Parameters::DEFAULT_THREAD_NUM = 1;
+    const int Parameters::DEFAULT_EXPERIMENT_LENGTH_MS = 1000;
 
-	const int Parameters::DEFAULT_MAX_LOW_TTC = 999;
-	const int Parameters::DEFAULT_HIGH_TTC_ENTRIES = 200;
-	const double Parameters::DEFAULT_HIGH_TTC_LOG_BASE = 1.03;
+    const int Parameters::DEFAULT_MAX_LOW_TTC = 999;
+    const int Parameters::DEFAULT_HIGH_TTC_ENTRIES = 200;
+    const double Parameters::DEFAULT_HIGH_TTC_LOG_BASE = 1.03;
 
-	const bool Parameters::DEFAULT_STRUCTURE_MODIFICATION_ENABLED = true;
-	const bool Parameters::DEFAULT_LONG_TRAVERSALS_ENABLED = true;
-	const bool Parameters::DEFAULT_REPORT_TTC_HISTOGRAMS = false;
+    const bool Parameters::DEFAULT_STRUCTURE_MODIFICATION_ENABLED = true;
+    const bool Parameters::DEFAULT_LONG_TRAVERSALS_ENABLED = true;
+    const bool Parameters::DEFAULT_REPORT_TTC_HISTOGRAMS = false;
 
-	const int Parameters::DEFAULT_VERBOSE_LEVEL = 1;
-	const char *Parameters::DEFAULT_FILE_NAME = "default.conf";
+    const int Parameters::DEFAULT_VERBOSE_LEVEL = 1;
+    const char *Parameters::DEFAULT_FILE_NAME = "default.conf";
 
-	const bool Parameters::DEFAULT_HINT_RO = true;
-	const bool Parameters::DEFAULT_WRITE_ROOT = true;
-	const bool Parameters::DEFAULT_INIT_SINGLE_TX = true;
+    const bool Parameters::DEFAULT_HINT_RO = true;
+    const bool Parameters::DEFAULT_WRITE_ROOT = true;
+    const bool Parameters::DEFAULT_INIT_SINGLE_TX = true;
 
-	const double Parameters::MAX_TO_INITIAL_RATIO = 1.05;
+    const double Parameters::MAX_TO_INITIAL_RATIO = 1.05;
 
-	Parameters parameters;
+    Parameters parameters;
 }
 
 sb7::Parameters::Parameters()

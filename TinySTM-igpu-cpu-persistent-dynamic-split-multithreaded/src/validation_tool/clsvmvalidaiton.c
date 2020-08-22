@@ -901,7 +901,7 @@ int cleanupCL(void){
     for(int i = 0; i < initial_rs_svm_buffers_ocl_global; i++){
         //gc_svm_pointers[3+i] = (void*) rset_pool[i];
         if(rset_pool[i]!=NULL){
-            clSVMFree(g_clContext, rset_pool[i]);
+            //clSVMFree(g_clContext, rset_pool[i]);
         }
     }
 

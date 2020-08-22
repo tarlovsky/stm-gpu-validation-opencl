@@ -247,6 +247,7 @@ declare -a benchmarks=("array" "tpcc" "sb7" "synth" "redblacktree" "linkedlist" 
 
 declare -a array_names=("array-r99-w1")
 declare -a tpcc_names=("tpcc-s96-d1-o1-p1-r1" "tpcc-s1-d96-o1-p1-r1" "tpcc-s1-d1-o96-p1-r1" "tpcc-s1-d1-o1-p96-r1" "tpcc-s1-d1-o1-p1-r96" "tpcc-s20-d20-o20-p20-r20" "tpcc-s4-d4-o4-p43-r45")
+declare -a sb7_20_names=("sb7_20-r-f-f" "sb7_20-rw-f-f" "sb7_20-w-f-f" "sb7_20-r-t-f" "sb7_20-rw-t-f" "sb7_20-w-t-f" "sb7_20-r-f-t" "sb7_20-rw-f-t" "sb7_20-w-f-t" "sb7_20-r-t-t" "sb7_20-rw-t-t" "sb7_20-w-t-t")
 declare -a sb7_names=("sb7-r-f-f" "sb7-rw-f-f" "sb7-w-f-f" "sb7-r-t-f" "sb7-rw-t-f" "sb7-w-t-f" "sb7-r-f-t" "sb7-rw-f-t" "sb7-w-f-t" "sb7-r-t-t" "sb7-rw-t-t" "sb7-w-t-t")
 declare -a synth_names=("synth-s-r" "synth-s-w" "synth-l-r" "synth-l-w")
 declare -a redblacktree_names=("redblacktree-l-w" "redblacktree-l-r" "redblacktree-s-w" "redblacktree-s-r")
@@ -380,6 +381,20 @@ declare -a sb7=(\
         "./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m true -n $threads")
+
+declare -a sb7_20=(\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t true -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t true -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t true -m true -n $threads")
 
 declare -a synth=(\
         "./synth/synth -s16384 -i 1000 -u10 -c10  -o10000   -t$threads"\
@@ -516,11 +531,11 @@ cd ../
 #only worker_threads
 sed -i "s/SB7_BENCHMARK=.*/SB7_BENCHMARK=0/g" "./$global_stm/$MAKEFILE"
 
-if [[ $bench_choice == "sb7" ]]; then
+if [[ $bench_choice == "sb7" || $bench_choice == "sb7_20" ]]; then
     #enable hint at stm about sb7
     sed -i "s/SB7_BENCHMARK=.*/SB7_BENCHMARK=1/g" "./$global_stm/$MAKEFILE"
     #adapt RW_SET_SIZE
-    sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=134217728/g" "./$global_stm/$MAKEFILE"
+    sed -i "s/RW_SET_SIZE=.*/RW_SET_SIZE=16777216/g" "./$global_stm/$MAKEFILE"
 
     make_sb7 $global_stm
 
