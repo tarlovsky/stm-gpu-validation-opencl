@@ -71,7 +71,7 @@ build_stm_and_benchmark(){
     cd ..
 }
 
-for th in 2 4 8; do
+for th in 2; do
 
     #stm vars
     RESULTS_DIR="results"

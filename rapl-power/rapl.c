@@ -1365,6 +1365,12 @@ get_pp0_freq_mhz(uint64_t node, uint64_t *freq)
 #include <ctype.h>
 #include <sys/stat.h>
 
+#define NUM_FREQ 5
+float maxcpupower = 89.4f; //Watt
+float mincpupower = 18.7f; //Watt
+float maxfreq = 3.6f; //GHz
+float minfreq = 1.6f; //GHz
+
 #define CPU_DIR "/sys/devices/system/cpu"
 #define CPU_FREQUENCY_STAT "/sys/devices/system/cpu/%s/cpufreq/stats/time_in_state"
 
@@ -1431,126 +1437,220 @@ void system_init(void)
 }
 
 
+ /*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ * 
+ * This program is based on rapl-read:
+ * https://github.com/deater/uarch-configure/tree/master/rapl-read
+ * 
+ * compile with:
+ * gcc -o ryzen-rapl ryzen-rapl.c -lm
+ */
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <inttypes.h>
+#include <unistd.h>
+#include <math.h>
+#include <string.h>
+
+#include <sys/syscall.h>
+#include <linux/perf_event.h>
+
+#define AMD_MSR_PWR_UNIT 0xC0010299
+#define AMD_MSR_CORE_ENERGY 0xC001029A
+#define AMD_MSR_PACKAGE_ENERGY 0xC001029B
+
+#define AMD_TIME_UNIT_MASK 0xF0000
+#define AMD_ENERGY_UNIT_MASK 0x1F00
+#define AMD_POWER_UNIT_MASK 0xF
+#define STRING_BUFFER 1024
+
+#define MAX_CPUS	1024
+#define MAX_PACKAGES	16
+
+static int total_cores=0,total_packages=0;
+static int package_map[MAX_PACKAGES];
+
+static int detect_packages(void) {
+    if(1){
+        /*FAST PATH with !KNOWLEDGE!*/
+        /*ryzen 2400g*/
+        total_cores=8; total_packages=1;
+    }else{
+        /*slow path*/
+        char filename[BUFSIZ];
+        FILE *fff;
+        int package;
+        int i;
+
+        for(i=0;i<MAX_PACKAGES;i++) package_map[i]=-1;
+
+        printf("\t");
+        for(i=0;i<MAX_CPUS;i++) {
+            sprintf(filename,"/sys/devices/system/cpu/cpu%d/topology/physical_package_id",i);
+            fff=fopen(filename,"r");
+            if (fff==NULL) break;
+            fscanf(fff,"%d",&package);
+            printf("%d (%d)",i,package);
+            if (i%8==7) printf("\n\t"); else printf(", ");
+            fclose(fff);
+
+            if (package_map[package]==-1) {
+                total_packages++;
+                package_map[package]=i;
+            }
+
+        }
+
+        printf("\n");
+
+        total_cores=i;
+
+        printf("\tDetected %d cores in %d packages\n\n", total_cores,total_packages);
+    }
+	
+
+	return 0;
+}
+
+static int open_msr(int core) {
+
+	char msr_filename[BUFSIZ];
+	int fd;
+
+	sprintf(msr_filename, "/dev/cpu/%d/msr", core);
+	fd = open(msr_filename, O_RDONLY);
+	if ( fd < 0 ) {
+		if ( errno == ENXIO ) {
+			fprintf(stderr, "rdmsr: No CPU %d\n", core);
+			exit(2);
+		} else if ( errno == EIO ) {
+			fprintf(stderr, "rdmsr: CPU %d doesn't support MSRs\n",
+					core);
+			exit(3);
+		} else {
+			perror("rdmsr:open");
+			fprintf(stderr,"Trying to open %s\n",msr_filename);
+			exit(127);
+		}
+	}
+
+	return fd;
+}
+
+static long long read_msr_ryzen(int fd, unsigned int which) {
+
+	uint64_t data;
+
+	if ( pread(fd, &data, sizeof data, which) != sizeof data ) {
+		perror("rdmsr:pread");
+		exit(127);
+	}
+
+	return (long long)data;
+}
+
+unsigned int time_unit, energy_unit, power_unit;
+double time_unit_d, energy_unit_d, power_unit_d;
+
+double *core_energy;
+double *core_energy_delta;
+
+double *package;
+double *package_delta;
+
+int core_energy_raw;
+int package_raw;
+int *fd;
+
 void startEnergyAMD()
 {
-    DIR *dir;
-    struct dirent *dirent;
-    FILE *file;
-    char filename[PATH_MAX];
-    char line[32];
-    float delta_power;
-    int ret = 0;
-    int maxfreq = 0;
-    u64 total_time = 0;
+    
+    core_energy = (double*)malloc(sizeof(double)*total_cores/2);
+    core_energy_delta = (double*)malloc(sizeof(double)*total_cores/2);
 
-    for (ret = 0; ret<16; ret++)
-        oldfreqs[ret].count = 0;
+    package = (double*)malloc(sizeof(double)*total_cores/2);
+    package_delta = (double*)malloc(sizeof(double)*total_cores/2);
 
-    dir = opendir(CPU_DIR);
-    if (!dir)
-        return;
+	fd = (int*)malloc(sizeof(int)*total_cores/2);
+	
+	for (int i = 0; i < total_cores/2; i++) {
+		fd[i] = open_msr(i);
+	}
+	
+	int core_energy_units = read_msr_ryzen(fd[0], AMD_MSR_PWR_UNIT);
+	//printf("Core energy units: %x\n",core_energy_units);
+	
+	time_unit = (core_energy_units & AMD_TIME_UNIT_MASK) >> 16;
+	energy_unit = (core_energy_units & AMD_ENERGY_UNIT_MASK) >> 8;
+	power_unit = (core_energy_units & AMD_POWER_UNIT_MASK);
+	//printf("Time_unit:%d, Energy_unit: %d, Power_unit: %d\n", time_unit, energy_unit, power_unit);
+	
+	time_unit_d = pow(0.5,(double)(time_unit));
+	energy_unit_d = pow(0.5,(double)(energy_unit));
+	power_unit_d = pow(0.5,(double)(power_unit));
+	//printf("Time_unit:%g, Energy_unit: %g, Power_unit: %g\n", time_unit_d, energy_unit_d, power_unit_d);
+	
+	
+	// Read per core energy values
+	for (int i = 0; i < total_cores/2; i++) {
+		core_energy_raw = read_msr_ryzen(fd[i], AMD_MSR_CORE_ENERGY);
+		package_raw = read_msr_ryzen(fd[i], AMD_MSR_PACKAGE_ENERGY);
 
-    int i;
-    while ((dirent = readdir(dir))) {
-        if (strncmp(dirent->d_name,"cpu", 3) != 0)
-            continue;
-
-        sprintf(filename, CPU_FREQUENCY_STAT, dirent->d_name);
-
-        file = fopen(filename, "r");
-        if (!file)
-            continue;
-
-        memset(line, 0, 32);
-        i = 0;
-        while (!feof(file)) {
-            if(fgets(line, 32,file) == NULL)
-                break;
-
-            unsigned long long count = 0;
-            sscanf(line, "%llu %llu", &oldfreqs[i].frequency, &count);
-
-            oldfreqs[i].count += count;
-            i++;
-            if (i>15)
-                break;
-        }
-        maxfreq = i - 1;
-        fclose(file);
-    }
-
-
-    closedir(dir);
+		core_energy[i] = core_energy_raw * energy_unit_d;
+		package[i] = package_raw * energy_unit_d;
+	}
 }
 
 void endEnergyAMD()
 {
-    DIR *dir;
-    struct dirent *dirent;
-    FILE *file;
-    char filename[PATH_MAX];
-    char line[32];
-    float delta_power;
-    int ret = 0;
-    int maxfreq = 0;
-    u64 total_time = 0;
+    for (int i = 0; i < total_cores/2; i++) {
+		core_energy_raw = read_msr_ryzen(fd[i], AMD_MSR_CORE_ENERGY);
+		package_raw = read_msr_ryzen(fd[i], AMD_MSR_PACKAGE_ENERGY);
 
-    for (ret = 0; ret<16; ret++)
-        freqs[ret].count = 0;
+		core_energy_delta[i] = core_energy_raw * energy_unit_d;
+		package_delta[i] = package_raw * energy_unit_d;
+	}
 
-    dir = opendir(CPU_DIR);
-    if (!dir)
-        return;
-
-    int i;
-    while ((dirent = readdir(dir))) {
-        if (strncmp(dirent->d_name,"cpu", 3) != 0)
-            continue;
-
-        sprintf(filename, CPU_FREQUENCY_STAT, dirent->d_name);
-
-        file = fopen(filename, "r");
-        if (!file)
-            continue;
-
-        memset(line, 0, 32);
-        i = 0;
-        while (!feof(file)) {
-            if(fgets(line, 32,file) == NULL)
-                break;
-
-            unsigned long long count = 0;
-            sscanf(line, "%llu %llu", &freqs[i].frequency, &count);
-
-            freqs[i].count += count;
-            i++;
-            if (i>15)
-                break;
-        }
-        maxfreq = i - 1;
-        fclose(file);
-    }
-
-
-    closedir(dir);
-    //count unit 10ms, usertime
-    for (ret = 0; ret < 16; ret++) {
-        delta[ret].count = freqs[ret].count - oldfreqs[ret].count;
-        total_time += delta[ret].count;
-        delta[ret].frequency = freqs[ret].frequency;
-
-        if (ret <= 4)
-            printf("\nfreq %llu -> %llu\n", delta[ret].frequency, delta[ret].count);
-    }
-
-    /*delta_power = 0.0;
-    float rangecpupower = maxcpupower - mincpupower;
-    for (ret = 0; ret <= maxfreq; ret++) {
-        if(total_time > 0 && maxfreq > 0)
-            delta_power = (maxcpupower - rangecpupower * ret / maxfreq) * delta[ret].count / 100;//Watt * 10ms
-        info->cpupower += delta_power;
-    }*/
+	double sum = 0;
+	for(int i = 0; i < total_cores/2; i++) {
+		double diff = (core_energy_delta[i] - core_energy[i])*10;
+		sum += diff;
+		//printf("Core %d, energy used: %gW, Package: %gW\n", i, diff,(package_delta[i]-package[i])*10);
+	}
+	
+    /*  W*s=J;
+     *  I want J because that is what we have in intel and used in academia. It is SI. Watt is not SI.
+     */
+	printf("%.9f\n", sum);
+	
+	free(core_energy);
+	free(core_energy_delta);
+	free(package);
+	free(package_delta);
+	free(fd);
 }
+    
+
 
 /* RAPL stuff */
 
@@ -1594,6 +1694,7 @@ void startEnergy() {
     if (isIntel) {
         startEnergyIntel();
     } else {
+        detect_packages();
         startEnergyAMD();
     }
 }

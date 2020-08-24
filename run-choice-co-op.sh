@@ -248,8 +248,41 @@ declare -a benchmarks=("array" "tpcc" "sb7" "sb7_20" "sb7_80" "synth" "redblackt
 declare -a array_names=("array-r99-w1")
 declare -a tpcc_names=("tpcc-s96-d1-o1-p1-r1" "tpcc-s1-d96-o1-p1-r1" "tpcc-s1-d1-o96-p1-r1" "tpcc-s1-d1-o1-p96-r1" "tpcc-s1-d1-o1-p1-r96" "tpcc-s20-d20-o20-p20-r20" "tpcc-s4-d4-o4-p43-r45")
 declare -a sb7_80_names=("sb7_80-r-f-f" "sb7_80-rw-f-f" "sb7_80-w-f-f" "sb7_80-r-t-f" "sb7_80-rw-t-f" "sb7_80-w-t-f" "sb7_80-r-f-t" "sb7_80-rw-f-t" "sb7_80-w-f-t" "sb7_80-r-t-t" "sb7_80-rw-t-t" "sb7_80-w-t-t")
-declare -a sb7_20_names=("sb7_20-r-f-f" "sb7_20-rw-f-f" "sb7_20-w-f-f" "sb7_20-r-t-f" "sb7_20-rw-t-f" "sb7_20-w-t-f" "sb7_20-r-f-t" "sb7_20-rw-f-t" "sb7_20-w-f-t" "sb7_20-r-t-t" "sb7_20-rw-t-t" "sb7_20-w-t-t")
-declare -a sb7_names=("sb7-r-f-f" "sb7-rw-f-f" "sb7-w-f-f" "sb7-r-t-f" "sb7-rw-t-f" "sb7-w-t-f" "sb7-r-f-t" "sb7-rw-f-t" "sb7-w-f-t" "sb7-r-t-t" "sb7-rw-t-t" "sb7-w-t-t")
+
+# actually useful with decent read-sets
+# 4 5 6
+# 10 11 12
+
+declare -a sb7_20_names=(\
+  #"sb7_20-r-f-f"\
+  #"sb7_20-rw-f-f"\
+  #"sb7_20-w-f-f"\
+  "sb7_20-r-t-f"\
+  "sb7_20-rw-t-f"\
+  "sb7_20-w-t-f"\
+  #"sb7_20-r-f-t"\
+  #"sb7_20-rw-f-t"\
+  #"sb7_20-w-f-t"\
+  "sb7_20-r-t-t"\
+  "sb7_20-rw-t-t"\
+  "sb7_20-w-t-t"\
+)
+
+declare -a sb7_names=(\
+  #"sb7-r-f-f"\
+  #"sb7-rw-f-f"\
+  #"sb7-w-f-f"\
+  "sb7-r-t-f"\
+  "sb7-rw-t-f"\
+  "sb7-w-t-f"\
+  #"sb7-r-f-t"\
+  #"sb7-rw-f-t"\
+  #"sb7-w-f-t"\
+  "sb7-r-t-t"\
+  "sb7-rw-t-t"\
+  "sb7-w-t-t"\
+)
+
 declare -a synth_names=("synth-s-r" "synth-s-w" "synth-l-r" "synth-l-w")
 declare -a redblacktree_names=("redblacktree-l-w" "redblacktree-l-r" "redblacktree-s-w" "redblacktree-s-r")
 declare -a hashmap_names=("hashmap-l-r" "hashmap-l-w" "hashmap-s-r" "hashmap-s-w")
@@ -370,29 +403,29 @@ declare -a array=( "./array/array -r$5 -n"$threads )
 		# SIZE_KEY -s s|m|b set size of data structure
 		# INIT_SINGLE_TX_KEY -i true|false; set whether to initialize data in single or multiple transaction
 declare -a sb7=(\
-        "./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m false -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m false -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m false -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m false -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m false -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m false -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m true -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m true -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 5000 -w r -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 5000 -w rw -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 5000 -w w -t false -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m true -n $threads")
 
 declare -a sb7_20=(\
-        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m false -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m false -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m false -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 20000 -w r -t true -m false -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t true -m false -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 20000 -w w -t true -m false -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m true -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m true -n $threads"\
-        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 20000 -w r -t true -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t true -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 20000 -w w -t true -m true -n $threads")

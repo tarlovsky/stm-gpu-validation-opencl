@@ -163,13 +163,12 @@ MAIN(argc, argv) {
   GOTO_REAL();
   TIMER_READ(stop);
 
-  printf("%.9f\n", TIMER_DIFF_SECONDS(start, stop));
-
   fflush(stdout);
 
 //printf("Final size: %d\n",   array_size(set));
 
   TM_SHUTDOWN();
+  printf("%.9f\n", TIMER_DIFF_SECONDS(start, stop));
   P_MEMORY_SHUTDOWN();
   GOTO_SIM();
   thread_shutdown();
