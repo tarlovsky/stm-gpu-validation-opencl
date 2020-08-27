@@ -42,19 +42,19 @@
 
 /* Validation OCL kernel specific defines */
 #define HW_THREADS_PER_EU 16 /*4 vALU, 16Processing elements per vALU = 64/Compute Unit.*/
-#define BIN_KERNEL_INSTANT "/home/otarlovskyy/stm-validation-study-63/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/instant_kernel.bin"
-#define CL_KERNEL_INSTANT  "/home/otarlovskyy/stm-validation-study-63/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/instant_kernel.cl"
-#define CL_KERNEL_INSTANT_DEBUG "/home/otarlovskyy/stm-validation-study-63/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/instant_kernel_debug.cl"
+#define BIN_KERNEL_INSTANT "/home/otarlovskyy/stm-validation-study-master/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/instant_kernel.bin"
+#define CL_KERNEL_INSTANT  "/home/otarlovskyy/stm-validation-study-master/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/instant_kernel.cl"
+#define CL_KERNEL_INSTANT_DEBUG "/home/otarlovskyy/stm-validation-study-master/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/instant_kernel_debug.cl"
 #define CL_KERNEL_INSTANT_NAME "InstantKernel"
 
-#define BIN_KERNEL_REGULAR "/home/otarlovskyy/stm-validation-study-63/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/regular_kernel.bin"
-#define CL_KERNEL_REGULAR "/home/otarlovskyy/stm-validation-study-63/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/regular_kernel.cl"
+#define BIN_KERNEL_REGULAR "/home/otarlovskyy/stm-validation-study-master/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/regular_kernel.bin"
+#define CL_KERNEL_REGULAR "/home/otarlovskyy/stm-validation-study-master/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool/regular_kernel.cl"
 #define CL_KERNEL_REGULAR_NAME "RegularKernel"
 
 /* vtune */
-//#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/otarlovskyy/stm-validation-study-63/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool -g -s " CL_KERNEL_INSTANT " -cl-std=CL2.0" //added I flag to share debug_validation header and define.
+//#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/otarlovskyy/stm-validation-study-master/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool -g -s " CL_KERNEL_INSTANT " -cl-std=CL2.0" //added I flag to share debug_validation header and define.
 /* normal exec */
-#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/otarlovskyy/stm-validation-study-63/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool -cl-std=CL2.0" //added I flag to share debug_validation header and define.
+#define CL_KERNEL_PROGRAM_OPTIONS "-I/home/otarlovskyy/stm-validation-study-master/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd/src/validation_tool -cl-std=CL2.0" //added I flag to share debug_validation header and define.
 
 
 #define PERF_TEST_ZERO_COPY 1 //don't forget to also decide if you want aligned or unaligned malloc

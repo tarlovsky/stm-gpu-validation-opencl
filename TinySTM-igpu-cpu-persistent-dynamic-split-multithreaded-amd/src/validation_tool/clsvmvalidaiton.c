@@ -417,7 +417,7 @@ int initializeDeviceCode(const char* kernel_src_path, const char* kernel_name, c
         filename = kernel_src_path;
 
         convertToStringBuf(filename, &length);//populates g_clProgramString with program string from .cl
-        printf("LENGTH %d\n", length);
+        //printf("LENGTH %d\n", length);
 
         size_t sourceSize = strlen(g_clProgramString);
 

@@ -46,7 +46,7 @@ plot \
  'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-4-workers' u ($0):2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 4 THREADS VALIDATING random array traversal" dt new1 lc rgb "black",\
  'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-8-workers' u ($0):2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 8 THREADS VALIDATING random array traversal" lc rgb "black",\
  'results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 1 THREADS VALIDATING sequential array traversal" dt new lc rgb col_gold pt 17,\
- 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-67-gpu-33' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "" dt new lc rgb "#b01313",\
+ 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-67-gpu-33' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "GLOBAL MINUMUM " dt new lc rgb "#b01313",\
  'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS 224WI/WKGP NO VALIDATION LOGIC, PERSISTENT KERNEL POLLING OVERHEAD" dt new lc rgb col_24 pt 8,\
 
 set title "CPU with threaded validation " font ",12"

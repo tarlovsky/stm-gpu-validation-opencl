@@ -24,6 +24,7 @@ fi
 #######################################################################################
 
 global_stm="TinySTM-igpu-persistent-blocks"
+#global_stm="TinySTM-igpu-persistent-blocks-amd"
 threads=1
 
 # THREADS
@@ -70,7 +71,8 @@ then
     RESULTS_DIR+="-$mode"
 fi
 
-#######################################################################################
+##################################################################################################################################################################
+##################################################################################################################################################################
 build_stm_and_benchmark(){
   # rebuild STM all the time because we change number of threads and I need that to SED the makefile with initial_rs_svm_buffer_size
   # now build stm $global_stm TinySTM, tl2, etc
@@ -123,7 +125,8 @@ build_stm_and_benchmark(){
     make -f Makefile
   cd ..
 }
-#######################################################################################
+##################################################################################################################################################################
+##################################################################################################################################################################
 
 progout=
 
@@ -147,27 +150,34 @@ done
 # example results/TinySTM-wbetl/2/intruder++
 TEMP_FILE="$RESULTS_DIR/temp"
 
+###############################################################
+#intel
 # 200 is where things get really slow. around 70 seconds validating at N=16777216
 # 2 seems to be the best performance
 # TODO investigate why
-declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100) # 200 500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
-declare -a KARRAY=(200 500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
-declare -a RSET=(4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728)
+declare -a KARRAY=(8 9 10 20 40 50 100 200 500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
+#declare -a KARRAY=(200 500 1000 10000 24966) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
+#AMD
+#declare -a KARRAY=(1 2 3 4 5 6 7 8 9 10 20 40 50 100 200 500 1000 10000 11915) #ignoring >200. coalesced seq 200 did not finish and coalesced random was too slow
+#declare -a RSET=(4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728) #make it more fine grained 512<->134217728
 
 N_SAMPLES=10
 SEQ_ONLY=0
 SEQ_ENABLED=1 #do both seq and rand: 0..1
 
-mem_access="coalesced"
-#mem_access="strided"
+#mem_access="coalesced"
+mem_access="strided"
+
+r_set_start=512 #gpu will work for sure
+r_set_end=134217728
 
 #debug
-DEBUG=1
+DEBUG=0
 
 #debug params
 if [[ DEBUG -eq 1 ]]; then
-  declare -a KARRAY=(200)
-  declare -a RSET=(134217728)
+  r_set_start=512 #gpu will work for sure
+  r_set_end=512
   SEQ_ONLY=0
   SEQ_ENABLED=0
   # for i=SEQ_ONLY; i<=SEQ_ENABLED
@@ -175,12 +185,11 @@ if [[ DEBUG -eq 1 ]]; then
 fi
 
 
-for K in ${KARRAY[@]}; do #co-op blind search
+for K in ${KARRAY[@]}; do 
   echo "===================== $K ====================="
 
   for((sequential=$SEQ_ONLY; sequential<=$SEQ_ENABLED;sequential++)); do
-      #vary cpu validation percentage
-
+      
       if [[ $sequential -eq 1 ]]; then
         FILE="$RESULTS_DIR/array-r99-w1-sequential-walk/$threads-$mem_access-mem-K-$K"
       else
@@ -188,7 +197,8 @@ for K in ${KARRAY[@]}; do #co-op blind search
       fi
 
       # this is the number of elements every work-item will do
-      # in a loop in the persistent kernel as percentage of WORK-SET/5376
+      # in a loop in the persistent kernel as percentage of WORK-SET/5376 INTEL
+      # in a loop in the persistent kernel as percentage of WORK-SET/11264  AMD
       sed -i "s/CONSTANTK=.*/CONSTANTK=$K/g" "./$global_stm/$MAKEFILE"
 
       build_stm_and_benchmark
@@ -198,7 +208,8 @@ for K in ${KARRAY[@]}; do #co-op blind search
       fi
 
       # VARY READ SET
-      for i in ${RSET[@]}; do
+      for((i=$r_set_start;i<=$r_set_end;i*=2));do
+      #for i in ${RSET[@]}; do
 
           #if [[ DEBUG -eq 0 ]]; then
             echo "\"Validation time(S)\" \"Commits\" \"Aborts\" \"Val Reads\" \"Val success\" \"Val fail\" \"Energy (J)\" \"Time(S)\"" > $TEMP_FILE
@@ -206,9 +217,10 @@ for K in ${KARRAY[@]}; do #co-op blind search
           sum=0
           avg=0
 
-                    # do a nice average
-          for ((k=1;k <= N_SAMPLES;k++)) do
-              if [[ $((K * 5376)) -gt $i ]]; then
+          # do a nice, clean average
+          for ((k=1;k <= N_SAMPLES;k++)) do # dont confuse this simple k iterator with K
+              #if [[ $((K * 5376)) -gt $i && $K -gt 1]]; then #INTEL
+              if [[ $((K * 5376)) -gt $i ]]; then #AMD
                 echo "0 0 0 0 0 0 0 0" >> $TEMP_FILE
                 #echo "continuing on $((K * 5376)) > $i"
                 continue;
@@ -220,7 +232,7 @@ for K in ${KARRAY[@]}; do #co-op blind search
                   echo "SAMPLE:$((k)), $threads threads, random array walk, $global_stm rset:$i N_PER_WI/K=$K"
               fi
 
-              #if [[ DEBUG -eq 0 ]]; then
+              if [[ DEBUG -eq 0 ]]; then
                   progout=$(./array/array -n$threads -r$i -s$sequential) #run the program $( parameters etc )
                   echo "$progout"
                   threads_out=$(head -n "$threads" <<< "$progout")
@@ -240,10 +252,11 @@ for K in ${KARRAY[@]}; do #co-op blind search
                   else
                     echo "${val_time} ${commits} ${aborts} ${val_reads} ${validation_succ} ${validation_fail} ${exec_time_power[0]} ${exec_time_power[1]}" >> $TEMP_FILE
                   fi
-              #else
+              else
                   #in debug just print values
-                  #./array/array -n$threads -r$i -s$sequential
-              #fi
+                  #gdb --args ./array/array -n$threads -r$i -s$sequential
+                  ./array/array -n$threads -r$i -s$sequential
+              fi
 
           done
 
@@ -265,7 +278,7 @@ for K in ${KARRAY[@]}; do #co-op blind search
 
                       for(i=1;i<=NR;i++){
                           for(j=1;j<=NF;j++){
-                              sumsq[j]+=((array[i,j]-(sum[j]/NR))**2);
+                              sumsq[j]+=((array[i,j]-(sum[j]/NR))^2);
                           }
                       }
 

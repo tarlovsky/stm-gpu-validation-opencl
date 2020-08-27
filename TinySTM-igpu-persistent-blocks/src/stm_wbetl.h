@@ -62,7 +62,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     int idx = tx->rset_slot;
     long N = tx->r_set.nb_entries;
-    int b, val_reads_local;
+    int b, val_reads_local = 0;
     int n_per_wi = CONSTANTK;
 
     threadComm[idx].valid = 1;
@@ -110,7 +110,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     b = 0;
     while(b < upper_block_lim){
-
+        threadComm[idx].reads_count = 0;
         //printf("GPU RUN %d\n", i);
         /*TODO counters will overflow in long runnning tx.
          * Up to 3 million read set safe.
@@ -157,7 +157,7 @@ stm_wbetl_validate(stm_tx_t *tx)
 #endif /*DEBUG_VALIDATION*/
 
 
-        val_reads_local+=elements_in_block;
+        val_reads_local+=threadComm[idx].reads_count;
 
         pCommBuffer[COMPLETE] = 0;
         /* while gpu was vaidating, cpu might have invalidated tx. Break */
@@ -170,6 +170,8 @@ stm_wbetl_validate(stm_tx_t *tx)
         if(!threadComm[idx].valid){break;}else{b++;}
     }
     TIMER_READ(stop);
+
+    //printf("%d %d\n", val_reads_local, threadComm[idx].reads_count);
 
 #ifdef DEBUG_VALIDATION
     #if (DEBUG_VALIDATION)

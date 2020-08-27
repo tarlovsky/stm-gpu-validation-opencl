@@ -77,20 +77,23 @@ MAKEFILE="Makefile"
 retries=0
 MAX_RETRY=4
 
-#mem_access="strided" # no strided for amd yet. prob wont make it.
-mem_access="coalesced"
+mem_access="strided" # no strided for amd yet. prob wont make it.
+#mem_access="coalesced"
+
+
+#AMD
+#global_stm="TinySTM-igpu-persistent-$mem_access-amd" #amd
+#instant_kernel_config="-g11264-l256-w44"  #done BEST
+#instant_kernel_config="-g11264-l64-w176"   #done
+#instant_kernel_config="-g2816-l16-w176"   #done
+#instant_kernel_config="-g2816-l256-w11"   #no forward progress
+#instant_kernel_config="-g28160-l256-w440" #no forward progress
+
+#INTEL
+#global_stm="TinySTM-igpu-persistent-$mem_access" #intel
+
+
 global_stm="TinySTM-igpu-persistent-$mem_access-amd" #amd
-
-#DONT RUN WITHOUGHT THIS TITLE
-#ONLY DEBUG
-#instant_kernel_config="g11264-l256-w44"  #done
-instant_kernel_config="g11264-l64-w176"   #done PROBLY BEST NEED TO PLOT
-#instant_kernel_config="g2816-l16-w176"   #done
-#instant_kernel_config="g2816-l256-w11"   #no forward progress
-#instant_kernel_config="g28160-l256-w440" #no forward progress
-
-
-#global_stm="TinySTM-igpu-persistent-$mem_access-amd-" #amd
 #global_stm="TinySTM-igpu-persistent-$mem_access" #intel
 threads=1
 
@@ -111,6 +114,7 @@ then
     # sets compiler define that is read within stm_init() in TinySTM.
     sed -i "s/INITIAL_RS_SVM_BUFFERS_OCL=.*/INITIAL_RS_SVM_BUFFERS_OCL=$threads/g" "./$global_stm/$MAKEFILE"
     # this can be moved to run-benches to run only once
+    #comment this on ryzen machine in inesc
     #rm ./$global_stm/src/validation_tool/instant_kernel.bin #remove it on first run then it gets built again
     #rm ./$global_stm/src/validation_tool/regular_kernel.bin #remove it on first run then it gets built again
 fi
@@ -118,7 +122,7 @@ fi
 RESULTS_DIR+='-validation-array'
 #add some spice to AMD instant kernel
 #need to test differnet configs
-RESULTS_DIR+="/${global_stm}-${instant_kernel_config}" #every backend has their own results sub-dir
+RESULTS_DIR+="/${global_stm}" #every backend has their own results sub-dir
 
 # example: results/ $global_stm:TinySTM - $4:wbetl
 #######################################################################################
@@ -149,7 +153,7 @@ TEMP_FILE="$RESULTS_DIR/temp"
 
 SEQ_ENABLED=1
 SEQ_ONLY=0
-
+N_SAMPLES=20
 i_start=512
 i_end=134217728
 
@@ -160,7 +164,8 @@ DEBUG=1
 if [[ DEBUG -eq 1 ]]; then
   SEQ_ENABLED=0
   N_SAMPLES=1 #stay on one as much as possible
-  i_start=131072
+  i_start=512
+  i_end=512
 fi
 ##################################################################
 
@@ -188,7 +193,7 @@ build_stm_and_benchmark
         sum=0
         avg=0
 
-        for k in {0..19}; do
+        for ((k=1;k <= N_SAMPLES;k++)) do
 
             if [[ $sequential -eq 1 ]];then
                 echo "RUN:$((k+1)), $threads threads, sequential array walk, $global_stm rset:$i" # VALTHREADS|CPU_PROPORTION:$j"
@@ -244,7 +249,7 @@ build_stm_and_benchmark
                 fi
             else
               #debug=1
-              ./array/array -n$threads -r$i -s$sequential
+              gdb --args ./array/array -n$threads -r$i -s$sequential
             fi 
         done
         #throw mean and stdev into file

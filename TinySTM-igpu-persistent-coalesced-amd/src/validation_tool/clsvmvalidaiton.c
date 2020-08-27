@@ -194,7 +194,7 @@ int initializeCL(volatile stm_word_t **locks_pointer){
             //printf(" %d.%d Parallel compute units: %d\n", j + 1, 4, maxComputeUnits);
 
             NumberOfExecUnits = maxComputeUnits;//will be 8 EUs per sublice * 3 slices = 24 on my 6700k's hd530
-            NumberOfHwThreads = NumberOfExecUnits * HW_THREADS_PER_EU;//24*7=168
+            NumberOfHwThreads = NumberOfExecUnits * HW_THREADS_PER_EU;//11*16=176
 
             //clGetDeviceInfo(devices[j], CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE, sizeof(cachelineSize), &cachelineSize, NULL);
             //printf(" %d.%d Global memory cacheline size: %d\n", j + 1, 5, cachelineSize);

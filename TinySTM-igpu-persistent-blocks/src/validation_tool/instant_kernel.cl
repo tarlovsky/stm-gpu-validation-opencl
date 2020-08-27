@@ -179,6 +179,7 @@ __kernel void InstantKernel(
 	while(1){
 
 		if ( get_local_id(0) == 0 ) {
+            atomic_store_explicit(&reads_validated, 0, memory_order_acq_rel, memory_scope_work_group);
             /* acquire memory fence is inserted right before atomic operation, so all write results of other work-items
              * within operation scope become visible to current work-item before atomic operation starts.*/
 		    ReqPhase = atomic_load_explicit(&SVMComm[PHASE], memory_order_acquire, memory_scope_all_svm_devices);
@@ -240,6 +241,9 @@ __kernel void InstantKernel(
 
                     //increment in Shared Local Memory, work leader notifies world later
 
+                    /*beats updating global memory every time*/
+                    atomic_fetch_add_explicit(&reads_validated, 1, memory_order_release, memory_scope_work_group);
+
                     stm_word_t l = (*((volatile size_t *)(r.lock)));
 
                     if( LOCK_GET_OWNED(l) ) {
@@ -275,15 +279,16 @@ __kernel void InstantKernel(
             //barrier( CLK_GLOBAL_MEM_FENCE );//workgroup barrier on global memory containing atomic control
 
             if( get_local_id(0) == 0 ){
-                //atomic_fetch_add_explicit(&comp_wkgps[get_group_id(0)],1,memory_order_seq_cst,memory_scope_all_svm_devices);
+                
+                atomic_fetch_add_explicit(
+                        &threadComm->reads_count,
+                        //get_local_size(0), /*i removed the individial work-item aromic counter and placed it here. overvalidate but better performance*/
+                        atomic_load_explicit(&reads_validated, memory_order_acquire, memory_scope_work_group),
+                        memory_order_release,
+                        memory_scope_all_svm_devices);
+
                 atomic_fetch_add_explicit(&SVMComm[COMPLETE], 1, memory_order_acq_rel, memory_scope_all_svm_devices);
 
-                //atomic_fetch_add_explicit(
-                //        &threadComm->reads_count,
-                //        get_local_size(0), /*i removed the individial work-item aromic counter and placed it here. overvalidate but better performance*/
-                        /*atomic_load_explicit(&reads_validated, memory_order_acquire, memory_scope_work_item),*/
-                //        memory_order_relaxed,
-                //        memory_scope_all_svm_devices);
             }
 
 		}//end reqphase

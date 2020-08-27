@@ -1,12 +1,13 @@
 LIB := ../lib
 
-STM := ../TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded
+STM := ../TinySTM-igpu-persistent-blocks
 
 CC       := g++
 CPP      := g++
 LD       := g++
 
-CFLAGS   += -std=c++11 -O2 -w -pthread -fpermissive
+CFLAGS   += -std=c++11 -g -w -pthread -fpermissive
+CFLAGS   += -O2
 CFLAGS   += -DSTM -I$(LIB) -I$(STM)/include -I../rapl-power/
 
 CPPFLAGS += $(CFLAGS)

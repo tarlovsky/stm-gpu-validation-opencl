@@ -96,6 +96,7 @@ fi
 
 #find them all
 declare -a BEST_CO_OP_somewhere=()
+t_col_best_co_op="GLOBAL MINUMUM "
 BEST_CO_OP=
 BEST_COUNT=0
 
@@ -158,7 +159,7 @@ echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-
 #echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-sequential-GPU-24WKGPS-224WKGPSIZE-SEQ-CST'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST, sequential array traversal\" lw 2 lc rgb col_24 pt 16, \\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"CPU 02 1 THREADS VALIDATING sequential array traversal\" dt new lc rgb col_gold pt 17,\\"  >> $FILE
 #co-op
-echo  " '$BEST_CO_OP' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
+#echo  " '$BEST_CO_OP' u 0:2:3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) w yerrorlines t \"$t_col_best_co_op\" dt new lc rgb \"#b01313\",\\"  >> $FILE
 #persistent kernel
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"24WKGPS 224WI/WKGP NO VALIDATION LOGIC, PERSISTENT KERNEL POLLING OVERHEAD\" dt new lc rgb col_24 pt 8,\\"  >> $FILE
 #these are temporary, for scale, to show difference between having seq_cst, acq_rel, relaxed atomic access inside opencl work-items
