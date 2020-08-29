@@ -26,9 +26,11 @@ else
   modprobe msr
 fi
 #######################################################################################
-
+#intel
 #global_stm="TinySTM-igpu-cpu-persistent-dynamic-split"
-global_stm="TinySTM-igpu-cpu-persistent-dynamic-split-strided"
+#global_stm="TinySTM-igpu-cpu-persistent-dynamic-split-strided"
+#amd
+global_stm="TinySTM-igpu-cpu-persistent-dynamic-split-amd"
 
 threads=1
 mode=wbetl
@@ -57,8 +59,8 @@ then
     # sets compiler define that is read within stm_init() in TinySTM.
     sed -i "s/INITIAL_RS_SVM_BUFFERS_OCL=.*/INITIAL_RS_SVM_BUFFERS_OCL=$threads/g" "./$global_stm/$MAKEFILE"
     # this can be moved to run-benches to run only once
-    rm ./$global_stm/src/validation_tool/instant_kernel.bin #remove it on first run then it gets built again
-    rm ./$global_stm/src/validation_tool/regular_kernel.bin #remove it on first run then it gets built again
+    #rm ./$global_stm/src/validation_tool/instant_kernel.bin #remove it on first run then it gets built again
+    #rm ./$global_stm/src/validation_tool/regular_kernel.bin #remove it on first run then it gets built again
 fi
 
 RESULTS_DIR+='-validation-array'
@@ -164,14 +166,14 @@ SEQ_ONLY=0
 SEQ_ENABLED=1 #do both seq and rand: 0..1
 RSET_START=512
 
-DEBUG=1
+DEBUG=0
 #debug params
 if [[ DEBUG -eq 1 ]]; then
   SEQ_ONLY=0
   SEQ_ENABLED=0
   # for i=SEQ_ONLY; i<=SEQ_ENABLED
   N_SAMPLES=1
-  RSET_START=$((5376*100))
+  RSET_START=$((11264*100))
 fi
 
 build_stm_and_benchmark
@@ -251,7 +253,7 @@ for((sequential=$SEQ_ONLY; sequential<=$SEQ_ENABLED;sequential++)); do
 
                     for(i=1;i<=NR;i++){
                         for(j=1;j<=NF;j++){
-                            sumsq[j]+=((array[i,j]-(sum[j]/NR))**2);
+                            sumsq[j]+=((array[i,j]-(sum[j]/NR))^2);
                         }
                     }
 

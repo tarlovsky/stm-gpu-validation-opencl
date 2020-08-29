@@ -18,9 +18,10 @@ FILE1="gnuplot/simple-array-best-K-amd.gnuplot"
 #echo "set term postscript eps color solid" >> $FILE1
 #echo "set output '1.eps'" >> $FILE1
 
-echo "set terminal wxt size 2860,550" > $FILE1
+echo "set terminal wxt size 1230,1100" > $FILE1
 
-echo "set multiplot layout 1,2 title \"1 STM thread - transactional array walk READS VALIDATED * 10^8 /s - persistent kernel validation in blocks of 11264*K on Vega 11 Ryzen 2400g APU\" font \"Computer Modern,16\"" >> $FILE1
+echo "set multiplot layout 2,1 title \"Varying N-ELEMENTS-PER-WORK-ITEM. Transactional array walk - AMD Vega 11 - COALESCED memory access\" font \"Computer Modern,16\"" >> $FILE1
+#Transactional array walk - COALESCED memory access; varying K (\'N-ELEMENTS-PER-WORK-ITEM\') , 1 STM thread - READS VALIDATED * 10^8 /s - persistent kernel validation in blocks of 11264*K on Vega 11 Ryzen 2400g APU
 echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE1
 #echo "set datafile missing \" \"" >> $FILE1
 echo "unset border" >> $FILE1
@@ -29,8 +30,7 @@ echo "set grid front lc rgb \"#999966\"" >> $FILE1
 echo "set datafile separator \" \"" >> $FILE1
 
 echo "set cbrange [0.01:10]" >> $FILE1
-echo "set palette model RGB defined (0.0 \"#ffffff\",0.01 \"#c1ff2a\",0.1 \"#dcff87\",0.25 \"#efff4d\",0.5 \"#fff14c\",1 \"#ffa81b\",4 \"#fe971a\",6 \"#ff4e1d\",7 \"#ff1e1e\")" >> $FILE1
-
+echo "set palette model RGB defined (0.0 \"#ffffff\" , 0.05 \"#bdd7ff\" ,0.5 \"#c1ff2a\", 0.75 \"#dcff87\",1 \"#efff4d\",2 \"#fff14c\",3 \"#ffa81b\",4 \"#fe971a\",6 \"#ff4e1d\",7 \"#ff1e1e\")" >> $FILE1
 #echo "set cbtics (4096 8192 32768 65536 131072 262144 524288 1048576 2097152 16777216 134217728)" >> $FILE1
 echo "set key autotitle columnhead" >> $FILE1
 echo "set ytics nomirror font \"Computer Modern, 11\" " >> $FILE1
@@ -64,10 +64,10 @@ for i in 1; do #2 4 8; do
 
     RESULS_FILE_COALESCED="$TARGET_FOLDER/tabled-heatmap-data-COALESCED"
     TMP="$TARGET_FOLDER/tmp-best-cpu"
-    #TMP1="$TARGET_FOLDER/tmp-best-co-op"
+    TMP1="$TARGET_FOLDER/tmp-best-co-op"
     echo -n > $RESULS_FILE_COALESCED
     echo -n > $TMP
-    #echo -n > $TMP1
+    echo -n > $TMP1
     #get cpu-only val_time
 
 # EXTRACT ONLY DATAPOINTS FROM CPU AND BEST-CO-OP EXISTANT IN VARYING-K STATISTIC #
@@ -78,12 +78,12 @@ for i in 1; do #2 4 8; do
       echo $(awk -v r=$r 'NR>1{if($1==r){print $0}}' "$RESULTS_DIR/TinySTM-wbetl/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation") >> $TMP
       #extract only those datapoints/readsets we have with "varying K" files/stats
       ########################### CO-OP ###########################
-      #echo $(awk -v r=$r 'NR>1{if($1==r){print $0}}' "$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation") >> $TMP1
+      echo $(awk -v r=$r 'NR>1{if($1==r){print $0}}' "$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-amd-wbetl/$i/array-r99-w1-$mode-walk/1-$mode-cpu-validation") >> $TMP1
     done
 
     cpu_val_time=$(awk '{printf "%0.2f\n", ($8/$2)/100000000}' $TMP)
     #get PREVIOUS BEST VAL_TIME. CO-OP- DYNAMIC SPLIT K=1, (THE ONE WITH A LOT OF SUBMERSIONS)
-    #co_op_val_time=$(awk '{print ($8/$2)/100000000}' $TMP1)
+    co_op_val_time=$(awk '{printf "%0.2f\n", ($12/$2)/100000000}' $TMP1)
 
     echo "\"NAME\" $header" | tee -a $RESULS_FILE_COALESCED
 
@@ -92,7 +92,7 @@ for i in 1; do #2 4 8; do
       echo $k
 ########################## COALESCED MEM ACCESS ##########################
       mem_access="coalesced"
-      MEM_CONFIG_NAME="$i-STM-threads-$mem_access-K=$k"
+      MEM_CONFIG_NAME="K=$k"
       CURR_DATA_FILE="$TARGET_FOLDER/$i-$mem_access-mem-K-$k"
       mem_access_line=$(awk -v test=$((11264*$k)) 'NR>1{if($1 > test){print ($8/$2)/100000000 }else{print "-";}}' $CURR_DATA_FILE)
       #extract column 2 with val_times
@@ -113,10 +113,10 @@ for i in 1; do #2 4 8; do
     #echo  "set arrow 2 from -0.5, 0.5 to 18.5, 0.5 front nohead lc rgb \"#000000\" lw 2" >> $FILE1
     #echo  "set arrow 3 from -0.5, 1.5 to 18.5, 1.5 front nohead lc rgb \"#000000\" lw 2" >> $FILE1
 
-    #echo "\"CO-OP-CPU+GPU\"" $co_op_val_time | tee -a $RESULS_FILE_COALESCED
-    echo "\"TINYSTM-UNTOUCHED-BASELINE\"" $cpu_val_time | tee -a $RESULS_FILE_COALESCED
+    echo "\"CPUGPU-coop\"" $co_op_val_time | tee -a $RESULS_FILE_COALESCED
+    echo "\"TinySTM-base\"" $cpu_val_time | tee -a $RESULS_FILE_COALESCED
 
-    echo "set title \"COALESCED access; varying K (\'N-ELEMENTS-PER-WORK-ITEM\') ($mode array access) READS VALIDATED*10^8/s \" font \"Computer Modern,14\"" >> $FILE1
+    echo "set title \"$mode array walk\" font \"Computer Modern,14\"" >> $FILE1
     echo "plot '$RESULS_FILE_COALESCED' matrix rowheaders columnheaders w image,\\" >> $FILE1
     # "     '' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"x%.2f\",\$3)) : (sprintf(\"-\")))) with labels font \",11.5\",\\" >> $FILE1
     echo "     '' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%.3f\",\$3)) : (sprintf(\" \")))):xtic(1):3 with labels font \"Computer Modern,10.7\" palette,\\" >> $FILE1
