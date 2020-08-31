@@ -7,10 +7,11 @@ set multiplot layout 1,2 title "Array traversal (random element access), 1 threa
 set decimal locale "en_US.UTF-8"; show locale
 set datafile missing '0'
 set tics scale 0
-set ytics
+set ytics font "Computer Modern, 11"
 set grid ytics lc rgb "#606060"
+set grid xtics lc rgb "#bbbbbb"
 set format x "%d"
-set xtics nomirror rotate by 45 right font "Verdana,10" 
+set xtics out nomirror rotate by 35 right font "Computer Modern, 11.5" 
 set datafile separator whitespace
 set border lc rgb "black"
 set style data lines
@@ -21,10 +22,9 @@ new2 = "_-_"
 col_24="#c724d6"
 col_48="#44cd1"
 col_gold="#8f8800"
-set key font ",8"
-set key top left
-set ylabel "Reads validated / s"
-set xlabel "RSET SIZE. Each loads at least 8 byte: (ENTRY, LOCK POINTER); 1 LOCK covers 4 READ-ENTRIES.
+set key top left font "Computer Modern ,12"
+set ylabel "Reads validated / s" font "Computer Modern, 11"
+set xlabel "RSET SIZE" font "Computer Modern, 11"
 set arrow from 5.8, graph 0 to 5.8, graph 1 nohead lc rgb "#efefef"
 set label "$L1: 128KB" at 5.9, 50000000 
 set arrow from 7.8, graph 0 to 7.8, graph 1 nohead lc rgb "#dadada"
@@ -35,6 +35,7 @@ set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb "#afafaf"
 set label "$L3: 8MB" at 11.9, 50000000*2.5 
 set title "Only CPU, threaded validation, random walk" font ",12"
 set style data linespoints
+set key top right font "Computer Modern, 10"
 unset logscale y
 set yrange [0:1000000000]
 set ytics 100000000

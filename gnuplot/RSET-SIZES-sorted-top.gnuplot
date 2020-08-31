@@ -1,5 +1,5 @@
 set terminal wxt size 800,1200
-set multiplot layout 4,1 rowsfirst title "Average reads validated in lengthiest STM benchmarks" font ",16"
+set multiplot layout 4,1 rowsfirst title "Average reads validated in lengthiest STM benchmarks" font "Computer Modern,16"
 set datafile missing '0'
 set datafile separator whitespace
 unset border
@@ -12,8 +12,8 @@ set key autotitle columnhead
 set key outside right vertical
 set key invert
 set key title "Benchmark"
-set key font ",9"
-set title "swissTM" font ",12" tc rgb "#8f8800"
+set key font "Computer Modern,9"
+set title "swissTM" font "Computer Modern,12" tc rgb "#8f8800"
 plot \
       'results-cpu/RSET-SIZE-sorted-top-transposed-swissTM' u 2:xtic(1) t col lt 1, \
       '' u ($3) t col lt 3, \
@@ -28,7 +28,7 @@ plot \
       '' u ($12) t col lt 12, \
       '' u ($13) t col lt 13
 
-set title "TinySTM-wbetl" font ",12" tc rgb "#8f8800"
+set title "TinySTM-wbetl" font "Computer Modern,12" tc rgb "#8f8800"
 plot \
       'results-cpu/RSET-SIZE-sorted-top-transposed-TinySTM-wbetl' u 2:xtic(1) t col lt 1, \
       '' u ($3) t col lt 3, \
@@ -37,7 +37,7 @@ plot \
       '' u ($6) t col lt 6, \
       '' u ($7) t col lt 7
 
-set title "norec" font ",12" tc rgb "#8f8800"
+set title "norec" font "Computer Modern,12" tc rgb "#8f8800"
 plot \
       'results-cpu/RSET-SIZE-sorted-top-transposed-norec' u 2:xtic(1) t col lt 1, \
       '' u ($3) t col lt 3, \
@@ -45,7 +45,7 @@ plot \
       '' u ($5) t col lt 5, \
       '' u ($6) t col lt 6
 
-set title "tl2" font ",12" tc rgb "#8f8800"
+set title "tl2" font "Computer Modern,12" tc rgb "#8f8800"
 plot \
       'results-cpu/RSET-SIZE-sorted-top-transposed-tl2' u 2:xtic(1) t col lt 1, \
       '' u ($3) t col lt 3, \

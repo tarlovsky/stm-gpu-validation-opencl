@@ -1267,7 +1267,14 @@ int_stm_init_thread(void)
   /*tarlovsky*/
   /* to reduce lock grab attempts check flag */
 
-  if(_tinystm.kernel_init==0){
+    if( _tinystm.kernel_init==0
+#if SB7_BENCHMARK
+        /* i'm such a god damn hacker. dont let data holder thread (0) in sb7 launch the instant kernel.
+        *  must be the i915 intel driver watchdog that kills off spinning kernel if its not used for too long (while data holder inits and other threads init).
+        */
+        && _tinystm.global_tid > 0
+#endif
+      ){
       //TIMER_T start;
       //TIMER_T stop;
       //TIMER_READ(start);
@@ -1280,7 +1287,7 @@ int_stm_init_thread(void)
       pthread_mutex_unlock(&_tinystm.kernel_init_mutex);
       //TIMER_READ(stop);
       //printf("launchInstantKernel() %fs\n", TIMER_DIFF_SECONDS(start,stop));// 0.087354s
-  }
+    }
 
   stm_tx_t *tx;
 

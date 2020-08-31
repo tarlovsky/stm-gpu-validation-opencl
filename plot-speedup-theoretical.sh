@@ -191,6 +191,7 @@ do
     ((COUNT++))
     #get trend average for red ine
     avg_speedup=$(awk 'NR>1{if($NF>0){total+=$NF;n++}} END{printf "%f",total/n}' <<< cat $RESULTS_DIR/speedup-theoretical-${stm};)
+    #get position coordinate for red avg line.
     avg_speedup_pos=$(awk -v col=$((${#thread_count[@]}+2)) 'NR>1{total+=$col;n++} END{printf "%f",total/n}' <<< cat $RESULTS_DIR/speedup-theoretical-${stm};)
 
     echo "set title \"${stm}\" font \",12\" tc rgb \"#8f8800\" offset 0,0" >> $FILE

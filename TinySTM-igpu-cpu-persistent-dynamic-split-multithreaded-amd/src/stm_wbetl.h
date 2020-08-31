@@ -72,8 +72,11 @@ stm_wbetl_validate(stm_tx_t *tx)
 
     /* don't even bother bothering GPU if read set <= 8192 */
     if(
-#if STICKY_THREAD /*only use gpu for STM THREAD 0. Sticky gpu thread*/
-        idx == 0 &&
+#if STICKY_THREAD /*only use gpu for STM THREAD 1. Sticky gpu thread.*/
+        idx == 1 &&
+#endif
+#if SB7_BENCHMARK
+        idx > 0 && /*thread 0 is data holder, ignore gpu for it. only use gpu for worker threads with id _> 0*/
 #endif
         N >= RSET_MIN_GPU_VAL){/*set index to 1 because thread 0 always has less aborts*/
         /* compete for gpu employment */
@@ -1147,7 +1150,13 @@ stm_wbetl_commit(stm_tx_t *tx)
     /*sequential always validates despite having one or N stm-threads*/
     /*sequential would not validate otherwise because no stm-thread touches anybodies rset*/
     //if(SEQUENTIAL || _tinystm.global_tid == 1){
-    if(_tinystm.global_tid == 1){
+    //if(_tinystm.global_tid == 1){
+    if( _tinystm.global_tid == 1
+#if SB7_BENCHMARK
+        ||
+        _tinystm.global_tid == 2 /*data holder takes up one thread*/
+#endif
+        ){
         /* always validate with 1 thread for thesis */
         if (!stm_wbetl_validate(tx)) {
             //if (unlikely(!stm_wbetl_validate(tx))) { /*tarlovskyy*/

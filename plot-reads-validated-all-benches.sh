@@ -101,6 +101,7 @@ then
                         }
                     } END { printf "%.0f", readsvalidated }' <<< "$my_line")
 
+                    #3d plot has only aborts,readsvalidated,threads
                     C_A=$(awk '{ A=($6) } END { printf "%d", A }' <<< "$my_line")
 
                     if [[ ! $readsvalidated == 0 ]];then
@@ -109,10 +110,12 @@ then
                     fi
 
                     #echo "          $source_file: $readsvalidated"
+                    #this represents total reads-validated for all $th threads.
+                    # 1 2 4 8 16 32
                     fileout+=" $readsvalidated"
 
                     #use this later to sort
-                    #this is the bulk don on all $th threads
+                    #this is the bulk done on all $th threads
                     linesum_readsvalidated=$(bc <<< "scale=10; $linesum_readsvalidated+($readsvalidated)";)
 
                     #this is how much is done in each validation function vall
@@ -128,6 +131,7 @@ then
                 fi
             done #thread count for a single program
 
+            # "Total"->column only used for sorting
             fileout+=" $linesum_readsvalidated"
 
             if [[ $N_TH_AVG -eq 0 ]]; then
@@ -138,7 +142,9 @@ then
                 lineavg_readsvalidated_per_th=$(bc <<< "scale=0; $linesum_readsvalidated_per_th/$N_TH_AVG";)
             fi
 
+            # "Average"
             fileout+=" $lineavg_readsvalidated"
+            # "Reads validated per function call / thread"
             fileout+=" $lineavg_readsvalidated_per_th"
             fileout+=$'\n'
             #########
@@ -180,16 +186,18 @@ fi
 FILE="gnuplot/AVG-READS-VALIDATED.gnuplot"
 
 echo "set terminal wxt size 1440,1200" > $FILE
+echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE
 #echo "set output 'png/... .png'" >> $FILE
 
-echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Average reads validated in STM benchmarks\" font \",16\"" >> $FILE
-echo "set title \"Average reads validated for all benchmark programs\" font \",16\"" >> $FILE
+echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Average reads validated in STM benchmarks\" font \"Computer Modern,16\"" >> $FILE
+echo "set title \"Average reads validated for all benchmark programs\" font \"Computer Modern,16\"" >> $FILE
 echo "set datafile missing '0'" >> $FILE
 
 echo "set border 0" >> $FILE
 #echo "xlabeloffsety=1.75" >> $FILE
 echo "set tics scale 0"  >> $FILE
-echo "set xtics nomirror rotate by 45 right scale 0 font \",8\"" >> $FILE
+
+
 #echo "set offset -0.3,-0.3,0,0" >> $FILE
 echo "set bmargin 8" >> $FILE
 echo "set style fill solid 1.00" >> $FILE
@@ -199,6 +207,8 @@ echo "unset border" >> $FILE
 echo "set yrange [0:*]" >> $FILE
 #echo "set format y \"%d\""  >> $FILE
 
+echo "set ytics right font \"Computer Modern,11\" " >> $FILE
+echo "set xtics nomirror rotate by 45 right scale 0 font \"Computer Moder,9.5\"" >> $FILE
 #echo "set ytics (10,50,100)"  >> $FIL1E
 echo "set datafile separator whitespace" >> $FILE
 echo "set boxwidth 0.95" >> $FILE
@@ -213,7 +223,7 @@ echo "set style histogram rowstacked" >> $FILE
 echo "set key outside right vertical" >> $FILE
 echo "set key invert" >> $FILE
 echo "set key title \"Threads\"" >> $FILE
-echo "set key font \",9\"" >> $FILE
+echo "set key font \"Computer Modern,10.75\"" >> $FILE
 
 echo >> $FILE
 
@@ -221,7 +231,7 @@ COUNT=0
 for stm in ${STMS[@]};
 do
     ((COUNT++))
-    echo "set title \"${stm}\" font \",12\" tc rgb \"#8f8800\"" >> $FILE
+    echo "set title \"${stm}\" font \"Computer Modern,12\" tc rgb \"#8f8800\"" >> $FILE
 
     #get trend average for red ine
     avg_rset_size=$(awk 'NR>1{if($NF>0){total+=$(NF);n++}} END{printf "%f",total/n}' <<< cat $RESULTS_DIR/RSET-SIZE-${stm};)
@@ -236,21 +246,22 @@ do
 
     avg_per_validation_function_call=$((${#thread_count[@]}+4)) #last field is average value
     line_sum_idx=$((${#thread_count[@]}+2))   #next to last is sum
-    echo  "      '' u (\$0-1):(\$$line_sum_idx):(sprintf('%d', \$$avg_per_validation_function_call)) notitle w labels rotate by 90 left font \",8\",\\"  >> $FILE
+    echo  "      '' u (\$0-1):(\$$line_sum_idx):(sprintf(\"%'d\", \$$avg_per_validation_function_call)) notitle w labels rotate by 90 left font \"Computer Modern,12.5\",\\"  >> $FILE
     echo  "      $avg_rset_size_pos t sprintf('%d', $avg_rset_size) lc rgb \"#c9413e\" "  >> $FILE
 
     echo >> $FILE
 done #for each stm
 echo  "unset multiplot" >> $FILE
 
-
+##################################################################################################################################################
+##################################################################################################################################################
 ######################################################## ZOOM INTO TOP LARGEST RSET SIZES ########################################################
 FILE_sorted="gnuplot/RSET-SIZES-sorted-top.gnuplot"
 echo "set terminal wxt size 800,1200" > $FILE_sorted
 #echo "set output 'png/... .png'" >> $FILE_sorted
 
-echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Average reads validated in lengthiest STM benchmarks\" font \",16\"" >> $FILE_sorted
-echo "set title \"Average reads validated for all benchmark programs\" font \",16\"" >> $FILE
+echo "set multiplot layout ${#STMS[@]},1 rowsfirst title \"Average reads validated in lengthiest STM benchmarks\" font \"Computer Modern,16\"" >> $FILE_sorted
+echo "set title \"Average reads validated for all benchmark programs\" font \"Computer Modern,16\"" >> $FILE
 echo "set datafile missing '0'" >> $FILE_sorted
 
 echo "set datafile separator whitespace" >> $FILE_sorted
@@ -260,7 +271,7 @@ echo "unset border" >> $FILE_sorted
 #echo "xlabeloffsety=1.75" >> $FILE_sorted
 
 echo "set tics scale 0"  >> $FILE_sorted
-#echo "set xtics nomirror rotate by 45 right scale 0 font \",8\"" >> $FILE_sorted
+#echo "set xtics nomirror rotate by 45 right scale 0 font \"Computer Modern,8\"" >> $FILE_sorted
 #echo "set offset -0.3,-0.3,0,0" >> $FILE_sorted
 
 echo "set style fill solid 1.00" >> $FILE_sorted
@@ -278,13 +289,13 @@ echo "set key autotitle columnhead" >> $FILE_sorted
 echo "set key outside right vertical" >> $FILE_sorted
 echo "set key invert" >> $FILE_sorted
 echo "set key title \"Benchmark\"" >> $FILE_sorted
-echo "set key font \",9\"" >> $FILE_sorted
+echo "set key font \"Computer Modern,9\"" >> $FILE_sorted
 
 COUNT=0
 for stm in ${STMS[@]};
 do
     ((COUNT++))
-    echo "set title \"${stm}\" font \",12\" tc rgb \"#8f8800\"" >> $FILE_sorted
+    echo "set title \"${stm}\" font \"Computer Modern,12\" tc rgb \"#8f8800\"" >> $FILE_sorted
     #get trend average for red ine
     SORTED_FILE="$RESULTS_DIR/RSET-SIZE-sorted-${stm}"
     SORTED_FILE_TOP="$RESULTS_DIR/RSET-SIZE-sorted-top-${stm}"
@@ -323,13 +334,14 @@ echo  "unset multiplot" >> $FILE_sorted
 
 
 ######################################################## 3D RSET SIZES  ########################################################
-
+######################################################## 3D RSET SIZES  ########################################################
+######################################################## 3D RSET SIZES  ########################################################
 FILE_3D="gnuplot/3D-RSET-SIZES-ABORTS.gnuplot"
 echo -n > $FILE_3D
 echo "set terminal wxt size 2440,1200" > $FILE_3D
 #echo "set terminal postscript eps enhanced color font 'Times-Bold' 25" >> $FILE_3D
 ##echo "set term pdfcairo color dashed font 'FreeSans,9'" >> $FILE_3D
-echo "set multiplot layout 2,2 title \"Avg reads validated, aborts (programs with reads validated > avg)\" font \",16\"" >> $FILE_3D
+echo "set multiplot layout 2,2 title \"Avg reads validated, aborts (programs with reads validated > avg)\" font \"Computer Modern,16\"" >> $FILE_3D
 #echo "set output \"3D-RSET-SIZE-ALL-STMS.pdf\" " >> $FILE_3D
 
 #echo "set logscale x;" >> $FILE_3D
@@ -385,7 +397,7 @@ do
     NCOLS=$(awk 'NR==1{print NF}' $F_3D_RSET_SIZES_TOP_TRANSPOSED)
     NCOLS=$(($NCOLS-1)) #remove thread count xtic col
 
-    echo "set title \"${stm}\" font \",16\" tc rgb \"#8f8800\"" >> $FILE_3D
+    echo "set title \"${stm}\" font \"Computer Modern,16\" tc rgb \"#8f8800\"" >> $FILE_3D
     echo "splot \\" >> $FILE_3D
 
     #COLOR_IDX=0
@@ -410,8 +422,8 @@ done
 echo "unset multiplot" >> $FILE_3D
 
 gnuplot -p $FILE
-gnuplot -p $FILE_3D
-gnuplot -p $FILE_sorted
+#gnuplot -p $FILE_3D
+#gnuplot -p $FILE_sorted
 
 
 
