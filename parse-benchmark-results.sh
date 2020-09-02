@@ -23,6 +23,8 @@ RESULTS_DIR="results-$DIR"
 benchmarks=("tpcc" "sb7" "synth" "redblacktree" "linkedlist" "hashmap" "skiplist"  "genome" "intruder" "kmeans" "labyrinth" "ssca2" "vacation" "yada")
 full_benchmark_names=(\
                     "tpcc-s96-d1-o1-p1-r1" "tpcc-s1-d96-o1-p1-r1" "tpcc-s1-d1-o96-p1-r1" "tpcc-s1-d1-o1-p96-r1" "tpcc-s1-d1-o1-p1-r96" "tpcc-s20-d20-o20-p20-r20" "tpcc-s4-d4-o4-p43-r45"\
+                    #TODO run these later on CPU Intel at least
+                    #"sb7_20-r-f-f" "sb7_20-rw-f-f" "sb7_20-w-f-f" "sb7_20-r-t-f" "sb7_20-rw-t-f" "sb7_20-w-t-f" "sb7_20-r-f-t" "sb7_20-rw-f-t" "sb7_20-w-f-t" "sb7_20-r-t-t" "sb7_20-rw-t-t" "sb7_20-w-t-t"\
                     "sb7-r-f-f" "sb7-rw-f-f" "sb7-w-f-f" "sb7-r-t-f" "sb7-rw-t-f" "sb7-w-t-f" "sb7-r-f-t" "sb7-rw-f-t" "sb7-w-f-t" "sb7-r-t-t" "sb7-rw-t-t" "sb7-w-t-t"\
                     "synth-s-r" "synth-s-w" "synth-l-r" "synth-l-w"\
                     "redblacktree-l-w" "redblacktree-l-r" "redblacktree-s-w" "redblacktree-s-r"\

@@ -41,7 +41,7 @@ plot newhistogram, \
       '' u ($6) t col lc rgbcolor "#C0C0C0" lt 1 fs pattern 3, \
       '' u ($7) t col lc rgbcolor "#D3D3D3" lt 1 fs pattern 3, \
       '' u ($0-1):($8):(sprintf("%'d", $10)) notitle w labels rotate by 90 left font "Computer Modern,12.5",\
-      278633.567164 t sprintf('%d', 23157.070175) lc rgb "#c9413e" 
+      277301.626866 t sprintf('%d', 23000.543860) lc rgb "#c9413e" 
 
 set title "norec" font "Computer Modern,12" tc rgb "#8f8800"
 plot newhistogram, \

@@ -395,7 +395,7 @@ declare -a array=( "./array/array -r$5 -n"$threads )
         #"./tpcc/tpcc -t 60 -s 20 -d 20 -o 20 -p 20 -r 20 -n $threads"\
         # payment and new order ops
         #"./tpcc/tpcc -t 60 -s 4 -d 4 -o 4 -p 43 -r 45 -n $threads")
-
+    # WRITE_ROOT_KEY << " (-r) true|false "
     # -p set percent of read-only operations
 		# WORKLOAD_TYPE_KEY << " (-w) r|rw|w; set workload type
 		# TRAVERSALS_KEY << " (-t) true|false; enable/disable long traversals

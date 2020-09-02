@@ -48,6 +48,7 @@ full_benchmark_names=(\
                     "yada" "yada+" "yada++")
 
 declare -a thread_count=(1 2 4 8 16 32)
+declare -a thread_count=(1 2 4 8 16 32)
 #declare -a thread_count=(1a)
 
 declare -a blue_pallet=("69a2ff" "7dafff" "94bdff" "9cc2ff" "adcdff" "b5d2ff" "bdd7ff")
@@ -103,6 +104,7 @@ then
 
                     #3d plot has only aborts,readsvalidated,threads
                     C_A=$(awk '{ A=($6) } END { printf "%d", A }' <<< "$my_line")
+                    #tranform into per thread data
 
                     if [[ ! $readsvalidated == 0 ]];then
                         #eliminate zeroes when doing average
@@ -338,7 +340,7 @@ echo  "unset multiplot" >> $FILE_sorted
 ######################################################## 3D RSET SIZES  ########################################################
 FILE_3D="gnuplot/3D-RSET-SIZES-ABORTS.gnuplot"
 echo -n > $FILE_3D
-echo "set terminal wxt size 2440,1200" > $FILE_3D
+echo "set terminal wxt size 1840,1200" > $FILE_3D
 #echo "set terminal postscript eps enhanced color font 'Times-Bold' 25" >> $FILE_3D
 ##echo "set term pdfcairo color dashed font 'FreeSans,9'" >> $FILE_3D
 echo "set multiplot layout 2,2 title \"Avg reads validated, aborts (programs with reads validated > avg)\" font \"Computer Modern,16\"" >> $FILE_3D
@@ -348,21 +350,21 @@ echo "set multiplot layout 2,2 title \"Avg reads validated, aborts (programs wit
 #echo "set logscale y;" >> $FILE_3D
 #echo "set logscale z;" >> $FILE_3D
 
-echo "set xtics center offset -2,-0.6,-14" >> $FILE_3D
-echo "set ytics center offset -3,-0.65,0" >> $FILE_3D
-echo "set ztics center offset 1,1,0" >> $FILE_3D
+echo "set xtics center offset -2,-0.6,-14 font \"Computer Modern, 15\"" >> $FILE_3D
+echo "set ytics center offset -3,-1.45,0 font \"Computer Modern, 12\"" >> $FILE_3D
+echo "set ztics center offset 1,0,0 font \"Computer Modern, 12\"" >> $FILE_3D
 
 echo "set datafile missing '0'" >> $FILE_3D
-echo "set xlabel \"threads\" offset 6, -2,3" >> $FILE_3D
-echo "set ylabel \"Aborts\" offset -9,-2,-6" >> $FILE_3D
-echo "set zlabel \"Rset size\" offset 5,50,0" >> $FILE_3D
+echo "set xlabel \"Threads\" offset 6, -2,3 font \"Computer Modern, 18\"" >> $FILE_3D
+echo "set ylabel \"Aborts\" offset -9,-2,-6 font \"Computer Modern, 18\"" >> $FILE_3D
+echo "set zlabel \"Reads validated\" offset 5,47,0 font \"Computer Modern, 18\"" >> $FILE_3D
 echo "set grid back" >> $FILE_3D
 echo "set border ls 2 lc rgb \"black\"" >> $FILE_3D
 
 #perfect angle do not touch
 #echo "set view 69, 119, 1.2, 1.1" >> $FILE_3D
-echo "set view 45, 45, 1, 1.1" >> $FILE_3D
-echo "set key outside top right" >> $FILE_3D
+echo "set view 42, 45, 1, 1.1" >> $FILE_3D
+echo "set key inside top right font \"Computer Modern, 12\"" >> $FILE_3D
 
 COUNT=0
 for stm in ${STMS[@]};
@@ -397,7 +399,7 @@ do
     NCOLS=$(awk 'NR==1{print NF}' $F_3D_RSET_SIZES_TOP_TRANSPOSED)
     NCOLS=$(($NCOLS-1)) #remove thread count xtic col
 
-    echo "set title \"${stm}\" font \"Computer Modern,16\" tc rgb \"#8f8800\"" >> $FILE_3D
+    echo "set title \"${stm} (aggregate counters)\" font \"Computer Modern,16\" tc rgb \"#8f8800\"" >> $FILE_3D
     echo "splot \\" >> $FILE_3D
 
     #COLOR_IDX=0
@@ -421,9 +423,10 @@ done
 #echo "unset output" >> $FILE_3D
 echo "unset multiplot" >> $FILE_3D
 
-gnuplot -p $FILE
-#gnuplot -p $FILE_3D
-#gnuplot -p $FILE_sorted
+
+gnuplot -p $FILE #PLOTTEN|DONE|IN_THESIS
+gnuplot -p $FILE_3D #PLOTTEN|DONE|IN_THESIS
+gnuplot -p $FILE_sorted
 
 
 
