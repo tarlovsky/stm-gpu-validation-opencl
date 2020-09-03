@@ -1,15 +1,15 @@
 #!/bin/bash
 
-RESULTS_DIR="results-validation-array"
+RESULTS_DIR="../results-validation-array"
 
-mkdir -p "gnuplot"
+mkdir -p "../gnuplot"
 ####################################################################################################################################################
 
 declare -a blue_pallet=("69a2ff" "7dafff" "94bdff" "9cc2ff" "adcdff" "b5d2ff" "bdd7ff")
 declare -a gray_pallet=("696969" "808080" "A9A9A9" "C0C0C0" "D3D3D3" "DCDCDC" "696969")
 declare -a all_pallet=("33ccff" "ccccff" "009933" "ff9900" "ff6666" "0033cc" "cc0000" "999966")
 
-FILE="gnuplot/simple-array-validation-all.gnuplot"
+FILE="../gnuplot/simple-array-validation-all.gnuplot"
 
 echo "set terminal wxt size 1550,600" > $FILE
 
@@ -27,7 +27,7 @@ echo "set datafile missing '0'" >> $FILE
 echo "set tics scale 0"  >> $FILE
 #echo "set xtics nomirror rotate by 45 right scale 0 font \",8\"" >> $FILE
 #echo "unset ytics" >> $FILE
-echo "set ytics font \"Computer Modern, 11\"" >> $FILE
+echo "set ytics font \"Computer Modern, 13\"" >> $FILE
 echo "set grid ytics lc rgb \"#606060\"" >> $FILE
 echo "set grid xtics lc rgb \"#bbbbbb\"" >> $FILE
 
@@ -53,12 +53,12 @@ echo "col_24=\"#c724d6\"" >> $FILE
 echo "col_48=\"#44cd1\"" >> $FILE
 echo "col_gold=\"#8f8800\"" >> $FILE
 
-echo "set key top left font \"Computer Modern ,12\"" >> $FILE
+echo "set key top left font \"Computer Modern ,12.4\"" >> $FILE
 #echo "set key left Left left Left inside top" >> $FILE
 
 
 # LABELS
-echo "set ylabel \"Reads validated / s\" font \"Computer Modern, 11\""  >> $FILE
+echo "set ylabel offset -2,0 \"Reads validated / s\" font \"Computer Modern, 14\""  >> $FILE
 echo "set xlabel \"RSET SIZE\" font \"Computer Modern, 11\""  >> $FILE
 
 #l1
@@ -84,12 +84,12 @@ echo "set style data linespoints" >> $FILE
 
 
 ##################################################################################################################################
-echo "set key top right font \"Computer Modern, 10\"" >> $FILE
+
 echo "unset logscale y" >> $FILE
 echo "set yrange [0:1000000000]" >> $FILE
 echo "set ytics 100000000" >> $FILE
 #BEST INTEL PERSISTENT KERNEL COALESCED
-echo "set title \"VARYING #WORKGROUPS, (WORKITEMS/WKGP) - MAINTAINING FULL OCCUPANCY - FULL GPU VALIDATION\" font \",10\"" >> $FILE
+echo "set title \"Varying Instant Kernel config - Coalesced\" font \"Computer Modern,17\"" >> $FILE
 echo  "plot \\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-amd-g2816-l16-w176-wbetl/1/array-r99-w1-random-walk/1-coalesced-mem'    u (\$0):(\$8/\$2):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Vega 11 coalesced   2816GWS-176WKGPS-16WKGPSIZE-ACQ-REL\" lw 1 dt new lc rgb \"#b01313\",\\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-amd-g11264-l64-w176-wbetl/1/array-r99-w1-random-walk/1-coalesced-mem'    u (\$0):(\$8/\$2):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Vega 11 coalesced 11264GWS-176WKGPS-64WKGPSIZE-ACQ-REL\" lw 1 pt 5 lc rgb \"#b01313\",\\"  >> $FILE
@@ -98,13 +98,13 @@ echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-amd-g11264-l256-w44-wbet
 echo >> $FILE
 ##################################################################################################################################
 
-
+echo "set key top right font \"Computer Modern, 10.5\"" >> $FILE
 declare -a KARRAY_AMD=(1 2 3 4 5 6 7 8 9 10 20 40 50 100 1000 10000 11915)
 echo "unset logscale y" >> $FILE
 echo "set yrange [0:1000000000]" >> $FILE
 echo "set ytics 100000000" >> $FILE
 #BEST INTEL PERSISTENT KERNEL COALESCED
-echo "set title \"VARYING READS VALIDATED PER WORK-ITEM - COALESCED - FULL GPU VALIDATION\" font \",10\"" >> $FILE
+echo "set title \"Varying validations/Work-item - Coalesced - Blocks\" font \"Computer Modern,17\"" >> $FILE
 echo  "plot \\"  >> $FILE
 
 #blocks

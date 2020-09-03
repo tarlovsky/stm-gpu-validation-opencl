@@ -20,7 +20,7 @@ echo "unset tmargin" >> $FILE
 echo "unset rmargin" >> $FILE
 echo "unset lmargin" >> $FILE
 
-echo "set multiplot layout 1,4 title \"Validating random/sequential array traversal single-threaded, Intel 6700k CPU, Intel HD530 iGPU, (TinySTM-WBETL)\" font \",16\"" >> $FILE
+echo "set multiplot layout 1,4 title \"Validating random/sequential array traversal single-threaded, Intel 6700k CPU, Intel HD530 iGPU, (TinySTM-WBETL)\" font \"Computer Modern,16\"" >> $FILE
 echo "set decimal locale \"en_US.UTF-8\"; show locale" >> $FILE
 echo "set datafile missing '0'" >> $FILE
 #echo "unset ytics" >> $FILE
@@ -33,7 +33,7 @@ echo "set grid ytics lc rgb \"#606060\"" >> $FILE
 echo "set logscale y" >> $FILE
 
 echo "set format x \"%d\"" >> $FILE
-echo "set xtics nomirror rotate by 45 right font \"Verdana,10\" " >> $FILE
+echo "set xtics nomirror rotate by 45 right font \"Computer Modern,10\" " >> $FILE
 echo "set datafile separator whitespace" >> $FILE
 
 echo "set border lc rgb \"black\"" >> $FILE
@@ -51,7 +51,7 @@ echo "col_24=\"#c724d6\"" >> $FILE
 echo "col_48=\"#44cd1\"" >> $FILE
 echo "col_gold=\"#8f8800\"" >> $FILE
 
-echo "set key font \",8\"" >> $FILE
+echo "set key font \"Computer Modern,12\"" >> $FILE
 #echo "set key left Left left Left inside top" >> $FILE
 echo "set key top left" >> $FILE
 echo "set yrange [0.0000001:10]" >> $FILE
@@ -74,7 +74,7 @@ echo  "set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb \"#afafaf\"" 
 echo  "set label \"\$L3: 8MB\" at 11.9,0.00000014*2.5 " >> $FILE
 
 
-echo  "set title \"Only CPU, threaded validation, sequential walk\" font \",12\"" >> $FILE
+echo  "set title \"Only CPU, threaded validation, sequential walk\" font \"Computer Modern ,12\"" >> $FILE
 #######################################################################################
 # out of all the data inside TinySTM-igpu-cpu-persistend (CO-OP) validation
 # find the fastest percentage. it is somewhere between 55-85% CPU validation assignment
@@ -138,7 +138,7 @@ echo
 #we know that there is no place better for sequential so no point in doing it.
 #######################################################################################
 
-echo "set title \"CPU worker threads; GPU Persistent Kernel threads;CPU+GPU co-operation\" font \",12\"" >> $FILE
+echo "set title \"CPU worker threads; GPU Persistent Kernel threads;CPU+GPU co-operation\" font \"Computer Modern ,12\"" >> $FILE
 echo  "plot \\"  >> $FILE
 #tinystm-gpu-persistent threads validation
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-random-GPU-NAIVE-CALL-KERNEL-EVERYTIME'    u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal\" lw 2 lc rgb \"#3cde33\" pt 16,\\"  >> $FILE
@@ -172,7 +172,7 @@ echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-AT
 echo >> $FILE
 #CPU l2 1.02400 megabytes
 #CPU l1 128 KB
-echo "set title \"CPU with threaded validation \" font \",12\"" >> $FILE
+echo "set title \"CPU with threaded validation \" font \"Computer Modern,12\"" >> $FILE
 echo  "plot \\"  >> $FILE
 #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-16-workers' u (\$0):2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02 16 THREADS VALIDATING\"  lc rgb \"black\" pt 1,\\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"random walk CPU 02   1 THREADS VALIDATING\" lw 2 lc rgb \"black\" pt 1,\\"  >> $FILE
@@ -190,7 +190,7 @@ echo >> $FILE
 echo "set style data linespoints" >> $FILE
 #memory_order_xxx_yyy
 echo "set yrange [0.0000001:0.0001]" >> $FILE
-echo "set title \"GPU C11 ATOMICS MEMORY ORDER COMPARISON + DIFFERENT GPU OCCUPANCY \" font \",12\"" >> $FILE
+echo "set title \"GPU C11 ATOMICS MEMORY ORDER COMPARISON + DIFFERENT GPU OCCUPANCY \" font \"Computer Modern,12\"" >> $FILE
 echo  "plot \\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP SEQ-CST Persistent Kernel polling\" lw 2 lc rgb col_48 pt 1,\\"  >> $FILE
 echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000))) t \"48WKGPS-128WI/WKGP REL-ACQ Persistent Kernel polling\" dt new lc rgb col_48 pt 1,\\"  >> $FILE
@@ -202,7 +202,7 @@ echo  " '$RESULTS_DIR/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-AT
 #best_co-op
 echo "set style data lines" >> $FILE
 echo "set yrange [0.0000001:10]" >> $FILE
-echo "set title \"CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance\" font \",12\"" >> $FILE
+echo "set title \"CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance\" font \"Computer Modern,12\"" >> $FILE
 echo  "plot \\"  >> $FILE
 for i in ${BEST_CO_OP_somewhere[@]}; do
   t_col=$(echo $i | sed 's/.*\///')
@@ -215,7 +215,7 @@ echo  " '$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-vali
 echo >> $FILE
 echo  "unset multiplot" >> $FILE
 
-gnuplot -p $FILE
+#gnuplot -p $FILE
 
 
 #HEATMAP############################################################
@@ -227,69 +227,81 @@ FILE1="gnuplot/simple-array-validation-co-op.gnuplot"
 #echo "set term postscript eps color solid" >> $FILE1
 #echo "set output '1.eps'" >> $FILE1
 
-echo "set terminal wxt size 3300,1080" > $FILE1
+echo "set terminal wxt size 1350,1080" > $FILE1
 
-echo "set multiplot layout 1,2 title \"Transactional random array traversal application; single-threaded; Intel 6700k CPU + Intel HD530 iGPU co-operative validation vs TinySTM-WBETL untouched\" font \",16\"" >> $FILE1
+echo "set multiplot layout 1,2 title \"Transactional random array traversal application; single-threaded; Intel 6700k CPU + Intel HD530 iGPU co-operative validation vs TinySTM-WBETL untouched\" font \"Computer Modern,16\"" >> $FILE1
 
 echo "set datafile missing \" \"" >> $FILE1
 echo "unset border" >> $FILE1
 echo "set view map" >> $FILE1
 echo "set grid front lc rgb \"#1c1c1c\"" >> $FILE1
 echo "set datafile separator \" \"" >> $FILE1
-echo "set cbrange [0:5]" >> $FILE1
+#echo "set cbrange [0:5]" >> $FILE1
 echo "set palette rgb -21,-22,-23" >> $FILE1
-echo "set key autotitle columnhead" >> $FILE1
-echo "set ytics nomirror" >> $FILE
-echo "set y2tics" >> $FILE
-echo "set grid" >> $FILE
-#echo "unset key" >> $FILE1
-#echo "unset xtics" >> $FILE1
-#echo "set style line 102 lc rgb'#101010' lt 0 lw 4" >> $FILE1
-#echo "set grid front ls 102" >> $FILE1
+#echo "set key autotitle columnhead" >> $FILE1
+echo "set ytics nomirror" >> $FILE1
+
+echo "set xlabel \"read-set size\" font \"Computer Modern, 13\"" >> $FILE1
+echo "set xtics rotate by 45 right scale 0 font \"Computer Moder, 12\" offset 0,0,-0.04" >> $FILE1
+echo "set colorbox size 2,5" >> $FILE1
+
+
+echo "unset key" >> $FILE1
+
+#echo "set style line 102 lc rgb'#101010' lt 0 lw 1" >> $FILE1
 ###############################################################
 #        CREATE THE HEATMAPS FOR VAL_TIME AND SPEEDUP         #
 HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file"
 HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file-speedup"
-header=$(awk 'NR>1{print $1}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
+header=$(awk 'NR>8{print $1}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
 header1=
 for word in ${header[@]}; do
   header1+="\"${word}\" "
 done
 echo \"Name\" $header1 > $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
 echo \"Name\" $header1 > $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP
-cpu=$(awk 'NR>1{print $2}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
+#TINY UNTOUCHED
+cpu=$(awk 'NR>8{print $8/$2}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
+echo $cpu
 for i in ${BEST_CO_OP_somewhere[@]};do
   #from each file extract column 1 and 2
-  #draw TINYSTM UNTOUCHED plane accross
-  row_name=$(echo $i | sed 's/.*\///') #strip all filepath, get only name of file
-  row=$(awk 'NR>1{print $2}' $i)       # get only val_time from cpu column 2
 
-  # join cpu val_time and BEST_SOMEWHERE valtime into one variable, look for smaller valtime in BEST_SOMEWHERE. if larger then print "-"
-  JOINED=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1<$2){print $1;}else{print "-"}}')
-  # join cpu val_time and BEST_SOMEWHERE valtime into one variable, if no speedup then print "-"
+  row_name=$(echo $i | sed 's/.*\///') #strip all filepath, get only filename
+  row=$(awk 'NR>8{print $12/$2}' $i)   # get readsvalidated/s
+
+  # join readsvalidated/s and BEST_SOMEWHERE valtime into one variable, look for smaller valtime in BEST_SOMEWHERE. if larger then print "-"
+  JOINED=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1>$2){print $1;}else{print "-"}}')
+
+  # join readsvalidated/s and BEST_SOMEWHERE valtime into one variable, if no speedup then print "-"
   # speedup is larger number over the other. how much faster is BEST_SOMEWHERE than our BASELINE cpu
-  JOINED_SPEEDUP=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1<$2){printf "%.2f ", $2/$1;}else{print "-"}}')
+  JOINED_SPEEDUP=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1>$2){printf "%.2f ", $1/$2;} else{print "-"}}')
+
+  #echo $JOINED_SPEEDUP #debug
+
   #echo entire line into heat file with BEST_SOMEWHERE file name as column $1
   echo \"${row_name//1-random-/}\" $JOINED >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
   #echo entire speedup line into heat file with BEST_SOMEWHERE file name as column $1
   echo \"${row_name//1-random-/}\" $JOINED_SPEEDUP >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP
 done
-
 echo \"TinySTM-wbetl\" $cpu >> $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
+
 ###############################################################
-
-echo "set xtics rotate by 45 right scale 0 font \",8\" offset 0,0,-0.04" >> $FILE1
-
+echo "set cbrange [10000000:1000000000]" >> $FILE1
+echo "set palette rgb -21,-22,-23" >> $FILE1
+###############################################################
+echo  "set title \"Reads validated/s\" font \"Computer Modern ,14\"" >> $FILE1
 echo "plot '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders w image,\\" >> $FILE1
 #echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(sprintf(\"%f\",\$3)) with labels" >> $FILE1
-echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%f\",\$3)) : (sprintf(\" \")))) with labels" >> $FILE1
+echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%.2f\",\$3/100000000)) : (sprintf(\" \")))) with labels font \"Computer Modern, 9.5\"" >> $FILE1
 echo >> $FILE1
+
+###############################################################
 echo "set cbrange [1:2.2]" >> $FILE1
 echo "set palette rgb -21,-22,-23" >> $FILE1
-
+echo  "set title \"Reads validated/s normalized to TinySTM-untouched\" font \"Computer Modern ,14\"" >> $FILE1
 echo "plot '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP' matrix rowheaders columnheaders w image,\\" >> $FILE1
 #echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH' matrix rowheaders columnheaders using 1:2:(sprintf(\"%f\",\$3)) with labels" >> $FILE1
-echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"x%.2f\",\$3)) : (sprintf(\" \")))) with labels" >> $FILE1
+echo "     '$HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%.2f\",\$3)) : (sprintf(\" \")))) with labels font \"Computer Modern, 9.5\"" >> $FILE1
 echo >> $FILE1
 
 echo "unset multiplot" >> $FILE1

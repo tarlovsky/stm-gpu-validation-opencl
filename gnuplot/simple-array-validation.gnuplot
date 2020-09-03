@@ -3,7 +3,7 @@ unset bmargin
 unset tmargin
 unset rmargin
 unset lmargin
-set multiplot layout 1,4 title "Validating random/sequential array traversal single-threaded, Intel 6700k CPU, Intel HD530 iGPU, (TinySTM-WBETL)" font ",16"
+set multiplot layout 1,4 title "Validating random/sequential array traversal single-threaded, Intel 6700k CPU, Intel HD530 iGPU, (TinySTM-WBETL)" font "Computer Modern,16"
 set decimal locale "en_US.UTF-8"; show locale
 set datafile missing '0'
 set tics scale 0
@@ -11,7 +11,7 @@ set ytics
 set grid ytics lc rgb "#606060"
 set logscale y
 set format x "%d"
-set xtics nomirror rotate by 45 right font "Verdana,10" 
+set xtics nomirror rotate by 45 right font "Computer Modern,10" 
 set datafile separator whitespace
 set border lc rgb "black"
 set style data lines
@@ -22,7 +22,7 @@ new2 = "_-_"
 col_24="#c724d6"
 col_48="#44cd1"
 col_gold="#8f8800"
-set key font ",8"
+set key font "Computer Modern,12"
 set key top left
 set yrange [0.0000001:10]
 set ylabel "Time (s)"
@@ -35,8 +35,8 @@ set arrow from 9.8, graph 0 to 9.8, graph 1 nohead lc rgb "#bebebe"
 set label "$L2: 1.024MB" at 9.9,0.00000014*1.5 
 set arrow from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb "#afafaf"
 set label "$L3: 8MB" at 11.9,0.00000014*2.5 
-set title "Only CPU, threaded validation, sequential walk" font ",12"
-set title "CPU worker threads; GPU Persistent Kernel threads;CPU+GPU co-operation" font ",12"
+set title "Only CPU, threaded validation, sequential walk" font "Computer Modern ,12"
+set title "CPU worker threads; GPU Persistent Kernel threads;CPU+GPU co-operation" font "Computer Modern ,12"
 plot \
  'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-random-GPU-NAIVE-CALL-KERNEL-EVERYTIME'    u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "Persistent Kernel 24WKGPS-224WKGPSIZE-SEQ-CST , random array traversal" lw 2 lc rgb "#3cde33" pt 16,\
  'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-48wkgps-128wi-each-acq-rel'    u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "Persistent Kernel 48WKGPS-128WKGPSIZE-ACQ-REL , random array traversal" lw 2 lc rgb col_48,\
@@ -48,7 +48,7 @@ plot \
  'results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/1-sequential-cpu-validation' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 1 THREADS VALIDATING sequential array traversal" dt new lc rgb col_gold pt 17,\
  'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS 224WI/WKGP NO VALIDATION LOGIC, PERSISTENT KERNEL POLLING OVERHEAD" dt new lc rgb col_24 pt 8,\
 
-set title "CPU with threaded validation " font ",12"
+set title "CPU with threaded validation " font "Computer Modern,12"
 plot \
  'results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "random walk CPU 02   1 THREADS VALIDATING" lw 2 lc rgb "black" pt 1,\
  'results-validation-array/TinySTM-threads-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation-2-workers' u ($0):2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "random walk CPU 02   2 THREADS VALIDATING" dt new lc rgb "black" pt 1,\
@@ -61,7 +61,7 @@ plot \
 
 set style data linespoints
 set yrange [0.0000001:0.0001]
-set title "GPU C11 ATOMICS MEMORY ORDER COMPARISON + DIFFERENT GPU OCCUPANCY " font ",12"
+set title "GPU C11 ATOMICS MEMORY ORDER COMPARISON + DIFFERENT GPU OCCUPANCY " font "Computer Modern,12"
 plot \
  'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP SEQ-CST Persistent Kernel polling" lw 2 lc rgb col_48 pt 1,\
  'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-48WKGP-128WKGPSIZE' u 3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "48WKGPS-128WI/WKGP REL-ACQ Persistent Kernel polling" dt new lc rgb col_48 pt 1,\
@@ -71,7 +71,7 @@ plot \
  'results-validation-array/TinySTM-igpu-persistent-coalesced-wbetl/1a-array-r99-w1-ATOMICS-POLLING-OVERHEAD-PT-24WKGP-224WKGPSIZE' u 4:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) t "24WKGPS-224WI/WKGP RELAXED Persistent Kernel polling" dt new1 lc rgb col_24 pt 1
 set style data lines
 set yrange [0.0000001:10]
-set title "CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance" font ",12"
+set title "CPU GPU co-op validation VS. TinySTM-wbetl, multiple balance" font "Computer Modern,12"
 plot \
  'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-17-gpu-83' u ($0):2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) notitle lc rgb "#11cacaca",\
  'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/1-random-cpu-18-gpu-82' u ($0):2:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) notitle lc rgb "#11cacaca",\
@@ -156,6 +156,3 @@ plot \
  'results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation' u 0:2:3:xtic(sprintf("%'d (%.2fMB)",$1, ((($1*8))/1000000))) w yerrorlines t "CPU 02 1 THREADS VALIDATING random array traversal" lc rgb col_gold pt 17
 
 unset multiplot
-set ytics nomirror
-set y2tics
-set grid
