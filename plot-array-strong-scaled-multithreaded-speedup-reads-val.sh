@@ -24,44 +24,47 @@ echo "set terminal wxt size 1400,1100" > $FILE2
 echo "set terminal wxt size 1400,1100" > $FILE3
 #echo "set size 1,1" >> $FILE
 #echo "set origin 0,0" >> $FILE
-echo "unset bmargin" | tee -a $FILES
-echo "unset tmargin" | tee -a $FILES
-echo "unset rmargin" | tee -a $FILES
-echo "unset lmargin" | tee -a $FILES
+#echo "unset bmargin" | tee -a $FILES
+echo "set tmargin -3" | tee -a $FILES
+echo "set bmargin 12" | tee -a $FILES
+echo "set lmargin 7" | tee -a $FILES
 
 #no sequential executions
-echo "set multiplot layout 2,2 title \"CONJOINT array walk STRONGLY scaled: ABORTS / THREAD / SECOND\" font \",14\"" >> $FILE #d=0
-echo "set multiplot layout 2,2 title \"DISJOINT array walk STRONGLY scaled: ABORTS / THREAD / SECOND\" font \",14\"" >> $FILE1 #d=1
-echo "set multiplot layout 2,2 title \"CONJOINT array walk STRONGLY scaled: TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS COMPETE FOR IGPU\" font \",13\"" >> $FILE2
-echo "set multiplot layout 2,2 title \"DISJOINT array walk STRONGLY scaled: TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS COMPETE FOR IGPU\" font \",13\"" >> $FILE3
+echo "set multiplot layout 2,2 title \"CONJOINT set READS VALIDATED/S normalized to TinySTM-untouched-Intel\" font \",18\"" >> $FILE #d=0
+echo "set multiplot layout 2,2 title \"DISJOINT set READS VALIDATED/S normalized to TinySTM-untouched-Intel\" font \",18\"" >> $FILE1 #d=1
+echo "set multiplot layout 2,2 title \"CONJOINT set TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS COMPETE FOR IGPU\" font \",18\"" >> $FILE2
+echo "set multiplot layout 2,2 title \"DISJOINT set TRANSACTIONAL THROUGHPUT NORMALIZED TO TINYSTM-UNTOUCHED; MULTITHREADED STM - CAS COMPETE FOR IGPU\" font \",18\"" >> $FILE3
 
 #vars
 echo "col_24=\"#c724d6\"" | tee -a $FILES
 echo "col_48=\"#44cd1\"" | tee -a $FILES
 echo "col_gold=\"#8f8800\"" | tee -a $FILES
 echo "col_red=\"#b01313\"" | tee -a $FILES
-echo "xlabeloffsety=-0.75" | tee -a $FILES
+echo "xlabeloffsety=0.15" | tee -a $FILES
 
 echo "set decimal locale \"en_US.UTF-8\"; show locale" | tee -a $FILES
 #echo "set datafile missing \"x\"" >> $FILE
 #echo "unset ytics" >> $FILE
 echo "set tics scale 0"  | tee -a $FILES
-#echo "set xtics nomirror rotate by 45 right scale 0 font \",8\"" >> $FILE
+
 #echo "unset ytics" >> $FILE
-echo "set ytics" | tee -a $FILES
+echo "set ytics nomirror font \"Computer Modern, 18\" " | tee -a $FILES
+echo "set ytics (0,1.0,1.5,2.0,2.5) " | tee -a $FILES
+echo  "set arrow 1 from 0, 1 to 12, 1 front nohead lc rgb \"#000000\" lw 1" | tee -a $FILES
 echo "set grid ytics lc rgb \"#606060\"" | tee -a $FILES
+echo "set grid xtics lc rgb \"#bbbbbb\"" | tee -a $FILES
 #echo "set format y2 \"%0.4f\"" >> $FILE
 #echo "set logscale y" | tee -a $FILES
 
 #THESE FILES CONTAIN ABORTS/SECOND
-echo "set yrange [0:4000000]" | tee -a $FILE $FILE1
+echo "set yrange [0:2.5]" | tee -a $FILE $FILE1
 
 #THESE FILES CONTAIN ONLY MULTIPLIERS NORMALIZED TO TINY-UNTOUCHED
 echo "set yrange [0:1.5]" | tee -a $FILE2 $FILE3
 
 
 echo "set format x \"%d\"" | tee -a $FILES
-echo "set xtics nomirror rotate by 45 right font \"Verdana,10\" " | tee -a $FILES
+echo "set xtics nomirror rotate by 45 right font \"Computer Modern, 14\" " | tee -a $FILES
 echo "set xtics offset 0, xlabeloffsety" | tee -a $FILES
 echo "set datafile separator whitespace" | tee -a $FILES
 
@@ -70,7 +73,7 @@ echo "set border lc rgb \"black\"" | tee -a $FILES
 
 echo "set style data lines" | tee -a $FILES
 
-#echo "set xlabel \"Read-set size\""  >> $FILE
+echo "set xlabel offset 0,-1.6 \"Read-set size\" font \"Computer Modern, 15\""  | tee -a $FILES
 
 echo | tee -a $FILES
 echo "new = \"-\"" | tee -a $FILES
@@ -78,32 +81,33 @@ echo "new1 = \"..\"" | tee -a $FILES
 echo "new2 = \"_-_\"" | tee -a $FILES
 
 
-echo "set key font \",9\"" | tee -a $FILES
-#echo "set key left Left left Left inside top" | tee -a $FILES
-echo "set key inside top right" | tee -a $FILES
 
-echo "set ylabel \"ABORTS / SECOND / THREAD\"" | tee -a $FILE $FILE1
+echo "unset key" | tee -a $FILES
+
+#echo "set ylabel \"READ VALIDATED / SECOND / THREAD\"" | tee -a $FILE $FILE1
 echo "set ylabel \"TRANSACTIONS / SECOND / THREAD\"" | tee -a $FILE2 $FILE3
 
 
-#echo "unset key" >> $FILE
 #l1
 echo  "set arrow from 1.8, graph 0 to 1.8, graph 1 nohead lc rgb \"#efefef\"" | tee -a $FILES
-echo  "set label \"\$L1: 128KB\" at 1.9, 0.05 " | tee -a $FILES
+echo  "set label \"\$L1: 128KB\" at 1.9, 0.08 font \"Computer Modern, 14\"" | tee -a $FILES
 #intelhd l3
 echo  "set arrow 2 from 3.8, graph 0 to 3.8, graph 1 nohead lc rgb \"#dadada\"" | tee -a $FILES
-echo  "set label 2 \"\$L3 GPU: 512KB\" at 3.9, 0.19 " | tee -a $FILES
+echo  "set label 2 \"\$L3 GPU: 512KB\" at 3.9, 0.27 font \"Computer Modern, 14\"" | tee -a $FILES
 #l2
 echo  "set arrow from 4.8, graph 0 to 4.8, graph 1 nohead lc rgb \"#bebebe\"" | tee -a $FILES
-echo  "set label \"\$L2: 1.024MB\" at 4.9, 0.10 " | tee -a $FILES
+echo  "set label \"\$L2: 1.024MB\" at 4.9, 0.12 font \"Computer Modern, 14\"" | tee -a $FILES
 #l3
 echo  "set arrow from 7.8, graph 0 to 7.8, graph 1 nohead lc rgb \"#afafaf\"" | tee -a $FILES
-echo  "set label \"\$L3: 8MB\" at 7.9, 0.19 " | tee -a $FILES
-echo  "set title \"Only CPU, threaded validation, sequential walk\" font \",12\"" | tee -a $FILES
+echo  "set label \"\$L3: 8MB\" at 7.9, 0.19 font \"Computer Modern, 14\"" | tee -a $FILES
+echo  "set title \"Only CPU, threaded validation, sequential walk\" font \"Computer Modern, 25\"" | tee -a $FILES
 
 #  $i STM-threads
 for i in 1 2 4 8; do
-  echo "set title \"$i STM threads\" font \",12\"" | tee -a $FILES
+  if [[ $i -eq 8 ]]; then
+    echo "set key left Left left Left reverse inside top font\"Computer modern, 11\"" | tee -a $FILES
+  fi
+  echo "set title \"$i STM threads\" offset 0, -1.15 font \"Computer modern,16\"" | tee -a $FILES
   echo  "plot \\"  | tee -a $FILES
   ################################################################# FILE 0 #################################################################
   #  READS VALIDATED
@@ -132,9 +136,12 @@ for i in 1 2 4 8; do
     #f sticky gpu thread to stm thread 0
     #f="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-sticky-thread-r99-w1-d$D-random-walk/$i-random"
 
-    #f1 shared gpu
+    #intel shared gpu
     coop="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-shared-gpu-r99-w1-d$D-random-walk/$i-random"
     coop_lsa="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl-lsa/$i/array-strongly-scaled-shared-gpu-r99-w1-d$D-random-walk/$i-random"
+
+    #amd shared gpu
+    coop_amd="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd-wbetl/$i/array-strongly-scaled-shared-gpu-r99-w1-d$D-random-walk/$i-random"
 
     #untouched tiny
     tiny="$RESULTS_DIR/TinySTM-wbetl/$i/array-strongly-scaled-r99-w1-d$D-random-walk/$i-random"
@@ -147,26 +154,29 @@ for i in 1 2 4 8; do
 
     if [[ $D -eq 0 ]]; then
       #conjoint array walk
-      CHOICE_ABORTS=$FILE
+      CHOICE_VALREADS=$FILE
       CHOICE_TXPS=$FILE2
     else
-      CHOICE_ABORTS=$FILE1
+      CHOICE_VALREADS=$FILE1
       CHOICE_TXPS=$FILE3
     fi
 
 
-    # aborts/s
-    echo  " '$tiny' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx', (\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\", \$1, (\$1*8)/1000000)) t \"TinySTM-wbetl\" with linespoints lc rgb col_gold,\\"  >> $CHOICE_ABORTS
-    echo  " '$tiny_lsa' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx', (\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\", \$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints lc rgb col_gold dt new,\\"  >> $CHOICE_ABORTS
 
-    # "RSET" "Validation time (s)" "stddev" "Validation time (s) CPU" "stddev" "Validation time (s) GPU" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "CPU Val Reads" "stddev" "GPU Val Reads" "stddev" "Wasted Val Reads" "stddev" "GPU employment times" "stddev" "Val success" "stddev" "Val fail" "stddev" 26"Snapshot ext. calls" "stddev" "Energy (J)" "stddev" #30:"Total time (s)" "stddev"
-    echo  " '$coop' u (\$0):(\$10/(\$30*$i)):( sprintf( '%.2fx',(\$10/(\$30*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t     \"CPU-GPU co-op; iGPU shared (CAS compete); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red        with linespoints,\\"  >> $CHOICE_ABORTS
-    echo  " '$coop_lsa' u (\$0):(\$10/(\$30*$i)):( sprintf( '%.2fx',(\$10/(\$30*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"LSA CPU-GPU co-op; iGPU shared (CAS compete); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red dt new with linespoints,\\"  >> $CHOICE_ABORTS
+    # tx/s: commits/totaltime relative to tinystm-untouched
+    # divide what you want over TINYSTM fields
+    # tiny comes to the left; what you want to the right
+    # Because this is normalized, the per thread (*$i) is redundant. keep it for future formulas.
+    echo  " '< join $tiny $tiny_lsa' u (\$0):((\$24/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$24/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints pt 1 lw 2 lc rgb col_gold dt new,\\"  >> $CHOICE_VALREADS
 
-    # "RSET" "Validation time (s)" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "Val success" "stddev" "Val fail" "stddev" "Energy (J)" "stddev" "Total time (s)" "stddev"
-    echo  " '$tiny_threads' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx',(\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" with linespoints,\\"  >> $CHOICE_ABORTS
-    echo  " '$tiny_threads_lsa' u (\$0):(\$6/(\$16*$i)):( sprintf( '%.2fx',(\$6/(\$16*$i)) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"LSA; TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_ABORTS
-    ##########################
+    echo  " '< join $tiny $coop' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"Intel CPU-GPU co-op; GPU CAS; Blocks of 5736; sync on block\" pt 2 lw 2 lc rgb \"#b5d2ff\" with linespoints,\\"  >> $CHOICE_VALREADS
+    echo  " '< join $tiny $coop_lsa' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"Intel CPU-GPU co-op; GPU CAS; Blocks of 5736; sync on block; LSA\" pt 2 lw 2 lc rgb \"#b5d2ff\" dt new with linespoints,\\"  >> $CHOICE_VALREADS
+    echo  " '< join $tiny $coop_amd' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"AMD CPU-GPU co-op; GPU CAS; Blocks of 11264; sync on block\" pt 2 lw 2 lc rgb col_red with linespoints,\\"  >> $CHOICE_VALREADS
+
+    echo  " '< join $tiny $tiny_threads' u (\$0):((\$24/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$24/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads\" pt 1 lw 2 lc rgb \"#${gray_palette[2]}\" with linespoints,\\"  >> $CHOICE_VALREADS
+    echo  " '< join $tiny $tiny_threads_lsa' u (\$0):((\$24/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$24/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads LSA\" pt 1 lw 2 lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_VALREADS
+
+    ###################################################################################################################################################################################################################################################################################
 
     #tx/s: commits/totaltime relative to tinystm-untouched
     echo  " '< join $tiny $tiny_lsa' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints lc rgb col_gold dt new,\\"  >> $CHOICE_TXPS
@@ -174,7 +184,7 @@ for i in 1 2 4 8; do
     #echo  " '< join $tiny $f' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU sticky thread (thread 0); Blocks of 5736 on iGPU; sync on block\" with linespoints,\\"  >> $CHOICE_TXPS
 
     echo  " '< join $tiny $coop' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block\" lc rgb col_red with linespoints,\\"  >> $CHOICE_TXPS
-    echo  " '< join $tiny $tiny_lsa' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block; LSA\" lc rgb col_red dt new with linespoints,\\"  >> $CHOICE_TXPS
+    echo  " '< join $tiny $coop_lsa' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU-GPU co-op; iGPU shared GPU (iGPU CAS); Blocks of 5736 on iGPU; sync on block; LSA\" lc rgb col_red dt new with linespoints,\\"  >> $CHOICE_TXPS
 
     echo  " '< join $tiny $tiny_threads' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads\" lc rgb \"#${gray_palette[2]}\" with linespoints,\\"  >> $CHOICE_TXPS
     echo  " '< join $tiny $tiny_threads_lsa' u (\$0):((\$20/(\$32*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$20/(\$32*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4 validation worker threads LSA\" lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_TXPS
@@ -223,10 +233,10 @@ echo | tee -a $FILES
 echo  "unset multiplot" | tee -a $FILES
 
 # valreads/s
-#gnuplot -p $FILE
-#gnuplot -p $FILE1
+gnuplot -p $FILE
+gnuplot -p $FILE1
 # tx/s
-gnuplot -p $FILE2
-gnuplot -p $FILE3
+#gnuplot -p $FILE2
+#gnuplot -p $FILE3
 
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-RESULTS_DIR="results-validation-array"
+RESULTS_DIR="../results-validation-array"
 
-mkdir -p "gnuplot"
+mkdir -p "../gnuplot"
 
 declare -a blue_pallet=("69a2ff" "7dafff" "94bdff" "9cc2ff" "adcdff" "b5d2ff" "bdd7ff")
 declare -a gray_pallet=("696969" "808080" "A9A9A9" "C0C0C0" "D3D3D3" "DCDCDC" "696969")
@@ -13,8 +13,8 @@ declare -a all_pallet=("33ccff" "ccccff" "009933" "ff9900" "ff6666" "0033cc" "cc
 ####################################################################
 # Table the times where gpu-cpu co-op is best and show speedup     #
 ####################################################################
-FILE1="gnuplot/simple-array-validation-K-choice-1.gnuplot"
-FILE2="gnuplot/simple-array-validation-K-choice-2.gnuplot"
+FILE1="../gnuplot/simple-array-validation-K-choice-1.gnuplot"
+FILE2="../gnuplot/simple-array-validation-K-choice-2.gnuplot"
 
 echo > $FILE1
 echo > $FILE2
@@ -41,8 +41,7 @@ echo "set key autotitle columnhead" | tee -a $FILE1 $FILE2
 echo "set ytics nomirror font \"Computer Modern, 11\" " | tee -a $FILE1 $FILE2
 
 echo "set xlabel \"READ-SET SIZE\" font \"Computer Modern, 11\" " | tee -a $FILE1 $FILE2
-echo "set ylabel \"K = N PER WORK-ITEM\" font \"Computer Modern, 11\" " | tee -a $FILE1 $FILE2
-
+echo "set ylabel offset 2.5,0 \"K = N PER WORK-ITEM\" font \"Computer Modern, 11\" " | tee -a $FILE1 $FILE2
 #echo "unset colorbox" | tee -a $FILE1 $FILE2
 #echo "unset xtics" | tee -a $FILE1 $FILE2
 #echo "set style line 102 lc rgb'#101010' lt 0 lw 4" | tee -a $FILE1 $FILE2
@@ -131,8 +130,8 @@ for mode in "random" "sequential";
   echo  "set arrow 2 from -0.5, 0.5 to 18.5, 0.5 front nohead lc rgb \"#000000\" lw 2" | tee -a $FILE1 $FILE2
   echo  "set arrow 3 from -0.5, 1.5 to 18.5, 1.5 front nohead lc rgb \"#000000\" lw 2" | tee -a $FILE1 $FILE2
 
-  echo "\"CPUGPU-coop\"" $co_op_val_time | tee -a $RESULS_FILE_COALESCED $RESULS_FILE_STRIDED
-  echo "\"TinySTM-base\"" $cpu_val_time | tee -a $RESULS_FILE_COALESCED $RESULS_FILE_STRIDED
+  echo "\"INTEL-COOP\"" $co_op_val_time | tee -a $RESULS_FILE_COALESCED $RESULS_FILE_STRIDED
+  echo "\"TinySTM-INTEL\"" $cpu_val_time | tee -a $RESULS_FILE_COALESCED $RESULS_FILE_STRIDED
 
 
   if [[ $mode == "random" ]];then
@@ -142,7 +141,7 @@ for mode in "random" "sequential";
   fi
 
   #COALESCED
-  echo "set title \"COALESCED kernel memory access\" font \"Computer Modern,14\"" >> $FILE
+  echo "set title \"COALESCED kernel memory access\" font \"Computer Modern,18\"" >> $FILE
   echo "plot '$RESULS_FILE_COALESCED' matrix rowheaders columnheaders w image,\\" >> $FILE
   # "     '' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"x%.2f\",\$3)) : (sprintf(\"-\")))) with labels font \",11.5\",\\" >> $FILE
   echo "     '' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%.3f\",\$3)) : (sprintf(\" \")))):xtic((sprintf(\"%'d (%.2fMB)\",\$1, (((\$1*8))/1000000)))):3 with labels font \"Computer Modern,10.7\" palette,\\" >> $FILE
@@ -157,7 +156,7 @@ for mode in "random" "sequential";
   echo  "set arrow 3 from -0.5, 2.5 to 18.5, 2.5 front nohead lc rgb \"#000000\" lw 2" >> $FILE
 
   #STRIDED
-  echo "set title \"STRIDED kernel memory access\" font \"Computer Modern,14\"" >> $FILE
+  echo "set title \"STRIDED kernel memory access\" font \"Computer Modern,18\"" >> $FILE
   echo "plot '$RESULS_FILE_STRIDED' matrix rowheaders columnheaders w image,\\" >> $FILE
   # "     '' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"x%.2f\",\$3)) : (sprintf(\"-\")))) with labels font \",11.5\",\\" >> $FILE
   echo "     '' matrix rowheaders columnheaders using 1:2:(((\$3 > 0) ? (sprintf(\"%.3f\",\$3)) : (sprintf(\" \")))):xtic(1) with labels font \"Computer Modern ,10.7\" palette,\\" >> $FILE

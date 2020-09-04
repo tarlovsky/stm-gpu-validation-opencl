@@ -113,7 +113,7 @@ for i in 1; do #2 4 8; do
     #echo  "set arrow 2 from -0.5, 0.5 to 18.5, 0.5 front nohead lc rgb \"#000000\" lw 2" >> $FILE1
     #echo  "set arrow 3 from -0.5, 1.5 to 18.5, 1.5 front nohead lc rgb \"#000000\" lw 2" >> $FILE1
 
-    echo "\"CPUGPU-coop\"" $co_op_val_time | tee -a $RESULS_FILE_COALESCED
+    echo "\"AMD-COOP\"" $co_op_val_time | tee -a $RESULS_FILE_COALESCED
     echo "\"TinySTM-INTL\"" $cpu_val_time | tee -a $RESULS_FILE_COALESCED
 
     echo "set title \"$mode array walk\" font \"Computer Modern,18\"" >> $FILE1
