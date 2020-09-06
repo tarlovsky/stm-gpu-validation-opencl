@@ -1,16 +1,16 @@
 #!/bin/bash
 
-RESULTS_DIR="results-validation-array"
+RESULTS_DIR="../results-validation-array"
 
-mkdir -p "gnuplot"
+mkdir -p "../gnuplot"
 ####################################################################################################################################################
 
 declare -a blue_pallet=("69a2ff" "7dafff" "94bdff" "9cc2ff" "adcdff" "b5d2ff" "bdd7ff")
 declare -a gray_pallet=("696969" "808080" "A9A9A9" "C0C0C0" "D3D3D3" "DCDCDC" "696969")
 declare -a all_pallet=("33ccff" "ccccff" "009933" "ff9900" "ff6666" "0033cc" "cc0000" "999966")
 
-FILE1="gnuplot/simple-array-validation-co-op-heatmap-random-walk.gnuplot"
-FILE2="gnuplot/simple-array-validation-co-op-heatmap-sequential-walk.gnuplot"
+FILE1="../gnuplot/simple-array-validation-co-op-heatmap-random-walk.gnuplot"
+FILE2="../gnuplot/simple-array-validation-co-op-heatmap-sequential-walk.gnuplot"
 
 echo > $FILE1
 echo > $FILE2
@@ -43,12 +43,12 @@ echo "set border lc rgb \"black\"" | tee -a $FILE1 $FILE2
 #echo "unset border" >> $FILE
 
 CO_OP_RAND_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk"
-HEAT_FILE_RAND="results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/heat-file"
-HEAT_FILE_CPU_RAND="results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/heat-file"
+HEAT_FILE_RAND="../results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/heat-file"
+HEAT_FILE_CPU_RAND="../results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/heat-file"
 
 CO_OP_SEQ_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk"
-HEAT_FILE_SEQ="results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/heat-file"
-HEAT_FILE_CPU_SEQ="results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/heat-file"
+HEAT_FILE_SEQ="../results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/heat-file"
+HEAT_FILE_CPU_SEQ="../results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/heat-file"
 
 echo "set xtics nomirror rotate by 35 right font \"Computer Modern,14\" offset 1,-1,0" | tee -a $FILE1 $FILE2
 echo "set ytics nomirror rotate by 35 right font \"Computer Modern,16\" " | tee -a $FILE1 $FILE2

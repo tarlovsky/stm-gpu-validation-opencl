@@ -1,15 +1,15 @@
 #!/bin/bash
 
-RESULTS_DIR="results-validation-array"
+RESULTS_DIR="../results-validation-array"
 
-mkdir -p "gnuplot"
+mkdir -p "../gnuplot"
 ####################################################################################################################################################
 
 declare -a blue_pallet=("69a2ff" "7dafff" "94bdff" "9cc2ff" "adcdff" "b5d2ff" "bdd7ff")
 declare -a gray_pallet=("696969" "808080" "A9A9A9" "C0C0C0" "D3D3D3" "DCDCDC" "696969")
 declare -a all_pallet=("33ccff" "ccccff" "009933" "ff9900" "ff6666" "0033cc" "cc0000" "999966")
 
-FILE="gnuplot/simple-array-validation.gnuplot"
+FILE="../gnuplot/simple-array-validation.gnuplot"
 
 echo "set terminal wxt size 3350,800" > $FILE
 
@@ -227,7 +227,7 @@ FILE1="gnuplot/simple-array-validation-co-op.gnuplot"
 #echo "set term postscript eps color solid" >> $FILE1
 #echo "set output '1.eps'" >> $FILE1
 
-echo "set terminal wxt size 1350,1080" > $FILE1
+echo "set terminal wxt size 1150,1080" > $FILE1
 
 echo "set multiplot layout 1,2 title \"Transactional random array traversal application; single-threaded; Intel 6700k CPU + Intel HD530 iGPU co-operative validation vs TinySTM-WBETL untouched\" font \"Computer Modern,16\"" >> $FILE1
 
@@ -241,8 +241,8 @@ echo "set palette rgb -21,-22,-23" >> $FILE1
 #echo "set key autotitle columnhead" >> $FILE1
 echo "set ytics nomirror" >> $FILE1
 
-echo "set xlabel \"read-set size\" font \"Computer Modern, 13\"" >> $FILE1
-echo "set xtics rotate by 45 right scale 0 font \"Computer Moder, 12\" offset 0,0,-0.04" >> $FILE1
+echo "set xlabel \"read-set size\" offset 0, -0.76 font \"Computer Modern, 13\"" >> $FILE1
+echo "set xtics rotate by 40 right scale 0 font \"Computer Moder, 13\" offset 0.5, 0.14" >> $FILE1
 echo "set colorbox size 2,5" >> $FILE1
 
 
@@ -253,7 +253,7 @@ echo "unset key" >> $FILE1
 #        CREATE THE HEATMAPS FOR VAL_TIME AND SPEEDUP         #
 HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file"
 HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/table-heat-file-speedup"
-header=$(awk 'NR>8{print $1}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
+header=$(awk 'NR>11{print $1}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
 header1=
 for word in ${header[@]}; do
   header1+="\"${word}\" "
@@ -261,13 +261,13 @@ done
 echo \"Name\" $header1 > $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH
 echo \"Name\" $header1 > $HEAT_CO_OP_BEST_SOMEWHERE_RAND_PATH_SPEEDUP
 #TINY UNTOUCHED
-cpu=$(awk 'NR>8{print $8/$2}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
+cpu=$(awk 'NR>11{print $8/$2}' "$RESULTS_DIR/TinySTM-wbetl/1/array-r99-w1-random-walk/1-random-cpu-validation")
 echo $cpu
 for i in ${BEST_CO_OP_somewhere[@]};do
   #from each file extract column 1 and 2
 
   row_name=$(echo $i | sed 's/.*\///') #strip all filepath, get only filename
-  row=$(awk 'NR>8{print $12/$2}' $i)   # get readsvalidated/s
+  row=$(awk 'NR>11{print $12/$2}' $i)   # get readsvalidated/s
 
   # join readsvalidated/s and BEST_SOMEWHERE valtime into one variable, look for smaller valtime in BEST_SOMEWHERE. if larger then print "-"
   JOINED=$(paste <(echo "$row") <(echo "$cpu") | awk '{if($1>$2){print $1;}else{print "-"}}')

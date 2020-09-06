@@ -20,6 +20,6 @@ set title "Array walk - RANDOM elements - CPUGPU cooperative validation - STATIC
 set style fill transparent solid 1 
 unset colorbox
 set pm3d depthorder
-splot 'results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/heat-file' u 2:1:3:xtic(1) t "TinySTM-wbetl CPUGPU cooperative validation" with pm3d, \
-      'results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/heat-file' u 2:1:3:xtic(2) t "TinySTM-wbetl untouched" w surface lt 13 lc "#000000"  
+splot '../results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-random-walk/heat-file' u 2:1:3:xtic(1) t "TinySTM-wbetl CPUGPU cooperative validation" with pm3d, \
+      '../results-validation-array/TinySTM-wbetl/1/array-r99-w1-random-walk/heat-file' u 2:1:3:xtic(2) t "TinySTM-wbetl untouched" w surface lt 13 lc "#000000"  
 
