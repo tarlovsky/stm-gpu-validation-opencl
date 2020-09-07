@@ -24,27 +24,34 @@ FILES="$FILE $FILE1 $FILE2 $FILE3 $FILE4 $FILE5 $FILE6 $FILE7"
 
 echo "set terminal wxt size 1400,1100" > $FILE
 echo "set terminal wxt size 1400,1100" > $FILE1
-echo "set terminal wxt size 1200,1250" > $FILE2
-echo "set terminal wxt size 1200,1250" > $FILE3
+
+echo "set terminal wxt size 880,2600;" > $FILE2
+echo "set terminal wxt size 880,2600; " > $FILE3
+
 echo "set terminal wxt size 1400,1100" > $FILE4
-echo "set terminal wxt size 1400,1100" > $FILE5
+echo "set terminal wxt size 880,2600" > $FILE5 #val time proportion
 echo "set terminal wxt size 1200,1250" > $FILE6
 echo "set terminal wxt size 1200,1250" > $FILE7
 #echo "set size 1,1" >> $FILE
 #echo "set origin 0,0" >> $FILE
 #echo "unset bmargin" | tee -a $FILES
 #echo "set tmargin -3" | tee -a $FILES
-echo "set bmargin 9" | tee -a $FILES
-echo "set lmargin 7" | tee -a $FILES
+echo "set bmargin 11" | tee -a $FILES
+echo "set lmargin 8" | tee -a $FILES
 #echo "set lmargin 10" >> $FILE5
 
 #no sequential executions
 echo "set multiplot layout 2,2 title \"CONJOINT set READS VALIDATED/S normalized to TinySTM-untouched-Intel\" font \"Computer Modern,20\"" >> $FILE #d=0
 echo "set multiplot layout 2,2 title \"DISJOINT set READS VALIDATED/S normalized to TinySTM-untouched-Intel\" font \"Computer Modern,20\"" >> $FILE1 #d=1
-echo "set multiplot layout 2,2 title \"CONJOINT set TX/S THROUGHPUT normalized to TinySTM-untouched-Intel\" font \"Computer Modern,23\"" >> $FILE2
-echo "set multiplot layout 2,2 title \"DISJOINT sets TX/S THROUGHPUT normalized to TinySTM-untouched-Intel\" font \"Computer Modern,23\"" >> $FILE3
-echo "set multiplot layout 2,2 title \"Contention on READS VALIDATED/S, normalized to TinySTM-untouched-Intel; INTEL-COOP - CAS COMPETE FOR IGPU\" font \",20\"" >> $FILE4
-echo "set multiplot layout 2,2 title \"TIME spent in validation / Total program execution time (CONJOINT array sets)\" font \"Computer Modern,26\"" >> $FILE5
+echo "set multiplot layout 4,1 title \"CONJOINT set TX/S normalized to TinySTM-untouched\" font \"Computer Modern,23\"" >> $FILE2 #CONJOINT
+echo "set multiplot layout 4,1 title \"DISJOINT sets TX/S normalized to TinySTM-untouched\" font \"Computer Modern,23\"" >> $FILE3 #DISJOINT
+#echo "set multiplot layout 4,1 title \"\" font \"Computer Modern,23\"" >> $FILE2
+#echo "set multiplot layout 4,1 title \"\" font \"Computer Modern,23\"" >> $FILE3
+echo "set multiplot layout 2,2 title \"Contention on READS VALIDATED/S, normalized to TinySTM-untouched-Intel; INTEL-COOP - CAS COMPETE FOR IGPU\" font \",12\"" >> $FILE4
+
+#echo "set multiplot layout 4,1 title \"TIME spent in validation / Total program execution time (CONJOINT array sets)\" font \"Computer Modern,23\"" >> $FILE5
+echo "set multiplot layout 4,1" >> $FILE5
+
 echo "set multiplot layout 2,2 title \"CONJOINT set TOTAL ABORTS normalized to TinySTM-untouched-Intel\" font \"Computer Modern,23\"" >> $FILE6 #d=0
 echo "set multiplot layout 2,2 title \"DISJOINT set TOTAL ABORTS normalized to TinySTM-untouched-Intel\" font \"Computer Modern,23\"" >> $FILE7 #d=1
 
@@ -61,13 +68,14 @@ echo "set decimal locale \"en_US.UTF-8\"; show locale" | tee -a $FILES
 echo "set tics scale 0"  | tee -a $FILES
 
 #echo "unset ytics" >> $FILE
-echo "set ytics nomirror font \"Computer Modern, 22\" " | tee -a $FILES
+echo "set ytics nomirror font \"Computer Modern, 21\" " | tee -a $FILES
 echo "set ytics (0,0.5,1.0,1.5,2.0,2.5) " | tee -a $FILES
 
+echo "set ytics 0.2 " | tee -a $FILE4
 echo "set ytics 0.1" | tee -a $FILE2 $FILE3 $FILE5
 echo "set ytics 0.2" | tee -a $FILE6 $FILE7
 
-echo  "set arrow 1 from 0, 1 to 12, 1 front nohead lc rgb \"#000000\" lw 1" | tee -a $FILES
+echo  "set arrow 1 from 0, 1 to 12, 1 front nohead lc rgb \"#000000\" lw 2" | tee -a $FILES
 echo  "unset arrow 1" >> $FILE5
 
 echo "set grid ytics lc rgb \"#606060\"" | tee -a $FILES
@@ -84,7 +92,7 @@ echo "set yrange [0.2:1.4]" | tee -a $FILE2 $FILE3
 echo "set yrange [0:1]" >> $FILE5
 
 echo "set format x \"%d\"" | tee -a $FILES
-echo "set xtics nomirror rotate by 45 right font \"Computer Modern, 18\" " | tee -a $FILES
+echo "set xtics nomirror rotate by 45 right font \"Computer Modern, 17\" " | tee -a $FILES
 echo "set xtics offset 0, xlabeloffsety" | tee -a $FILES
 echo "set datafile separator whitespace" | tee -a $FILES
 
@@ -93,7 +101,7 @@ echo "set border lc rgb \"black\"" | tee -a $FILES
 
 echo "set style data lines" | tee -a $FILES
 
-echo "set xlabel offset 0,-2 \"Read-set size\" font \"Computer Modern, 17\""  | tee -a $FILES
+echo "set xlabel offset 0,-2.1 \"Read-set size\" font \"Computer Modern, 20\""  | tee -a $FILES
 
 echo | tee -a $FILES
 echo "new = \"-\"" | tee -a $FILES
@@ -108,16 +116,16 @@ echo "unset key" | tee -a $FILES
 
 #l1
 echo  "set arrow 2 from 1.8, graph 0 to 1.8, graph 1 nohead lc rgb \"#efefef\"" | tee -a $FILES
-echo  "set label 2\"\$L1: 128KB\" at 1.9, 0.24 font \"Computer Modern, 12\"" | tee -a $FILES
+echo  "set label 2\"\$L1: 128KB\" at 1.9, 0.24 font \"Computer Modern, 14\"" | tee -a $FILES
 #intelhd l3
 echo  "set arrow 3 from 3.8, graph 0 to 3.8, graph 1 nohead lc rgb \"#dadada\"" | tee -a $FILES
-echo  "set label 3 \"\$L3 GPU: 512KB\" at 3.9, 0.34 font \"Computer Modern, 12\"" | tee -a $FILES
+echo  "set label 3 \"\$L3 GPU: 512KB\" at 3.9, 0.44 font \"Computer Modern, 14\"" | tee -a $FILES
 #l2
 echo  "set arrow 4 from 4.8, graph 0 to 4.8, graph 1 nohead lc rgb \"#bebebe\"" | tee -a $FILES
-echo  "set label 4\"\$L2: 1.024MB\" at 4.9, 0.26 font \"Computer Modern, 12\"" | tee -a $FILES
+echo  "set label 4\"\$L2: 1.024MB\" at 4.9, 0.26 font \"Computer Modern, 14\"" | tee -a $FILES
 #l3
 echo  "set arrow 5 from 7.8, graph 0 to 7.8, graph 1 nohead lc rgb \"#afafaf\"" | tee -a $FILES
-echo  "set label 5\"\$L3: 8MB\" at 7.9, 0.34 font \"Computer Modern, 12\"" | tee -a $FILES
+echo  "set label 5\"\$L3: 8MB\" at 7.9, 0.34 font \"Computer Modern, 14\"" | tee -a $FILES
 
 
 
@@ -127,13 +135,13 @@ echo  "set title \"Only CPU, threaded validation, sequential walk\" font \"Compu
 for i in 1 2 4 8; do
 
   if [[ $i -eq 8 ]]; then
-    echo "set key left Left left Left reverse inside top font\"Computer modern, 14\"" | tee -a $FILE $FILE1 $FILE2 $FILE3
-    echo "set key left Left left Left reverse inside top font\"Computer modern, 16\"" | tee -a $FILE4
+    echo "set key left Left left Left reverse inside top font\"Computer modern, 16\"" | tee -a $FILE $FILE1 $FILE2 $FILE3
+    echo "set key left Left left Left reverse inside top font\"Computer modern, 18\"" | tee -a $FILE4
   fi
 
   ###### file 5 only ######
   if [[ $i -eq 2 ]]; then
-    echo "set key left Left left Left reverse inside top font\"Computer modern, 12\"" | tee -a $FILE5
+    echo "set key left Left left Left reverse inside top font\"Computer modern, 22\"" | tee -a $FILE5
     echo "unset label 2" >> $FILE5
     echo "unset label 3" >> $FILE5
     echo "unset label 4" >> $FILE5
@@ -143,16 +151,16 @@ for i in 1 2 4 8; do
     ####################################################################################################
     #FILE5
     echo  "set arrow 2 from 1.8, graph 0 to 1.8, graph 1 nohead lc rgb \"#efefef\"" >> $FILE5
-    echo  "set label 2\"\$L1: 128KB\" at 1.9, 0.88 font \"Computer Modern, 14\"" >> $FILE5
+    echo  "set label 2\"\$L1: 128KB\" at 1.9, 0.88 font \"Computer Modern, 18\"" >> $FILE5
     #intelhd l3
     echo  "set arrow 3 from 3.8, graph 0 to 3.8, graph 1 nohead lc rgb \"#dadada\"" >> $FILE5
-    echo  "set label 3 \"\$L3 GPU: 512KB\" at 3.9, 0.96 font \"Computer Modern, 14\"" >> $FILE5
+    echo  "set label 3 \"\$L3 GPU: 512KB\" at 3.9, 0.96 font \"Computer Modern, 18\"" >> $FILE5
     #l2
     echo  "set arrow 4 from 4.8, graph 0 to 4.8, graph 1 nohead lc rgb \"#bebebe\"" >> $FILE5
-    echo  "set label 4\"\$L2: 1.024MB\" at 4.9, 0.90 font \"Computer Modern, 14\"" >> $FILE5
+    echo  "set label 4\"\$L2: 1.024MB\" at 4.9, 0.90 font \"Computer Modern, 18\"" >> $FILE5
     #l3
     echo  "set arrow 5 from 7.8, graph 0 to 7.8, graph 1 nohead lc rgb \"#afafaf\"" >> $FILE5
-    echo  "set label 5\"\$L3: 8MB\" at 7.9, 0.96 font \"Computer Modern, 14\"" >> $FILE5
+    echo  "set label 5\"\$L3: 8MB\" at 7.9, 0.96 font \"Computer Modern, 18\"" >> $FILE5
     ####################################################################################################
   fi
 
@@ -215,12 +223,12 @@ for i in 1 2 4 8; do
     if [[ $D -eq 0 ]]; then
       #conjoint array walk
       CHOICE_VALREADS=$FILE
-      CHOICE_TXPS=$FILE2
+      CHOICE_TXPS=$FILE2 #FILE2 CONJOINT
       CHOICE_ABORTS=$FILE6
     else
       #disjoint array walk
       CHOICE_VALREADS=$FILE1
-      CHOICE_TXPS=$FILE3
+      CHOICE_TXPS=$FILE3 #FILE3 DISJOINT
       CHOICE_ABORTS=$FILE7
     fi
 
@@ -261,7 +269,7 @@ for i in 1 2 4 8; do
     echo  " '< join $tiny $tiny_threads_lsa' u (\$0):((\$20) / (\$4)):( sprintf( '%.2fx',((\$20) / (\$4)) ) ):xtic(sprintf(\"%'d \",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl 4  validators - LSA\" pt 1 lw 2 lc rgb \"#${gray_palette[2]}\" dt new1 with linespoints,\\"  >> $CHOICE_ABORTS
     ###################################################################################################################################################################################################################################################################################
 
-    if [[ $D -eq 1 ]];then #do this once
+    if [[ $D -eq 0 ]];then #do this once
       #validation time proportion
       echo  " '$tiny' u (\$0):(\$2/(\$16)):( sprintf( '%.2fx', (\$2/(\$16)) ) ):xtic(sprintf(\"%'d\",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl\" with linespoints pt 1 lw 3 lc rgb col_gold,\\"  >> $FILE5
       echo  " '$tiny_lsa' u (\$0):(\$2/(\$16)):( sprintf( '%.2fx',(\$2/(\$16)) ) ):xtic(sprintf(\"%'d \",\$1, (\$1*8)/1000000)) t \"TinySTM-wbetl-lsa\" with linespoints pt 1 lw 3 lc rgb col_gold dt new,\\"  >> $FILE5
@@ -274,10 +282,18 @@ for i in 1 2 4 8; do
       ######## FILE 4 - contention compare for d vs c ########
       # tx/s #
       ########
+      #no difference in $D==1 or 0. new files
+
+      tiny_d="$RESULTS_DIR/TinySTM-wbetl/$i/array-strongly-scaled-r99-w1-d1-random-walk/$i-random"
+      tiny_c="$RESULTS_DIR/TinySTM-wbetl/$i/array-strongly-scaled-r99-w1-d0-random-walk/$i-random"
       coop_d="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-shared-gpu-r99-w1-d1-random-walk/$i-random"
       coop_c="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl/$i/array-strongly-scaled-shared-gpu-r99-w1-d0-random-walk/$i-random"
-      echo  " '< join $tiny $coop_d' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"No contention (disjoint arrays)\" pt 2 lw 2 lc rgb \"#94bdff\" dt new with linespoints,\\"  >> $FILE4
-      echo  " '< join $tiny $coop_c' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"Medium contention (conjoint array)\" pt 2 lw 2 lc rgb \"#94bdff\" with linespoints,\\"  >> $FILE4
+
+      #echo  " '< join $tiny_c $coop_c' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d \",\$1, (\$1*8)/1000000)) t \"No contention (disjoint arrays)\" pt 2 lw 2 lc rgb \"#94bdff\" dt new with linespoints,\\"    >> $FILE4
+      #echo  " '< join $tiny_d $coop_d' u (\$0):((\$24/(\$46*$i)) / (\$4/(\$16*$i))):( sprintf( '%.2fx',((\$24/(\$46*$i)) / (\$4/(\$16*$i))) ) ):xtic(sprintf(\"%'d \",\$1, (\$1*8)/1000000)) t \"Medium contention (conjoint array)\" pt 2 lw 2 lc rgb \"#94bdff\" with linespoints,\\"    >> $FILE4
+
+      echo  " '< join $tiny_d $coop_d' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d\",\$1, (\$1*8)/1000000)) t \"No contention (disjoint arrays)\" pt 2 lw 2 lc rgb \"#94bdff\" dt new with linespoints,\\"  >> $FILE4
+      echo  " '< join $tiny_c $coop_c' u (\$0):((\$28/(\$18*$i)) / (\$8/(\$2*$i))):( sprintf( '%.2fx',((\$28/(\$18*$i)) / (\$8/(\$2*$i))) ) ):xtic(sprintf(\"%'d\",\$1, (\$1*8)/1000000)) t \"Medium contention (conjoint array)\" pt 2 lw 2 lc rgb \"#94bdff\" with linespoints,\\"  >> $FILE4
     fi
 
     #echo  " '$RESULTS_DIR/TinySTM-threads-wbetl/$i/array-r99-w1-random-walk/$i-random-cpu-validation-4-workers' u (\$0):(((\$10+\$12)>0)?( ((\$8/(ceil(\$10+\$12)))/$i) /  (\$2/$i) ):(NaN)):xtic(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t \"CPU -02 4 validation worker / STM thread\" dt new1 lc rgb \"#${gray_palette[$i]}\",\\"  >> $FILE
@@ -331,11 +347,11 @@ echo  "unset multiplot" | tee -a $FILES
 #gnuplot -p $FILE3
 
 # valreads/s intel coop disjoint vs conjoint. effects of contention on GPU help
-#gnuplot -p $FILE4
+gnuplot -p $FILE4
 
 #validation time proportion
 #gnuplot -p $FILE5
 
 # total aborts
-gnuplot -p $FILE6
-gnuplot -p $FILE7
+#gnuplot -p $FILE6
+#gnuplot -p $FILE7

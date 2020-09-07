@@ -17,13 +17,13 @@ FILE1="../gnuplot/simple-array-multithreaded-validation-reads-validated-sequenti
 
 FILES="$FILE $FILE1"
 
-echo "set terminal wxt size 1300,1200" > $FILE
-echo "set terminal wxt size 1300,1200" > $FILE1
+echo "set terminal wxt size 850,2800" > $FILE
+echo "set terminal wxt size 850,2800" > $FILE1
 
 echo "unset bmargin" | tee -a $FILES
 echo "unset tmargin" | tee -a $FILES
 echo "unset rmargin" | tee -a $FILES
-echo "unset lmargin" | tee -a $FILES
+echo "set bmargin 11" | tee -a $FILES
 
 echo >> $FILE
 echo >> $FILE1
@@ -40,8 +40,8 @@ echo "xlabeloffsety=0.15" | tee -a $FILES
 echo "set grid ytics lc rgb \"#606060\"" | tee -a $FILES
 echo "set grid xtics lc rgb \"#bbbbbb\"" | tee -a $FILES
 
-echo "set multiplot layout 2,2 " >> $FILE
-echo "set multiplot layout 2,2 " >> $FILE1
+echo "set multiplot layout 4,1 " >> $FILE
+echo "set multiplot layout 4,1 " >> $FILE1
 
 echo "set decimal locale \"en_US.UTF-8\"; show locale" | tee -a $FILES
 #echo "set datafile missing \"x\"" | tee -a $FILES
@@ -65,20 +65,20 @@ echo "set border lc rgb \"black\"" | tee -a $FILES
 
 echo "set style data lines" | tee -a $FILES
 
-echo "set xlabel offset 0,-2 \"Read-set size\" font \"Computer Modern, 17\""  | tee -a $FILES
+echo "set xlabel offset 0,-2 \"Read-set size\" font \"Computer Modern, 21\""  | tee -a $FILES
 
 echo  "set arrow 1 from 0, 1 to 19, 1 front nohead lc rgb \"#000000\" lw 1" | tee -a $FILES
 
 
 #l1
 echo  "set arrow 2 from 5.8, graph 0 to 5.8, graph 1 nohead lc rgb \"#efefef\"" | tee -a $FILES
-echo  "set label 2\"\$L1: 128KB\" at 5.9, 0.54 font \"Computer Modern, 14\"" | tee -a $FILES
+echo  "set label 2\"\$L1: 128KB\" at 5.9, 0.54 font \"Computer Modern, 18\"" | tee -a $FILES
 #l2
 echo  "set arrow 4 from 8.8, graph 0 to 8.8, graph 1 nohead lc rgb \"#bebebe\"" | tee -a $FILES
-echo  "set label 4\"\$L2: 1.024MB\" at 8.9, 0.62 font \"Computer Modern, 15\"" | tee -a $FILES
+echo  "set label 4\"\$L2: 1.024MB\" at 8.9, 0.62 font \"Computer Modern, 18\"" | tee -a $FILES
 #l3
 echo  "set arrow 5 from 11.8, graph 0 to 11.8, graph 1 nohead lc rgb \"#afafaf\"" | tee -a $FILES
-echo  "set label 5\"\$L3: 8MB\" at 11.9, 0.71 font \"Computer Modern, 15\"" | tee -a $FILES
+echo  "set label 5\"\$L3: 8MB\" at 11.9, 0.71 font \"Computer Modern, 18\"" | tee -a $FILES
 
 
 
@@ -86,7 +86,7 @@ echo  "set label 5\"\$L3: 8MB\" at 11.9, 0.71 font \"Computer Modern, 15\"" | te
 for i in 1 2 4 8;do
 
   if [[ $i -eq 1 ]];then
-    echo "set key left Left left Left reverse inside top font\"Computer modern, 18\"" | tee -a $FILES
+    echo "set key left Left left Left reverse inside top font\"Computer modern, 22\"" | tee -a $FILES
   else
     echo "unset key" | tee -a $FILES
   fi
@@ -137,7 +137,7 @@ echo  "unset multiplot" | tee -a $FILES
 
 
 
-gnuplot -p $FILE  #RAND
+#gnuplot -p $FILE  #RAND
 gnuplot -p $FILE1 #SEQ
 
 

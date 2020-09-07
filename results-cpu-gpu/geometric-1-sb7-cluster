@@ -1,0 +1,4 @@
+"RSET" "Validation time (s)" "stddev" "Validation time (s) CPU" "stddev" "Validation time (s) GPU" "stddev" "Commits" "stddev" "Aborts" "stddev" "Val Reads" "stddev" "CPU Val Reads" "stddev" "GPU Val Reads" "stddev" "Wasted Val Reads" "stddev" "GPU employment times" "stddev" "Val success" "stddev" "Val fail" "stddev" "Snapshot ext. calls" "stddev" "Energy (J)" "stddev" "Total time (s)" "stddev"
+TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-amd-wbetl 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl 0.003591 0.000093 0.003554 0.000093 0.120672 0.082057 7.942985 2.123634 3.163483 2.400616 841202.747121 168.313592 687771.742271 394.057904 78.707956 53.659502 8.707121 8.453248 0.826253 0.769924 6.042340 2.173870 0 0 0 0 741.036178 13.235939 20.992798 0.062278 
+TinySTM-igpu-cpu-persistent-dynamic-split-multithreaded-wbetl-lsa 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
