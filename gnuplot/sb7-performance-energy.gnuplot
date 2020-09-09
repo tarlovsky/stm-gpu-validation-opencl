@@ -1,4 +1,4 @@
-set terminal wxt size 1400,1100
+set terminal wxt noenhanced size 1400,1100
 set bmargin 8
 set lmargin -2
 set multiplot layout 2,2 title "Performance/J, normalized to TinySTM-untouched-Intel; INTEL-COOP - CAS COMPETE FOR IGPU" font ",12"
@@ -12,9 +12,9 @@ set tics scale 0
 set ytics nomirror font "Computer Modern, 21" 
 set grid ytics lc rgb "#606060"
 set grid xtics lc rgb "#bbbbbb"
-set logscale y
 set format x "%d"
 set xtics font "Computer Modern, 19" 
+set xtics offset 0, xlabeloffsety
 set xtics offset 0, xlabeloffsety
 set datafile separator whitespace
 set border lc rgb "black"

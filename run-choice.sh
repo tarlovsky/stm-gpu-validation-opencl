@@ -228,11 +228,25 @@ run_sub(){
     fi
 }
 
-declare -a benchmarks=("array" "tpcc" "sb7" "synth" "redblacktree" "linkedlist" "hashmap" "skiplist" "genome" "intruder" "kmeans" "labyrinth" "ssca2" "vacation" "yada")
+declare -a benchmarks=("array" "tpcc" "sb7" "sb7_20" "synth" "redblacktree" "linkedlist" "hashmap" "skiplist" "genome" "intruder" "kmeans" "labyrinth" "ssca2" "vacation" "yada")
 
 declare -a array_names=("array-r99-w1")
 declare -a tpcc_names=("tpcc-s96-d1-o1-p1-r1" "tpcc-s1-d96-o1-p1-r1" "tpcc-s1-d1-o96-p1-r1" "tpcc-s1-d1-o1-p96-r1" "tpcc-s1-d1-o1-p1-r96" "tpcc-s20-d20-o20-p20-r20" "tpcc-s4-d4-o4-p43-r45")
 declare -a sb7_names=("sb7-r-f-f" "sb7-rw-f-f" "sb7-w-f-f" "sb7-r-t-f" "sb7-rw-t-f" "sb7-w-t-f" "sb7-r-f-t" "sb7-rw-f-t" "sb7-w-f-t" "sb7-r-t-t" "sb7-rw-t-t" "sb7-w-t-t")
+declare -a sb7_20_names=(\
+  #"sb7_20-r-f-f"\
+  #"sb7_20-rw-f-f"\
+  #"sb7_20-w-f-f"\
+  "sb7_20-r-t-f"\
+  "sb7_20-rw-t-f"\
+  "sb7_20-w-t-f"\
+  #"sb7_20-r-f-t"\
+  #"sb7_20-rw-f-t"\
+  #"sb7_20-w-f-t"\
+  "sb7_20-r-t-t"\
+  "sb7_20-rw-t-t"\
+  "sb7_20-w-t-t"\
+)
 declare -a synth_names=("synth-s-r" "synth-s-w" "synth-l-r" "synth-l-w")
 declare -a redblacktree_names=("redblacktree-l-w" "redblacktree-l-r" "redblacktree-s-w" "redblacktree-s-r")
 declare -a hashmap_names=("hashmap-l-r" "hashmap-l-w" "hashmap-s-r" "hashmap-s-w")
@@ -358,7 +372,19 @@ declare -a sb7=(\
         "./sb7/sb7_tt -r false -s b -d 5000 -w r -t true -m true -n $threads"
         "./sb7/sb7_tt -r false -s b -d 5000 -w rw -t true -m true -n $threads"\
         "./sb7/sb7_tt -r false -s b -d 5000 -w w -t true -m true -n $threads")
-
+declare -a sb7_20=(\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t true -m false -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t true -m false -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w r -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w rw -t false -m true -n $threads"\
+        #"./sb7/sb7_tt -r false -s b -d 20000 -w w -t false -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w r -t true -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w rw -t true -m true -n $threads"\
+        "./sb7/sb7_tt -r false -s b -d 20000 -w w -t true -m true -n $threads")
 declare -a synth=(\
         "./synth/synth -s16384 -i 1000 -u10 -c10  -o10000   -t$threads"\
         "./synth/synth -s16384 -i 1000 -u90 -c90  -o10000   -t$threads"\
@@ -506,7 +532,7 @@ progout=0 #initialize to something
 #  cation. [nmdiegues]
 
 if containsElement $1 ${benchmarks[@]}; then
-    for i in {0..10}; do #TODO do 20 at least.
+    for i in {0..9}; do #TODO do 20 at least.
 
         echo "Running benchmark $bench_choice with $2 threads, stm: $global_stm $4:"
 

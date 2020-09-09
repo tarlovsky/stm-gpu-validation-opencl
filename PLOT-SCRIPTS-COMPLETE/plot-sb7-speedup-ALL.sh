@@ -5,27 +5,33 @@ RESULTS_DIR_CPUGPU="../results-cpu-gpu"
 TMP="../tmp"
 mkdir -p "../gnuplot"
 
+#BENCHMARK=sb7_20
 BENCHMARK=sb7
 
 
-
-
 ########################################################################################################################
+#benchmarks=("tpcc" "sb7_20" "synth" "redblacktree" "linkedlist" "hashmap" "skiplist" "genome" "intruder" "kmeans" "labyrinth" "ssca2" "vacation" "yada")
 benchmarks=("tpcc" "sb7" "synth" "redblacktree" "linkedlist" "hashmap" "skiplist" "genome" "intruder" "kmeans" "labyrinth" "ssca2" "vacation" "yada")
 full_benchmark_names=(\
                     "tpcc-s96-d1-o1-p1-r1" "tpcc-s1-d96-o1-p1-r1" "tpcc-s1-d1-o96-p1-r1" "tpcc-s1-d1-o1-p96-r1" "tpcc-s1-d1-o1-p1-r96" "tpcc-s20-d20-o20-p20-r20" "tpcc-s4-d4-o4-p43-r45"\
                     #"sb7-r-f-f"\
                     #"sb7-rw-f-f"\
                     #"sb7-w-f-f"\
-                    "sb7-r-t-f"\
-                    "sb7-rw-t-f"\
-                    "sb7-w-t-f"\
+                    "sb7-r-t-f"\ "sb7-rw-t-f"\ "sb7-w-t-f"\
                     #"sb7-r-f-t"\
                     #"sb7-rw-f-t"\
                     #"sb7-w-f-t"\
-                    "sb7-r-t-t"\
-                    "sb7-rw-t-t"\
-                    "sb7-w-t-t"\
+                    "sb7-r-t-t"\ "sb7-rw-t-t"\ "sb7-w-t-t"\
+
+                    #"sb7_20-r-f-f"\
+                    #"sb7_20-rw-f-f"\
+                    #"sb7_20-w-f-f"\
+                    #"sb7_20-r-t-f" "sb7_20-rw-t-f" "sb7_20-w-t-f"\
+                    #"sb7_20-r-f-t"\
+                    #"sb7_20-rw-f-t"\
+                    #"sb7_20-w-f-t"\
+                    #"sb7_20-r-t-t" "sb7_20-rw-t-t" "sb7_20-w-t-t"\
+
                     "synth-s-r" "synth-s-w" "synth-l-r" "synth-l-w"\
                     "redblacktree-l-w" "redblacktree-l-r" "redblacktree-s-w" "redblacktree-s-r"\
                     "hashmap-l-r" "hashmap-l-w" "hashmap-s-r" "hashmap-s-w"\
@@ -69,17 +75,17 @@ declare -a red_palette=( " " "b01313")
 
 FILE="../gnuplot/sb7-tx-throughput.gnuplot"              #d=0
 FILE1="../gnuplot/sb7-validation-reads-validated.gnuplot"  #d=0
-FILE1="../gnuplot/sb7-aborts.gnuplot"              #d=0
-FILE3="../gnuplot/sb7-val-proportion.gnuplot"
+FILE2="../gnuplot/sb7-val-proportion.gnuplot"
+FILE3="../gnuplot/sb7-aborts.gnuplot"              #d=0
 FILE4="../gnuplot/sb7-performance-energy.gnuplot"
 
 FILES="$FILE $FILE1 $FILE2 $FILE3 $FILE4"
 
-echo "set terminal wxt size 1200,1100" > $FILE
-echo "set terminal wxt size 1400,1100" > $FILE1
-echo "set terminal wxt size 880,2600;" > $FILE2
-echo "set terminal wxt size 880,2600; " > $FILE3
-echo "set terminal wxt size 1400,1100" > $FILE4
+echo "set terminal wxt noenhanced size 1200,1100" > $FILE
+echo "set terminal wxt noenhanced size 1400,1100" > $FILE1
+echo "set terminal wxt noenhanced size 1400,1100;" > $FILE2
+echo "set terminal wxt noenhanced size 880,2600; " > $FILE3
+echo "set terminal wxt noenhanced size 1400,1100" > $FILE4
 #echo "set size 1,1" >> $FILE
 #echo "set origin 0,0" >> $FILE
 #echo "unset bmargin" | tee -a $FILES
@@ -91,8 +97,8 @@ echo "set lmargin -2" | tee -a $FILES
 #no sequential executions
 echo "set multiplot layout 2,3 title \"TX/S\" font \"Computer Modern,20\"" >> $FILE #txps
 echo "set multiplot layout 2,3 title \"Reads validated/s normalized to TinySTM-untouched-Intel\" font \"Computer Modern,20\"" >> $FILE1 # readsval
-echo "set multiplot layout 4,1 title \"#Aborts normalized to TinySTM-untouched\" font \"Computer Modern,23\"" >> $FILE2 #aborts
-echo "set multiplot layout 4,1 title \"Validation time / Total time\" font \"Computer Modern,23\"" >> $FILE3 #valtime proportion
+echo "set multiplot layout 2,3 title \"Validation time / Total time\" font \"Computer Modern,23\"" >> $FILE2 #valtime proportion
+echo "set multiplot layout 4,1 title \"#Aborts normalized to TinySTM-untouched\" font \"Computer Modern,23\"" >> $FILE3 #aborts
 echo "set multiplot layout 2,2 title \"Performance/J, normalized to TinySTM-untouched-Intel; INTEL-COOP - CAS COMPETE FOR IGPU\" font \",12\"" >> $FILE4
 
 #vars
@@ -118,7 +124,7 @@ echo "set ytics nomirror font \"Computer Modern, 21\" " | tee -a $FILES
 echo "set grid ytics lc rgb \"#606060\"" | tee -a $FILES
 echo "set grid xtics lc rgb \"#bbbbbb\"" | tee -a $FILES
 #echo "set format y2 \"%0.4f\"" >> $FILE
-echo "set logscale y" | tee -a $FILES
+#echo "set logscale y" | tee -a $FILES
 
 #THESE FILES CONTAIN #RV/s NORMALIZED TO TINY-UNTOUCHED
 #echo "set yrange [0:2.5]" | tee -a $FILE $FILE1 $FILE2 $FILE4
@@ -126,10 +132,15 @@ echo "set logscale y" | tee -a $FILES
 #THESE FILES CONTAIN #TX/s NORMALIZED TO TINY-UNTOUCHED
 #echo "set yrange [0.2:1.4]" | tee -a $FILE2 $FILE3
 
-echo "set yrange [0.1:5]" >> $FILE
+echo "set yrange [0.1:1.5]" >> $FILE
+echo "set ytics 0.1" >> $FILE
+
+#echo "set yrange [0:01]" >> $FILE2
+#echo "set ytics 0.001" >> $FILE2
 
 echo "set format x \"%d\"" | tee -a $FILES
 echo "set xtics font \"Computer Modern, 19\" " | tee -a $FILES
+echo "set xtics offset 0, xlabeloffsety" | tee -a $FILES
 echo "set xtics offset 0, xlabeloffsety" | tee -a $FILES
 echo "set datafile separator whitespace" | tee -a $FILES
 
@@ -147,7 +158,7 @@ echo "new2 = \"_-_\"" | tee -a $FILES
 
 echo "unset key" | tee -a $FILES
 
-echo "set ylabel offset -1, 0 \"TX / SECOND / THREAD\" font \"Computer Modern, 16\"" | tee -a $FILE $FILE1
+echo "set ylabel offset -1, 0 \"SPEEDUP\" font \"Computer Modern, 16\"" | tee -a $FILE
 #echo "set ylabel \"TRANSACTIONS / SECOND / THREAD\"" | tee -a $FILE2 $FILE3
 #echo "set ylabel \"Validation time proportion\" offset -1.4,0 font \"Computer Modern, 14\"" | tee -a $FILE5
 
@@ -159,9 +170,13 @@ for i in ${!benchmark_arr[@]}; do
 
   COUNT=0
   PROGRAM="$TMP/gnuplot-${benchmark_arr[$i]}-txps"
-  echo "#THREADS TinySTM-wbetl AMD Intel Intel-LSA" > $PROGRAM
-  #cluster files that house avg data from multiple benchmarks
+  PROGRAM_RVAL="$TMP/gnuplot-${benchmark_arr[$i]}-rval"
+  PROGRAM_VAL_PROP="$TMP/gnuplot-${benchmark_arr[$i]}-valprop"
 
+  #tee cleans files; no -a option
+  echo "#THREADS TinySTM-wbetl AMD Intel Intel-LSA" | tee $PROGRAM $PROGRAM_RVAL $PROGRAM_VAL_PROP
+
+  #cluster files that house avg data from multiple benchmarks
   for j in ${!thread_count[@]}; do
     n=${thread_count[$j]}
 
@@ -181,13 +196,29 @@ for i in ${!benchmark_arr[@]}; do
     # 16
     # regular plot with linespoints!
 
-    cpu=$RESULTS_DIR/$n-${benchmark_arr[$i]}-cluster
+    #CPU ALWAYS AS SB7-5 because i didnt run it with 20 s
+    ##########################################################
+    # COMMON
+    cpu=$RESULTS_DIR/$n-$(sed 's/sb7_20/sb7/' <<< ${benchmark_arr[$i]})-cluster
+    echo cpu
     cpugpu=$RESULTS_DIR_CPUGPU/$n-${benchmark_arr[$i]}-cluster
-
+    ##########################################################
+    # TXPS
     tinystm_txps=$(awk -v th=$n 'NR>1{if ($1 == "TinySTM-wbetl") {printf "%.17g\n", $4/($16*th)} }' <<< cat "$cpu")
     cpugpu_txps=$(awk -v th=$n 'NR>1{printf "%.17g\n", $8/($30*th)}' <<< cat "$cpugpu")
-
     echo $n $tinystm_txps $cpugpu_txps >> $PROGRAM
+    ##########################################################
+    # RVALPS
+    tinystm_rval=$(awk -v th=$n 'NR>1{if ($1 == "TinySTM-wbetl") {printf "%.17g\n", $8/($2*th)} }' <<< cat "$cpu")
+    cpugpu_rval=$(awk -v th=$n 'NR>1{printf "%.17g\n", $12/($2*th)}' <<< cat "$cpugpu")
+    echo $n $tinystm_rval $cpugpu_rval >> $PROGRAM_RVAL
+    ##########################################################
+    # VALPROP
+    tinystm_valprop=$(awk -v th=$n 'NR>1{if ($1 == "TinySTM-wbetl") {printf "%.17g\n", $2/($16*th)} }' <<< cat "$cpu")
+    cpugpu_valprop=$(awk -v th=$n 'NR>1{printf "%.17g\n", $2/($30*th)}' <<< cat "$cpugpu")
+    echo $n $tinystm_valprop $cpugpu_valprop >> $PROGRAM_VAL_PROP
+
+
 
     #echo $tinystm_txps $cpugpu_txps
     #exit;
@@ -250,17 +281,28 @@ for i in ${!benchmark_arr[@]}; do
   done
 
   if [[ $i -eq 5 ]];then
-    echo "set key left right left Left reverse inside bottom font\"Computer modern, 18\"" >> $FILE
+    echo "set key left right left Left reverse inside top font\"Computer modern, 18\"" >> $FILE
   fi
 
   #echo "set title \"${benchmark_arr[$i]}\" font \",12\" tc rgb \"#8f8800\"" | tee -a $FILES
   echo "set title \"${benchmark_arr[$i]}\" offset 0, -1.15 font \"Computer Modern,23\"" | tee -a $FILES
   echo "plot\\"  | tee -a $FILES
 
-  echo "'$PROGRAM' u 2:xtic(1) t \"TinySTM-wbetl\" lw 3 lc rgb col_gold with linespoints, \\" >> $FILE
-  echo "'$PROGRAM' u 3:xtic(1) t \"AMD cooperative\" lw 3 lc rgb col_red with linespoints, \\" >> $FILE
-  echo "'$PROGRAM' u 4:xtic(1) t \"Intel cooperative\" lw 3 lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE
-  echo "'$PROGRAM' u 5:xtic(1) t \"Intel coop LSA\" lw 3 dt new lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE
+  #echo "'$PROGRAM' u 2:xtic(1) t \"TinySTM-wbetl\" lw 3 lc rgb col_gold with linespoints, \\" >> $FILE
+  echo "'$PROGRAM' u (\$0):(\$3/\$2):xtic(1) t \"AMD cooperative\" lw 3 lc rgb col_red with linespoints, \\" >> $FILE
+  echo "'$PROGRAM' u (\$0):(\$4/\$2)::xtic(1) t \"Intel cooperative\" lw 3 lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE
+  echo "'$PROGRAM' u (\$0):(\$5/\$2)::xtic(1) t \"Intel coop LSA\" lw 3 dt new lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE
+
+  echo "'$PROGRAM_RVAL' u 2:xtic(1) t \"TinySTM-wbetl\" lw 3 lc rgb col_gold with linespoints, \\" >> $FILE1
+  echo "'$PROGRAM_RVAL' u 3:xtic(1) t \"AMD cooperative\" lw 3 lc rgb col_red with linespoints, \\" >> $FILE1
+  echo "'$PROGRAM_RVAL' u 4:xtic(1) t \"Intel cooperative\" lw 3 lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE1
+  echo "'$PROGRAM_RVAL' u 5:xtic(1) t \"Intel coop LSA\" lw 3 dt new lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE1
+
+  echo "'$PROGRAM_VAL_PROP' u 2:xtic(1) t \"TinySTM-wbetl\" lw 3 lc rgb col_gold with linespoints, \\" >> $FILE2
+  echo "'$PROGRAM_VAL_PROP' u 3:xtic(1) t \"AMD cooperative\" lw 3 lc rgb col_red with linespoints, \\" >> $FILE2
+  echo "'$PROGRAM_VAL_PROP' u 4:xtic(1) t \"Intel cooperative\" lw 3 lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE2
+  echo "'$PROGRAM_VAL_PROP' u 5:xtic(1) t \"Intel coop LSA\" lw 3 dt new lc rgb \"#1f84ff\" with linespoints, \\" >> $FILE2
+
 
   echo | tee -a $FILES
 
@@ -271,7 +313,7 @@ echo | tee -a $FILES
 echo  "unset multiplot" | tee -a $FILES
 
 
-gnuplot -p $FILE
+gnuplot -p $FILE2
 
 
 # valreads/s
