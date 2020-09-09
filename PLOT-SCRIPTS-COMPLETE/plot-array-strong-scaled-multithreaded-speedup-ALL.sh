@@ -343,11 +343,11 @@ echo  "unset multiplot" | tee -a $FILES
 #gnuplot -p $FILE1
 
 # tx/s
-#gnuplot -p $FILE2
-#gnuplot -p $FILE3
+gnuplot -p $FILE2
+gnuplot -p $FILE3
 
 # valreads/s intel coop disjoint vs conjoint. effects of contention on GPU help
-gnuplot -p $FILE4
+#gnuplot -p $FILE4
 
 #validation time proportion
 #gnuplot -p $FILE5
