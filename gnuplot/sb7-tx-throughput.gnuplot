@@ -12,6 +12,7 @@ set tics scale 0
 set ytics nomirror font "Computer Modern, 21" 
 set grid ytics lc rgb "#606060"
 set grid xtics lc rgb "#bbbbbb"
+set logscale y
 set yrange [0.1:1.5]
 set ytics 0.1
 set format x "%d"
@@ -28,42 +29,48 @@ new1 = ".."
 new2 = "_-_"
 unset key
 set ylabel offset -1, 0 "SPEEDUP" font "Computer Modern, 16"
-set title "sb7-r-t-f" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-r-t-f" offset 0, -1.15 font "Computer Modern,23"
 plot\
-'../tmp/gnuplot-sb7-r-t-f-txps' u ($0):($3/$2):xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
-'../tmp/gnuplot-sb7-r-t-f-txps' u ($0):($4/$2)::xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
-'../tmp/gnuplot-sb7-r-t-f-txps' u ($0):($5/$2)::xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-f-txps' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-f-txps' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-f-txps' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-f-txps' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-rw-t-f" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-rw-t-f" offset 0, -1.15 font "Computer Modern,23"
 plot\
-'../tmp/gnuplot-sb7-rw-t-f-txps' u ($0):($3/$2):xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
-'../tmp/gnuplot-sb7-rw-t-f-txps' u ($0):($4/$2)::xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
-'../tmp/gnuplot-sb7-rw-t-f-txps' u ($0):($5/$2)::xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-f-txps' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-f-txps' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-f-txps' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-f-txps' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-w-t-f" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-w-t-f" offset 0, -1.15 font "Computer Modern,23"
 plot\
-'../tmp/gnuplot-sb7-w-t-f-txps' u ($0):($3/$2):xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
-'../tmp/gnuplot-sb7-w-t-f-txps' u ($0):($4/$2)::xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
-'../tmp/gnuplot-sb7-w-t-f-txps' u ($0):($5/$2)::xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-f-txps' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-f-txps' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-f-txps' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-f-txps' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-r-t-t" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-r-t-t" offset 0, -1.15 font "Computer Modern,23"
 plot\
-'../tmp/gnuplot-sb7-r-t-t-txps' u ($0):($3/$2):xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
-'../tmp/gnuplot-sb7-r-t-t-txps' u ($0):($4/$2)::xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
-'../tmp/gnuplot-sb7-r-t-t-txps' u ($0):($5/$2)::xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-t-txps' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-t-txps' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-t-txps' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-t-txps' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-rw-t-t" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-rw-t-t" offset 0, -1.15 font "Computer Modern,23"
 plot\
-'../tmp/gnuplot-sb7-rw-t-t-txps' u ($0):($3/$2):xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
-'../tmp/gnuplot-sb7-rw-t-t-txps' u ($0):($4/$2)::xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
-'../tmp/gnuplot-sb7-rw-t-t-txps' u ($0):($5/$2)::xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-t-txps' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-t-txps' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-t-txps' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-t-txps' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
 set key left right left Left reverse inside top font"Computer modern, 18"
-set title "sb7-w-t-t" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-w-t-t" offset 0, -1.15 font "Computer Modern,23"
 plot\
-'../tmp/gnuplot-sb7-w-t-t-txps' u ($0):($3/$2):xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
-'../tmp/gnuplot-sb7-w-t-t-txps' u ($0):($4/$2)::xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
-'../tmp/gnuplot-sb7-w-t-t-txps' u ($0):($5/$2)::xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-t-txps' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-t-txps' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-t-txps' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-t-txps' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
 
 unset multiplot

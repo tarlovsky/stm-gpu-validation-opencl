@@ -1,4 +1,4 @@
-set terminal wxt size 850,2800
+set terminal wxt size 1400,1100
 unset bmargin
 unset tmargin
 unset rmargin
@@ -13,7 +13,7 @@ col_gold="#8f8800"
 xlabeloffsety=0.15
 set grid ytics lc rgb "#606060"
 set grid xtics lc rgb "#bbbbbb"
-set multiplot layout 4,1 
+set multiplot layout 2,2 
 set decimal locale "en_US.UTF-8"; show locale
 set tics scale 0
 set ytics nomirror font "Computer Modern, 22" 

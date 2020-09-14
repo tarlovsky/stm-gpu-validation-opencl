@@ -50,13 +50,13 @@ CO_OP_SEQ_PATH="$RESULTS_DIR/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-se
 HEAT_FILE_SEQ="../results-validation-array/TinySTM-igpu-cpu-persistent-wbetl/1/array-r99-w1-sequential-walk/heat-file"
 HEAT_FILE_CPU_SEQ="../results-validation-array/TinySTM-wbetl/1/array-r99-w1-sequential-walk/heat-file"
 
-echo "set xtics nomirror rotate by 35 right font \"Computer Modern,14\" offset 1,-1,0" | tee -a $FILE1 $FILE2
-echo "set ytics nomirror rotate by 35 right font \"Computer Modern,16\" " | tee -a $FILE1 $FILE2
-echo "set ztics nomirror rotate by 35 right font \"Computer Modern,16\" " | tee -a $FILE1 $FILE2
+echo "set xtics font \"Computer Modern,18\" offset 1,-1,0" | tee -a $FILE1 $FILE2
+echo "set ytics font \"Computer Modern,24\" " | tee -a $FILE1 $FILE2
+echo "set ztics font \"Computer Modern,28\" " | tee -a $FILE1 $FILE2
 
-echo "set xlabel \"READ-SET SIZE\" font \"Computer Modern, 17\" offset graph 0,0,-0.04"  | tee -a $FILE1 $FILE2
-echo "set ylabel \"CPU %\" font \"Computer Modern, 18\" offset graph 0.1,0,0"  | tee -a $FILE1 $FILE2
-echo "set zlabel \"READS VALIDATED / s\" font \"Computer Modern, 17\" offset graph 0,0,0.56"  | tee -a $FILE1 $FILE2
+echo "set xlabel \"READ-SET SIZE\" font \"Computer Modern, 22\" offset graph 0,0,-0.04"  | tee -a $FILE1 $FILE2
+echo "set ylabel \"CPU %\" font \"Computer Modern, 25\" offset graph 0.1,0,0"  | tee -a $FILE1 $FILE2
+echo "set zlabel \"READS VALIDATED / s\" font \"Computer Modern, 18\" offset graph 0,0,0.66"  | tee -a $FILE1 $FILE2
 
 
 echo -n > $HEAT_FILE_RAND
@@ -126,7 +126,7 @@ echo "      '$HEAT_FILE_CPU_SEQ' u 2:1:3:xtic(2) t \"TinySTM-wbetl untouched\" w
 echo >> $FILE2
 
 gnuplot -p $FILE1 #RANDOM
-gnuplot -p $FILE2 #SEQUENTIAL
+#gnuplot -p $FILE2 #SEQUENTIAL
 
 
 

@@ -17,7 +17,8 @@ FILE1="../gnuplot/simple-array-multithreaded-validation-reads-validated-sequenti
 
 FILES="$FILE $FILE1"
 
-echo "set terminal wxt size 850,2800" > $FILE
+echo "set terminal wxt size 1400,1100" > $FILE
+#echo "set terminal wxt size 850,2800" > $FILE
 echo "set terminal wxt size 850,2800" > $FILE1
 
 echo "unset bmargin" | tee -a $FILES
@@ -40,7 +41,7 @@ echo "xlabeloffsety=0.15" | tee -a $FILES
 echo "set grid ytics lc rgb \"#606060\"" | tee -a $FILES
 echo "set grid xtics lc rgb \"#bbbbbb\"" | tee -a $FILES
 
-echo "set multiplot layout 4,1 " >> $FILE
+echo "set multiplot layout 2,2 " >> $FILE
 echo "set multiplot layout 4,1 " >> $FILE1
 
 echo "set decimal locale \"en_US.UTF-8\"; show locale" | tee -a $FILES
@@ -137,7 +138,7 @@ echo  "unset multiplot" | tee -a $FILES
 
 
 
-#gnuplot -p $FILE  #RAND
-gnuplot -p $FILE1 #SEQ
+gnuplot -p $FILE  #RAND
+#gnuplot -p $FILE1 #SEQ
 
 

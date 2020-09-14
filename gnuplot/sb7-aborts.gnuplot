@@ -1,7 +1,7 @@
-set terminal wxt noenhanced size 880,2600; 
+set terminal wxt noenhanced size 1400,1100
 set bmargin 8
 set lmargin -2
-set multiplot layout 4,1 title "#Aborts normalized to TinySTM-untouched" font "Computer Modern,23"
+set multiplot layout 2,3 title "Aborts / thread" font "Computer Modern,23"
 col_24="#c724d6"
 col_48="#44cd1"
 col_gold="#8f8800"
@@ -12,6 +12,7 @@ set tics scale 0
 set ytics nomirror font "Computer Modern, 21" 
 set grid ytics lc rgb "#606060"
 set grid xtics lc rgb "#bbbbbb"
+set logscale y
 set format x "%d"
 set xtics font "Computer Modern, 19" 
 set xtics offset 0, xlabeloffsety
@@ -25,23 +26,48 @@ new = "-"
 new1 = ".."
 new2 = "_-_"
 unset key
-set title "sb7-r-t-f" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-r-t-f" offset 0, -1.15 font "Computer Modern,23"
 plot\
+'../tmp/gnuplot-sb7_20-r-t-f-aborts' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-f-aborts' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-f-aborts' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-f-aborts' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-rw-t-f" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-rw-t-f" offset 0, -1.15 font "Computer Modern,23"
 plot\
+'../tmp/gnuplot-sb7_20-rw-t-f-aborts' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-f-aborts' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-f-aborts' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-f-aborts' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-w-t-f" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-w-t-f" offset 0, -1.15 font "Computer Modern,23"
 plot\
+'../tmp/gnuplot-sb7_20-w-t-f-aborts' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-f-aborts' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-f-aborts' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-f-aborts' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-r-t-t" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-r-t-t" offset 0, -1.15 font "Computer Modern,23"
 plot\
+'../tmp/gnuplot-sb7_20-r-t-t-aborts' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-t-aborts' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-t-aborts' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-r-t-t-aborts' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-rw-t-t" offset 0, -1.15 font "Computer Modern,23"
+set title "sb7_20-rw-t-t" offset 0, -1.15 font "Computer Modern,23"
 plot\
+'../tmp/gnuplot-sb7_20-rw-t-t-aborts' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-t-aborts' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-t-aborts' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-rw-t-t-aborts' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
-set title "sb7-w-t-t" offset 0, -1.15 font "Computer Modern,23"
+set key left right left Left reverse inside top font"Computer modern, 18"
+set title "sb7_20-w-t-t" offset 0, -1.15 font "Computer Modern,23"
 plot\
+'../tmp/gnuplot-sb7_20-w-t-t-aborts' u 2:xtic(1) t "TinySTM-wbetl" lw 3 lc rgb col_gold with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-t-aborts' u 3:xtic(1) t "AMD cooperative" lw 3 lc rgb col_red with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-t-aborts' u 4:xtic(1) t "Intel cooperative" lw 3 lc rgb "#1f84ff" with linespoints, \
+'../tmp/gnuplot-sb7_20-w-t-t-aborts' u 5:xtic(1) t "Intel coop LSA" lw 3 dt new lc rgb "#1f84ff" with linespoints, \
 
 
 unset multiplot

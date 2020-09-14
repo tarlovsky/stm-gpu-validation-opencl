@@ -74,7 +74,7 @@ echo  "   u 14               t col lc rgbcolor col_gold lt 1 fs pattern 3, \\"  
 echo  "'' u 16               t col lc rgbcolor \"#${blue_pallet[((5))]}\" fs pattern 3, \\"  >> $FILE
 echo  "'' u 18:xticlabels(sprintf(\"%'d (%.2fMB)\",\$1, (\$1*8)/1000000)) t col lc rgbcolor \"#d1d1cd\" fs pattern 10, \\"  >> $FILE
 #draw labels
-echo  "      '<tail -n+2 $RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/1/array-r99-w1-random-walk/1-random-cpu-validation' u (\$0-0.104):((\$14!=0)?(\$14+\$14*0.20):NaN):(sprintf(\"%'d\", \$14)) notitle w labels rotate by 90 left textcolor rgb \"#d4d281\" font \"Computer Modern,13.5\", \\"  >> $FILE
+echo  "      '<tail -n+2 $RESULTS_DIR/TinySTM-igpu-cpu-persistent-dynamic-split-wbetl-block-level-sync-k-1/1/array-r99-w1-random-walk/1-random-cpu-validation' u (\$0-0.104):((\$14!=0)?(\$14+\$14*0.20):NaN):(sprintf(\"%'d\", \$14)) notitle w labels rotate by 90 left textcolor rgb \"#000000\" font \"Computer Modern,13.5\", \\"  >> $FILE
 echo  "      ''               u (\$0+0.11):((\$16!=0)?(\$16+\$16*0.20):NaN):(sprintf(\"%'d\", \$16)) notitle w labels rotate by 90 left textcolor rgb \"#70a8ff\" font \"Computer Modern,13.5\", \\"  >> $FILE
 echo  "      ''               u (\$0+0.30):((\$18!=0)?(\$18+\$18*0.20):NaN):(sprintf(\"%'d\", \$18)) notitle w labels rotate by 90 left font \"Computer Modern,13.5\", \\"  >> $FILE
 #plot errors bars

@@ -3,12 +3,13 @@ set multiplot layout 4,2 title "Transactional array traversal application - Inte
 set decimal locale "en_US.UTF-8"; show locale
 set view map
 set tmargin 5
+set lmargin 15
 set grid front lc rgb "#999966"
 set datafile separator " "
 set palette rgb -21,-22,-23
 set key autotitle columnhead
+set ytics font "Computer Modern, 11"
 set xlabel "Read-set size" offset 0, -1.6 font"Computer Modern, 13"
-set ylabel offset 2.2,0 "Program" font"Computer Modern, 15"
 unset colorbox
 set xtics nomirror rotate by 40 right font "Computer Modern, 16"
 set format x "%'d"
